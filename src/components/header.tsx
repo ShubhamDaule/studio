@@ -20,16 +20,17 @@ import {
 import { DateRangePicker } from "./dashboard/date-range-picker";
 import { SourceFilter } from "./dashboard/source-filter";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { cn } from "@/lib/utils";
 
 const Logo = () => (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-shrink-0">
         <svg
             width="32"
             height="32"
             viewBox="0 0 32 32"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="text-primary h-8 w-8 flex-shrink-0"
+            className="text-primary h-8 w-8"
             >
             <rect width="32" height="32" rx="8" fill="currentColor" />
             <path
@@ -69,7 +70,20 @@ const UserNav = () => {
     router.push('/login');
   }
 
-  if (!user) return null;
+  if (!user) {
+    return (
+        <div className="hidden md:flex items-center gap-2">
+            <Link href="/login">
+                <Button variant="outline" size="sm">
+                    Login
+                </Button>
+            </Link>
+            <Button asChild size="sm" className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90">
+                <Link href="/dashboard">Get Started</Link>
+            </Button>
+        </div>
+    );
+  }
   
   return (
       <DropdownMenu>
@@ -117,20 +131,7 @@ const LandingNav = () => {
             <LandingNavLinks />
         </div>
         <div className="hidden md:flex items-center gap-2">
-            { user ? (
-                <UserNav />
-            ) : (
-                <>
-                <Link href="/login">
-                    <Button variant="outline" size="sm">
-                        Login
-                    </Button>
-                </Link>
-                <Button asChild size="sm" className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90">
-                    <Link href="/dashboard">Get Started</Link>
-                </Button>
-                </>
-            )}
+            <UserNav />
         </div>
         <Sheet>
             <SheetTrigger asChild>
@@ -174,7 +175,7 @@ const DashboardNav = () => {
     } = useDashboardContext();
 
     return (
-        <div className="flex w-full items-center justify-end gap-2 ml-auto">
+        <div className="flex w-full items-center justify-end gap-2">
             <div className="hidden sm:flex items-center gap-2">
                 <DateRangePicker
                     date={dateRange}
@@ -233,7 +234,7 @@ const NavContent = () => {
 export function Header() {
     return (
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
-          <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8 gap-4">
             <Link href="/landing">
               <Logo />
             </Link>
