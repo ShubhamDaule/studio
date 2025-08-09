@@ -52,7 +52,7 @@ const Logo = () => (
             />
         </svg>
 
-        <span className="hidden sm:inline-block text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
+        <span className="hidden sm:inline-block text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
             SpendWise
         </span>
     </div>
@@ -113,8 +113,10 @@ const LandingNav = () => {
 
     return (
         <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-8">
-                <LandingNavLinks />
+             <div className="hidden md:flex items-center gap-8">
+                <div className="flex items-center gap-8">
+                    <LandingNavLinks />
+                </div>
                 {user ? (
                     <UserNav />
                 ) : (
