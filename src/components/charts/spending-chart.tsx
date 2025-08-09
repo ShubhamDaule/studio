@@ -94,7 +94,7 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
             key
         }
       })
-      .sort((a, b) => b.value - a.amount);
+      .sort((a, b) => b.value - a.value); // Sort by spending amount, descending
 
       return { aggregatedData: aggregated, chartConfig: dynamicChartConfig satisfies ChartConfig };
   }, [transactions, allCategories]);
@@ -152,7 +152,7 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
                 innerRadius="30%"
                 outerRadius="80%"
                 strokeWidth={2}
-                onClick={(data) => onPieClick(data)}
+                onClick={(data) => onPieClick({ category: data.name })}
                 onMouseEnter={onPieEnter}
                 onMouseLeave={onPieLeave}
                 className="cursor-pointer"
