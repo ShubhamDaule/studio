@@ -65,7 +65,7 @@ export function AskAiCharacter() {
             animation: glow 2s ease-in-out infinite;
         }
       `}</style>
-      <g className="ai-char-bob">
+      <g className="ai-char-bob" transform="translate(0, 5)">
         {/* Body */}
         <path className="ai-char-body" d="M 25 95 C 20 70, 20 60, 50 60 C 80 60, 80 70, 75 95 Z" />
         
@@ -92,7 +92,7 @@ export function AskAiCharacter() {
         <path className="ai-char-features" d="M 48 50 Q 50 52, 52 50" />
       </g>
        {/* Lightbulb */}
-      <g transform="translate(65, 10)">
+      <g transform="translate(65, 15)">
           <circle className="ai-char-lightbulb-glow ai-char-glow-animate" cx="0" cy="0" r="12" />
           <path className="ai-char-lightbulb-glass" d="M 0 -12 C 8 -12, 8 -4, 5 0 L -5 0 C -8 -4, -8 -12, 0 -12 Z" />
           <rect className="ai-char-lightbulb-base" x="-4" y="0" width="8" height="4" rx="1"/>

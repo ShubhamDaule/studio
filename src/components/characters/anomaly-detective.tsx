@@ -55,7 +55,7 @@ export function AnomalyDetective() {
             animation: bob 3s ease-in-out infinite;
         }
       `}</style>
-      <g className="detective-bob">
+      <g className="detective-bob" transform="translate(0, 5)">
         {/* Body */}
         <path className="detective-body" d="M 25 95 C 20 70, 20 60, 50 60 C 80 60, 80 70, 75 95 Z" />
         <path className="detective-coat" d="M 27 68 C 22 75, 22 80, 50 80 C 78 80, 78 75, 73 68 Z" />

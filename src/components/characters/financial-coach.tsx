@@ -44,7 +44,7 @@ export function FinancialCoach() {
             animation: bob 3s ease-in-out infinite;
         }
       `}</style>
-      <g className="coach-bob">
+      <g className="coach-bob" transform="translate(0, 5)">
         {/* Body */}
         <path className="coach-body" d="M 25 95 C 20 70, 20 60, 50 60 C 80 60, 80 70, 75 95 Z" />
         
