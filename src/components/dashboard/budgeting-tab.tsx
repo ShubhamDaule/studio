@@ -61,10 +61,22 @@ export function BudgetingTab({
         if(isEditing){
              setAllCategories(prev => prev.map(c => c.name === selectedCategory.name ? updatedCategory : c));
         } else {
+            // This is the "Add" mode
+            const isAlreadyBudgeted = activeBudgets.some(b => b.category === updatedCategory.name);
+            if (isAlreadyBudgeted) {
+                // Don't add if it's already there
+                closeDialog();
+                setSelectedCategory(null);
+                return;
+            }
+
             const isNewCustomCategory = !allCategories.some(c => c.name === updatedCategory.name);
             if (isNewCustomCategory) {
+                // Add to the master list of all possible categories if it's brand new
                 setAllCategories(prev => [...prev, updatedCategory]);
             }
+            
+            // Add the category to the active budget list
             onAddBudget({ category: updatedCategory.name, amount: 0 });
         }
         closeDialog();
@@ -93,8 +105,8 @@ export function BudgetingTab({
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <SortableContext items={budgetedCategories.map(c => c.name)} strategy={verticalListSortingStrategy}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <SortableContext items={budgetedCategories.map(c => c.name)} strategy={verticalListSortingStrategy}>
                                 {budgetedCategories.map(cat => {
                                         const budget = activeBudgets.find(b => b.category === cat.name);
                                         if(!budget) return null;
@@ -111,14 +123,14 @@ export function BudgetingTab({
                                             />
                                         )
                                     })}
-                                 <div className="flex items-center justify-center min-h-[160px] border-2 border-dashed rounded-lg">
-                                    <Button variant="ghost" onClick={() => { setSelectedCategory(null); openDialog(); }}>
-                                        <PlusCircle className="mr-2 h-4 w-4"/>
-                                        Add Category
-                                    </Button>
-                                </div>
+                            </SortableContext>
+                             <div className="flex items-center justify-center min-h-[160px] border-2 border-dashed rounded-lg">
+                                <Button variant="ghost" onClick={() => { setSelectedCategory(null); openDialog(); }}>
+                                    <PlusCircle className="mr-2 h-4 w-4"/>
+                                    Add Category
+                                </Button>
                             </div>
-                        </SortableContext>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
