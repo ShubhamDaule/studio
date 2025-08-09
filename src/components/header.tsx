@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { Download, LogOut, FileText, FileSpreadsheet, FileJson, PanelLeft, BarChart3 } from "lucide-react";
+import { Download, LogOut, FileText, FileJson, PanelLeft, BarChart3 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -132,19 +132,15 @@ const triggerExport = async (format: 'csv' | 'pdf', transactions: Transaction[])
     }));
 
     if (format === 'csv') {
-      const [{ utils, write }, { saveAs }] = await Promise.all([
-        import('xlsx'),
-        import('file-saver')
-      ]);
-
-      const worksheet = utils.json_to_sheet(dataToExport);
-      const workbook = utils.book_new();
-      utils.book_append_sheet(workbook, worksheet, "Transactions");
-      const fileType = 'text/csv;charset=utf-8;';
-      const fileExtension = '.csv';
-      const excelBuffer = write(workbook, { bookType: format, type: 'array' });
-      const data = new Blob([excelBuffer], { type: fileType });
-      saveAs(data, "transactions" + fileExtension);
+      const { saveAs } = await import('file-saver');
+      const header = Object.keys(dataToExport[0]);
+      const csv = [
+        header.join(','),
+        ...dataToExport.map(row => header.map(fieldName => JSON.stringify((row as any)[fieldName])).join(','))
+      ].join('\r\n');
+      
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      saveAs(blob, "transactions.csv");
 
     } else if (format === 'pdf') {
       const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
@@ -154,7 +150,7 @@ const triggerExport = async (format: 'csv' | 'pdf', transactions: Transaction[])
       const doc = new jsPDF();
       autoTable(doc, {
         head: [['ID', 'Date', 'Merchant', 'Amount', 'Category', 'Source']],
-        body: dataToExport.map(t => [t.ID, t.date, t.merchant, t.amount, t.category, t.source]),
+        body: dataToExport.map(t => [t.ID, t.Date, t.Merchant, t.Amount, t.Category, t.Source]),
       });
       doc.save('transactions.pdf');
     }
