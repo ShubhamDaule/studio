@@ -1,17 +1,20 @@
 
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useDashboardContext } from "@/context/dashboard-context";
 import { mockTransactions, mockCategories } from "@/lib/mock-data";
 import type { Transaction, Category } from "@/lib/types";
 
 export function useTransactions() {
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>(mockTransactions);
-  const [allCategories, setAllCategories] = useState<Category[]>(mockCategories);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
   
-  // This hook now gets its filter state from the context.
-  // The context is the single source of truth for the date range and source filter.
+  useEffect(() => {
+    setAllTransactions(mockTransactions);
+    setAllCategories(mockCategories);
+  }, []);
+
   const { dateRange, selectedSourceFilter } = useDashboardContext();
 
   const transactionFiles = useMemo(() => {
