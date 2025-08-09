@@ -67,7 +67,7 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-50 text-foreground">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
         <main className="container mx-auto p-4 sm:p-6 lg:p-8">
             <Tabs defaultValue="overview" className="mt-8">
               <div className="overflow-x-auto">
