@@ -2,10 +2,11 @@
 "use client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import type { Transaction } from "@/lib/types";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { categoryColors } from "../recent-transactions"; // Using same colors
+import { CategoryIcon } from "../icons";
+import { TrendingUp, Calendar, Banknote, Tag, Building, FileText } from "lucide-react";
 
 type Props = {
   isOpen: boolean;
@@ -16,37 +17,75 @@ type Props = {
 export function TransactionDetailDialog({ isOpen, onClose, transaction }: Props) {
   if (!transaction) return null;
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
+  
+  const formatDate = (dateString: string) => {
+    try {
+        const date = parseISO(dateString);
+        return format(date, "MMMM do, yyyy");
+    } catch {
+        return dateString;
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Transaction Details</DialogTitle>
+           <DialogTitle className="flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 text-primary" />
+            Transaction Details
+          </DialogTitle>
           <DialogDescription>
             Detailed view of your transaction.
           </DialogDescription>
         </DialogHeader>
-        <div className="mt-4 space-y-4">
-            <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Amount</span>
-                <span className="font-bold text-lg">{transaction.amount < 0 ? "-" : ""}${Math.abs(transaction.amount).toFixed(2)}</span>
+        <div className="mt-4 space-y-4 text-sm">
+            <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
+                <div className="flex items-center gap-3">
+                    <Building className="w-5 h-5 text-muted-foreground" />
+                    <span className="font-medium text-muted-foreground">Merchant</span>
+                </div>
+                <span className="font-semibold text-right">{transaction.merchant}</span>
             </div>
-            <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Date</span>
-                <span>{format(new Date(transaction.date), "PPP")}</span>
+             <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
+                <div className="flex items-center gap-3">
+                    <Banknote className="w-5 h-5 text-muted-foreground" />
+                    <span className="font-medium text-muted-foreground">Amount</span>
+                </div>
+                <span className="font-semibold text-primary text-lg">{formatCurrency(transaction.amount)}</span>
             </div>
-             <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Merchant</span>
-                <span>{transaction.merchant}</span>
+            <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
+                <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-muted-foreground" />
+                    <span className="font-medium text-muted-foreground">Date</span>
+                </div>
+                <span className="font-semibold">{formatDate(transaction.date)}</span>
             </div>
-            <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Category</span>
-                <Badge variant="outline" className={cn("font-normal", categoryColors[transaction.category])}>
+             <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
+                <div className="flex items-center gap-3">
+                    <Tag className="w-5 h-5 text-muted-foreground" />
+                    <span className="font-medium text-muted-foreground">Category</span>
+                </div>
+                <Badge variant="outline" className="py-1 text-sm">
+                    <CategoryIcon
+                        category={transaction.category}
+                        className="mr-2 h-4 w-4"
+                    />
                     {transaction.category}
                 </Badge>
             </div>
-            <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Source File</span>
-                <span>{transaction.fileSource}</span>
+            <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
+                <div className="flex items-center gap-3">
+                    <FileText className="w-5 h-5 text-muted-foreground" />
+                    <span className="font-medium text-muted-foreground">Source</span>
+                </div>
+                <span className="font-semibold text-muted-foreground">{transaction.fileSource}</span>
             </div>
         </div>
       </DialogContent>

@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TransactionTable } from "../dashboard/transaction-table";
 import type { Transaction } from "@/lib/types";
+import { TopMerchantIcon } from "../icons";
 
 type Props = {
   isOpen: boolean;
@@ -18,7 +19,10 @@ export function MerchantTransactionsDialog({ isOpen, onClose, merchant, transact
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Transactions at {merchant}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <TopMerchantIcon className="w-6 h-6" />
+            Transactions at {merchant}
+          </DialogTitle>
           <DialogDescription>
             Showing all transactions at "{merchant}" for the selected period.
           </DialogDescription>

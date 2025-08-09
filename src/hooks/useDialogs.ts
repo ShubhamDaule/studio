@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { Transaction } from '@/lib/types';
 
 type DialogType = 'category' | 'day' | 'source' | 'merchant' | 'transactionDetail';
@@ -35,15 +35,15 @@ export const useDialogs = ({ transactions, allTransactions }: UseDialogsProps) =
   
   const [activeDialogKey, setActiveDialogKey] = useState<string | null | Transaction>(null);
 
-  const openDialog = (type: DialogType, key: string | Transaction | null) => {
+  const openDialog = useCallback((type: DialogType, key: string | Transaction | null) => {
     setActiveDialogKey(key);
     setDialogState(prev => ({ ...prev, [type]: true }));
-  };
+  }, []);
 
-  const closeDialog = (type: DialogType) => {
+  const closeDialog = useCallback((type: DialogType) => {
     setDialogState(prev => ({ ...prev, [type]: false }));
     setActiveDialogKey(null);
-  };
+  }, []);
   
   const dialogData: DialogData = useMemo(() => {
     if (!activeDialogKey) return { transactions: [] };

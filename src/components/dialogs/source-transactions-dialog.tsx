@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TransactionTable } from "../dashboard/transaction-table";
 import type { Transaction } from "@/lib/types";
+import { FileText } from "lucide-react";
 
 type Props = {
   isOpen: boolean;
@@ -18,7 +19,10 @@ export function SourceTransactionsDialog({ isOpen, onClose, source, transactions
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Transactions from {source}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <FileText className="w-6 h-6" />
+            Transactions from {source}
+          </DialogTitle>
           <DialogDescription>
             Showing all transactions from the file "{source}".
           </DialogDescription>
