@@ -156,7 +156,7 @@ const DashboardNav = () => {
             <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="sm" disabled={!hasTransactions}>
+                    <Button size="sm" disabled={!hasTransactions} className="w-full sm:w-[180px]">
                       <Download className="mr-2 h-4 w-4 hidden sm:inline-block" />
                       Export
                     </Button>
