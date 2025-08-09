@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { Download, LogOut, FileText, FileJson, PanelLeft, BarChart3 } from "lucide-react";
+import { Download, LogOut, FileText, FileJson, PanelLeft, BarChart3, FileSpreadsheet } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -21,7 +21,6 @@ import { SourceFilter } from "./dashboard/source-filter";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { cn } from "@/lib/utils";
 import type { Transaction } from "@/lib/types";
-import type { ExportFormat } from "@/lib/types";
 
 const Logo = () => (
     <div className="flex items-center gap-2 flex-shrink-0">
@@ -86,12 +85,12 @@ const LandingNav = () => {
 
     return (
         <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-x-1">
+             <div className="hidden md:flex items-center gap-x-4">
+                <LandingNavLinks />
                 {user ? (
                     <UserNav />
                 ) : isLandingPage ? (
-                    <div className="flex items-center gap-2 ml-4">
-                        <LandingNavLinks />
+                    <div className="flex items-center gap-2">
                         <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
                         <Button asChild><Link href="/signup">Get Started</Link></Button>
                     </div>
@@ -188,7 +187,7 @@ const DashboardNav = () => {
             <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="sm" disabled={!hasTransactions} className="w-full sm:w-[180px]">
+                    <Button size="sm" disabled={!hasTransactions} className="w-full sm:w-[120px]">
                       <Download className="mr-2 h-4 w-4 hidden sm:inline-block" />
                       Export
                     </Button>
