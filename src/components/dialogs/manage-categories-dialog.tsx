@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { Category, Budget, Transaction } from "@/lib/types";
 import { CategoryIcon } from "../icons";
 import { ScrollArea } from "../ui/scroll-area";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 
 type Props = {
@@ -18,6 +18,7 @@ type Props = {
   onAddBudget: (budget: Budget) => void;
   onDeleteBudget: (categoryName: Category['name']) => void;
   transactions: Transaction[];
+  onAddCustomCategory: () => void;
 };
 
 const CategoryRow = ({ category, action, onAction, disabled }: { category: Category; action: 'add' | 'remove'; onAction: () => void; disabled?: boolean }) => {
@@ -47,7 +48,7 @@ const CategoryRow = ({ category, action, onAction, disabled }: { category: Categ
     )
 }
 
-export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeBudgets, onAddBudget, onDeleteBudget, transactions }: Props) {
+export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeBudgets, onAddBudget, onDeleteBudget, transactions, onAddCustomCategory }: Props) {
   const [locallyBudgeted, setLocallyBudgeted] = useState<Budget[]>([]);
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeB
   
   const availableCategories = useMemo(() => {
     const budgetedNames = new Set(locallyBudgeted.map(b => b.category));
-    return allCategories.filter(c => !budgetedNames.has(c.name) && !['Payment', 'Rewards', 'Investments & Savings', 'Fees & Charges', 'Government & Taxes'].includes(c.name));
+    return allCategories.filter(c => !budgetedNames.has(c.name));
   }, [locallyBudgeted, allCategories]);
 
   const categoriesWithTransactions = useMemo(() => new Set(transactions.map(t => t.category)), [transactions]);
@@ -94,10 +95,18 @@ export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeB
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Manage Budget Categories</DialogTitle>
-          <DialogDescription>
-            Add or remove categories from your main budget panel. Changes will be saved when you click "Save".
-          </DialogDescription>
+            <div className='flex justify-between items-center'>
+                <div>
+                    <DialogTitle>Manage Budget Categories</DialogTitle>
+                    <DialogDescription>
+                        Add or remove categories from your main budget panel.
+                    </DialogDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={onAddCustomCategory}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Custom
+                </Button>
+            </div>
         </DialogHeader>
         <div className="mt-4 grid grid-cols-2 gap-4 items-start">
             <div className="border rounded-lg p-2">

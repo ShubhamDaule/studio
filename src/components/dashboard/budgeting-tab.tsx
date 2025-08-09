@@ -4,7 +4,7 @@ import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Budget, BudgetOverride, Category, Transaction } from "@/lib/types";
-import { Settings2 } from "lucide-react";
+import { Settings2, Plus } from "lucide-react";
 import { EditCategoryDialog } from "../dialogs/edit-category-dialog";
 import { useBoolean } from "@/hooks/use-boolean";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -35,12 +35,11 @@ export function BudgetingTab({
     onAddBudget,
     allCategories,
     onDeleteBudget,
-    onDeleteCategory
+    onDeleteCategory,
 }: Props) {
     const {value: isEditDialogOpen, setTrue: openEditDialog, setFalse: closeEditDialog} = useBoolean(false);
     const {value: isManageDialogOpen, setTrue: openManageDialog, setFalse: closeManageDialog} = useBoolean(false);
     const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
-
 
     const spendingByCategory = React.useMemo(() => {
         return transactions.reduce((acc, t) => {
@@ -61,14 +60,19 @@ export function BudgetingTab({
     };
     
     const handleSaveCategory = (updatedCategory: Category) => {
-        // This is only for editing an existing custom category's name now.
-        // Adding is handled by onAddBudget.
-        setAllCategories(prev => prev.map(c => c.name === selectedCategory?.name ? updatedCategory : c));
+        const isNew = !allCategories.some(c => c.name === selectedCategory?.name);
+
+        if (isNew) {
+            setAllCategories(prev => [...prev, updatedCategory]);
+            onAddBudget({ category: updatedCategory.name, amount: 0 });
+        } else {
+             setAllCategories(prev => prev.map(c => c.name === selectedCategory?.name ? updatedCategory : c));
+        }
+
         closeEditDialog();
         setSelectedCategory(null);
     }
     
-
     const budgetedCategories = allCategories.filter(
       (c) => activeBudgets.some((b) => b.category === c.name)
     );
@@ -130,6 +134,7 @@ export function BudgetingTab({
                 onAddBudget={onAddBudget}
                 onDeleteBudget={onDeleteBudget}
                 transactions={transactions}
+                onAddCustomCategory={() => { setSelectedCategory(null); openEditDialog(); }}
             />
         </>
     );

@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { Category } from '@/lib/types';
-import { mockCategories } from '@/lib/mock-data';
 
 type Props = {
   isOpen: boolean;
@@ -23,19 +22,23 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category }: Props)
   const isPredefined = !!category?.isDefault;
 
   useEffect(() => {
-    if (isOpen && category) {
-        setCustomName(category.name);
+    if (isOpen) {
+        if(category) {
+            setCustomName(category.name);
+        } else {
+            setCustomName('');
+        }
     }
   }, [isOpen, category]);
   
   const handleSave = () => {
-    if(!category) return;
     const finalName = customName.trim();
     if (finalName) {
-      onSave({
-        ...category,
-        name: finalName,
-      });
+      if (isEditing) {
+        onSave({ ...category!, name: finalName });
+      } else {
+         onSave({ name: finalName, icon: 'Package', isDefault: false });
+      }
       onClose();
     }
   };
@@ -44,9 +47,9 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category }: Props)
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Category</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Category' : 'Create Custom Category'}</DialogTitle>
           <DialogDescription>
-            {`Editing the "${category?.name}" category.`}
+            {isEditing ? `Editing the "${category?.name}" category.` : 'Create a new category for your budget.'}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
