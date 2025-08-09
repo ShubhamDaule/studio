@@ -17,7 +17,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import type { Transaction, Budget, Category } from '@/lib/types';
-import { PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
+import { PieChart as PieChartIcon } from 'lucide-react';
 
 const chartConfigBase = {
   amount: {
@@ -124,13 +124,12 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
 
   return (
     <Card className="flex flex-col h-full card-interactive group" onClick={() => onPieClick({})}>
-      <CardHeader className="flex-row items-center gap-2 space-y-0">
-        <PieChartIcon className="h-6 w-6" />
-        <div className="flex-1">
-            <CardTitle className='group-hover:text-primary transition-colors'>Spending Breakdown</CardTitle>
-            <CardDescription>Monthly spending by category. Click for details.</CardDescription>
-        </div>
-        <TrendingUp className="h-5 w-5" />
+      <CardHeader>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+            <PieChartIcon className="h-6 w-6" />
+            Spending Breakdown
+        </CardTitle>
+        <CardDescription>Monthly spending by category. Click for details.</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -161,7 +160,6 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
                   <Cell key={`cell-${entry.key}`} fill={entry.fill} />
                 ))}
               </Pie>
-              <Legend content={<ChartLegendContent />} />
             </PieChart>
           </ResponsiveContainer>
         </ChartContainer>
