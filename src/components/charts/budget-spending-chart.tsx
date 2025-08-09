@@ -65,9 +65,9 @@ export function BudgetSpendingChart({ transactions, budgets }: BudgetSpendingCha
   const formatCurrency = (value: number) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
   return (
-    <Card className="flex flex-col h-full card-interactive">
+    <Card className="flex flex-col h-full card-interactive group">
       <CardHeader>
-        <CardTitle className='flex items-center gap-2'>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
             <Target className="h-6 w-6" />
             Spending vs. Budget
         </CardTitle>
