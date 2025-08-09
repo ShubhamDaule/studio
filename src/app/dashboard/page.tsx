@@ -122,7 +122,8 @@ export default function DashboardPage() {
         handleMultipleBudgetChange,
         handleSetBudgetOverride,
         handleDeleteBudgetOverride,
-        addBudget
+        addBudget,
+        deleteBudget
     } = useBudgets({allCategories, dateRange, transactions: filteredTransactions});
 
     const {
@@ -146,6 +147,13 @@ export default function DashboardPage() {
                 return arrayMove(items, oldIndex, newIndex);
             });
         }
+    };
+    
+    const handleDeleteCategory = (categoryName: Category['name']) => {
+        // Remove from master category list
+        setAllCategories(prev => prev.filter(c => c.name !== categoryName));
+        // Remove from budget
+        deleteBudget(categoryName);
     };
 
     return (
@@ -210,6 +218,7 @@ export default function DashboardPage() {
                                 budgetOverrides={budgetOverrides}
                                 onDeleteBudgetOverride={handleDeleteBudgetOverride}
                                 onAddBudget={addBudget}
+                                onDeleteCategory={handleDeleteCategory}
                             />
                         </TabsContent>
                     </Tabs>

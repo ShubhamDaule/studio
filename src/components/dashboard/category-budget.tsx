@@ -11,7 +11,18 @@ import type { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CategoryIcon } from "../icons";
 import { useBoolean } from "@/hooks/use-boolean";
-import { Edit } from "lucide-react";
+import { Edit, Trash } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 type Props = {
   category: Category;
@@ -19,9 +30,10 @@ type Props = {
   spent: number;
   onBudgetChange: (category: Category['name'], amount: number) => void;
   onEditCategory: (category: Category) => void;
+  onDeleteCategory: (categoryName: Category['name']) => void;
 };
 
-export function CategoryBudget({ category, budget, spent, onBudgetChange, onEditCategory }: Props) {
+export function CategoryBudget({ category, budget, spent, onBudgetChange, onEditCategory, onDeleteCategory }: Props) {
   const {value: isEditing, setTrue: startEditing, setFalse: stopEditing} = useBoolean(false);
   const [localBudget, setLocalBudget] = React.useState(budget);
 
@@ -45,9 +57,34 @@ export function CategoryBudget({ category, budget, spent, onBudgetChange, onEdit
             <CategoryIcon category={category} className="w-6 h-6" />
             <CardTitle className="text-lg">{category.name}</CardTitle>
           </div>
-           <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEditCategory(category)}>
-             <Edit className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEditCategory(category)}>
+              <Edit className="h-4 w-4" />
+            </Button>
+            {!category.isDefault && (
+               <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10">
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete the "{category.name}" category and its budget. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDeleteCategory(category.name)} className="bg-destructive hover:bg-destructive/90">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+           </div>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col justify-end">

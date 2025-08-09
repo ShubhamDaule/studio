@@ -16,9 +16,10 @@ type Props = {
   spent: number;
   onBudgetChange: (category: Category['name'], amount: number) => void;
   onEditCategory: (category: Category) => void;
+  onDeleteCategory: (categoryName: Category['name']) => void;
 };
 
-export function SortableCategoryBudget({ id, category, budget, spent, onBudgetChange, onEditCategory }: Props) {
+export function SortableCategoryBudget({ id, category, budget, spent, onBudgetChange, onEditCategory, onDeleteCategory }: Props) {
   const {
     attributes,
     listeners,
@@ -43,6 +44,7 @@ export function SortableCategoryBudget({ id, category, budget, spent, onBudgetCh
             spent={spent}
             onBudgetChange={onBudgetChange}
             onEditCategory={onEditCategory}
+            onDeleteCategory={onDeleteCategory}
         />
     </div>
   );

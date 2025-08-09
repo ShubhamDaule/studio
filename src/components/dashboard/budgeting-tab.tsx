@@ -24,6 +24,7 @@ type Props = {
     budgetOverrides: BudgetOverride[];
     onDeleteBudgetOverride: (month: string, category: Category['name']) => void;
     onAddBudget: (budget: Budget) => void;
+    onDeleteCategory: (categoryName: Category['name']) => void;
 };
 
 export function BudgetingTab({
@@ -32,7 +33,8 @@ export function BudgetingTab({
     transactions,
     setAllCategories,
     onAddBudget,
-    allCategories
+    allCategories,
+    onDeleteCategory
 }: Props) {
     const {value: isDialogOpen, setTrue: openDialog, setFalse: closeDialog} = useBoolean(false);
     const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
@@ -61,10 +63,8 @@ export function BudgetingTab({
         if(isEditing){
              setAllCategories(prev => prev.map(c => c.name === selectedCategory.name ? updatedCategory : c));
         } else {
-            // This is the "Add" mode
             const isAlreadyBudgeted = activeBudgets.some(b => b.category === updatedCategory.name);
             if (isAlreadyBudgeted) {
-                // Don't add if it's already there
                 closeDialog();
                 setSelectedCategory(null);
                 return;
@@ -72,11 +72,9 @@ export function BudgetingTab({
 
             const isNewCustomCategory = !allCategories.some(c => c.name === updatedCategory.name);
             if (isNewCustomCategory) {
-                // Add to the master list of all possible categories if it's brand new
                 setAllCategories(prev => [...prev, updatedCategory]);
             }
             
-            // Add the category to the active budget list
             onAddBudget({ category: updatedCategory.name, amount: 0 });
         }
         closeDialog();
@@ -120,6 +118,7 @@ export function BudgetingTab({
                                                 spent={spendingByCategory[budget.category] || 0}
                                                 onBudgetChange={handleBudgetChange}
                                                 onEditCategory={handleEditCategory}
+                                                onDeleteCategory={onDeleteCategory}
                                             />
                                         )
                                     })}

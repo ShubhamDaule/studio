@@ -41,6 +41,7 @@ export function useBudgets({ allCategories, dateRange, transactions }: UseBudget
     
     return allCategories
         .filter(cat => !['Payment', 'Rewards', 'Investments & Savings', 'Fees & Charges', 'Government & Taxes'].includes(cat.name))
+        .filter(cat => budgets.some(b => b.category === cat.name)) // Ensure only budgeted categories are active
         .map(category => {
             const override = budgetOverrides.find(o => o.month === currentMonth && o.category === category.name);
             if (override) {
@@ -93,6 +94,11 @@ export function useBudgets({ allCategories, dateRange, transactions }: UseBudget
     });
   };
 
+  const deleteBudget = (categoryName: Category['name']) => {
+    setBudgets(prev => prev.filter(b => b.category !== categoryName));
+    setBudgetOverrides(prev => prev.filter(o => o.category !== categoryName));
+  }
+
 
   return {
     budgets,
@@ -102,5 +108,6 @@ export function useBudgets({ allCategories, dateRange, transactions }: UseBudget
     handleSetBudgetOverride,
     handleDeleteBudgetOverride,
     addBudget,
+    deleteBudget
   };
 }
