@@ -123,11 +123,9 @@ export default function DashboardDemoClient() {
   const dashboardContext = useDashboardContext();
   
   React.useEffect(() => {
-    if (dashboardContext) {
-      // This is a bit of a hack to get around the fact that the context is not available on first render
-      // dashboardContext.setHasTransactionsState(true); // Always has transactions
-    }
-  }, [dashboardContext]);
+    // This effect can be used for any future logic that needs to run on mount
+    // For now, it's kept empty as the data loading is handled by the useTransactions hook.
+  }, []);
 
 
   return (
@@ -276,3 +274,5 @@ export default function DashboardDemoClient() {
     </div>
   );
 }
+
+    
