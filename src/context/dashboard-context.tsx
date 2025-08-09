@@ -3,17 +3,19 @@
 import type { DateRange } from "react-day-picker";
 import * as React from 'react';
 
+type ExportFormat = 'csv' | 'xlsx' | 'pdf';
+
 type DashboardContextType = {
   dateRange: DateRange | undefined;
   setDateRange: (date: DateRange | undefined) => void;
   selectedSourceFilter: string;
   setSelectedSourceFilter: (source: string) => void;
-  // Exposing these so the header can be aware of the data boundaries
   transactionFiles: string[];
   minDate: Date | undefined;
   maxDate: Date | undefined;
   hasTransactions: boolean;
-  triggerExport: () => void;
+  setHasTransactions: (has: boolean) => void;
+  triggerExport: (format: ExportFormat) => void;
 };
 
 const DashboardContext = React.createContext<DashboardContextType | undefined>(undefined);
@@ -41,16 +43,16 @@ export function DashboardProvider({ children, value: providerValue }: DashboardP
     to: providerValue.maxDate,
   });
   const [selectedSourceFilter, setSelectedSourceFilter] = React.useState<string>("all");
+  const [hasTransactions, setHasTransactions] = React.useState(providerValue.transactionFiles.length > 0);
 
   React.useEffect(() => {
     setDateRange({ from: providerValue.minDate, to: providerValue.maxDate });
   }, [providerValue.minDate, providerValue.maxDate]);
 
-  const triggerExport = () => {
-    console.log("Triggering export");
+  const triggerExport = (format: ExportFormat) => {
+    console.log(`Triggering export for format: ${format}`);
+    // In a real app, you would implement the export logic here
   };
-  
-  const hasTransactions = providerValue.transactionFiles.length > 0;
 
   const value = {
     dateRange,
@@ -61,6 +63,7 @@ export function DashboardProvider({ children, value: providerValue }: DashboardP
     minDate: providerValue.minDate,
     maxDate: providerValue.maxDate,
     hasTransactions,
+    setHasTransactions,
     triggerExport,
   };
 

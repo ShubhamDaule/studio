@@ -21,6 +21,7 @@ import { useDashboardContext } from "@/context/dashboard-context";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
+    const { setHasTransactions } = useDashboardContext();
     
     const {
         transactionFiles,
@@ -38,6 +39,10 @@ export default function DashboardPage() {
         setAllCategories,
         handleCategoryChange,
     } = useTransactions();
+
+    React.useEffect(() => {
+        setHasTransactions(allTransactions.length > 0);
+    }, [allTransactions, setHasTransactions]);
 
   const { dateRange } = useDashboardContext();
   

@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { Download, LogOut } from "lucide-react";
+import { Download, LogOut, FileText, FileSpreadsheet, FileJson } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -127,9 +127,6 @@ const LandingNav = () => {
 
 const DashboardNav = () => {
     const { 
-        isPro, 
-        triggerExport, 
-        hasTransactions,
         dateRange,
         setDateRange,
         minDate,
@@ -137,6 +134,8 @@ const DashboardNav = () => {
         transactionFiles,
         selectedSourceFilter,
         setSelectedSourceFilter,
+        hasTransactions,
+        triggerExport,
     } = useDashboardContext();
 
     return (
@@ -155,13 +154,31 @@ const DashboardNav = () => {
                 />
             </div>
             <div className="flex items-center gap-2">
-                {isPro && (
-                    <Button size="sm" onClick={triggerExport} disabled={!hasTransactions}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Export
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" disabled={!hasTransactions}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Export
                     </Button>
-                )}
-            <UserNav />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>Export As</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => triggerExport('csv')}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      <span>CSV</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => triggerExport('xlsx')}>
+                      <FileSpreadsheet className="mr-2 h-4 w-4" />
+                      <span>XLSX</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => triggerExport('pdf')}>
+                      <FileJson className="mr-2 h-4 w-4" />
+                      <span>PDF</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <UserNav />
             </div>
         </div>
     )
