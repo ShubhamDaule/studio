@@ -3,25 +3,19 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import type { DateRange } from "react-day-picker";
-import { subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { subMonths } from "date-fns";
 import type { Transaction, Category } from "@/lib/types";
+import { useDashboardContext } from "@/context/dashboard-context";
 
 export function useTransactions(isPro: boolean) {
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [allCategories, setAllCategories] = useState<Category[]>([]);
+  const { dateRange, selectedSourceFilter } = useDashboardContext();
 
-
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
-    const end = new Date();
-    const start = subMonths(end, 2);
-    return { from: start, to: end };
-  });
 
   const transactionFiles = useMemo(() => {
     return Array.from(new Set(allTransactions.map((t) => t.fileSource)));
   }, [allTransactions]);
-
-  const [selectedSourceFilter, setSelectedSourceFilter] = useState<string>("all");
 
   const filteredTransactions = useMemo(() => {
     return allTransactions.filter((t) => {
@@ -119,10 +113,6 @@ export function useTransactions(isPro: boolean) {
     allTransactions,
     setAllTransactions,
     filteredTransactions,
-    dateRange,
-    setDateRange,
-    selectedSourceFilter,
-    setSelectedSourceFilter,
     totalSpending,
     highestTransaction,
     transactionCount,

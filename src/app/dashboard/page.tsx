@@ -12,25 +12,27 @@ import { BudgetingTab } from "@/components/dashboard/budgeting-tab";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useTransactions } from "@/hooks/useTransactions";
-import { DateRangePicker } from "@/components/dashboard/date-range-picker";
-import { SourceFilter } from "@/components/dashboard/source-filter";
 import { useTiers } from "@/hooks/use-tiers";
 import { OverviewTab } from "@/components/dashboard/tabs/overview-tab";
 import { TransactionsTab } from "@/components/dashboard/tabs/transactions-tab";
 import { InsightsTab } from "@/components/dashboard/tabs/insights-tab";
+import { useDashboardContext } from "@/context/dashboard-context";
 
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
     const {
-        transactionFiles,
-        allTransactions,
-        setAllTransactions,
-        filteredTransactions,
         dateRange,
         setDateRange,
         selectedSourceFilter,
         setSelectedSourceFilter,
+    } = useDashboardContext();
+    
+    const {
+        transactionFiles,
+        allTransactions,
+        setAllTransactions,
+        filteredTransactions,
         totalSpending,
         highestTransaction,
         transactionCount,
@@ -73,19 +75,6 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
         <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 mb-8">
-              <DateRangePicker
-                  date={dateRange}
-                  setDate={setDateRange}
-                  minDate={minDate}
-                  maxDate={maxDate}
-              />
-              <SourceFilter
-                  files={transactionFiles}
-                  selectedSource={selectedSourceFilter}
-                  onSelectSource={setSelectedSourceFilter}
-              />
-            </div>
             <Tabs defaultValue="overview" className="mt-8">
               <div className="overflow-x-auto">
                 <TabsList className="whitespace-nowrap">

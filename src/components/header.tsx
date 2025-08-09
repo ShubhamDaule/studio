@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { Download, Loader2, LogOut } from "lucide-react";
+import { Download, LogOut } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -17,6 +17,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DateRangePicker } from "./dashboard/date-range-picker";
+import { SourceFilter } from "./dashboard/source-filter";
 
 const Logo = () => (
     <div className="flex items-center gap-2">
@@ -124,15 +126,37 @@ const LandingNav = () => {
 };
 
 const DashboardNav = () => {
-    const dashboardContext = useDashboardContext();
-
-    if (!dashboardContext) return null;
+    const { 
+        isPro, 
+        triggerExport, 
+        hasTransactions,
+        dateRange,
+        setDateRange,
+        minDate,
+        maxDate,
+        transactionFiles,
+        selectedSourceFilter,
+        setSelectedSourceFilter,
+    } = useDashboardContext();
 
     return (
         <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-                {dashboardContext.isPro && (
-                    <Button size="sm" onClick={dashboardContext.triggerExport} disabled={!dashboardContext.hasTransactions}>
+                <DateRangePicker
+                    date={dateRange}
+                    setDate={setDateRange}
+                    minDate={minDate}
+                    maxDate={maxDate}
+                />
+                <SourceFilter
+                    files={transactionFiles}
+                    selectedSource={selectedSourceFilter}
+                    onSelectSource={setSelectedSourceFilter}
+                />
+            </div>
+            <div className="flex items-center gap-2">
+                {isPro && (
+                    <Button size="sm" onClick={triggerExport} disabled={!hasTransactions}>
                     <Download className="mr-2 h-4 w-4" />
                     Export
                     </Button>
