@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { IconPicker } from '../icon-picker';
 import type { Category } from '@/lib/types';
 import { defaultCategoryIcons } from '../icons';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 type Props = {
   isOpen: boolean;
@@ -16,11 +17,14 @@ type Props = {
   onSave: (category: Category, icon: string) => void;
   category?: Category | null;
   icon?: string | null;
+  availableCategories?: Category[];
 };
 
-export function EditCategoryDialog({ isOpen, onClose, onSave, category, icon: initialIcon }: Props) {
-  const [name, setName] = useState('');
+export function EditCategoryDialog({ isOpen, onClose, onSave, category, icon: initialIcon, availableCategories = [] }: Props) {
+  const [name, setName] = useState<Category | ''>('');
   const [selectedIcon, setSelectedIcon] = useState('Smile');
+  
+  const isEditing = !!category;
 
   useEffect(() => {
     if (isOpen) {
@@ -36,20 +40,40 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, icon: in
       onClose();
     }
   };
+  
+  useEffect(() => {
+      if(name && defaultCategoryIcons[name as keyof typeof defaultCategoryIcons]) {
+          const newIconName = Object.keys(defaultCategoryIcons).find(key => key === name);
+          if (newIconName) setSelectedIcon(newIconName);
+      }
+  }, [name]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{category ? 'Edit' : 'Create'} Category</DialogTitle>
+          <DialogTitle>{category ? 'Edit' : 'Add'} Category</DialogTitle>
           <DialogDescription>
-            {category ? `Editing the "${category}" category.` : 'Create a new budget category.'}
+            {category ? `Editing the "${category}" category.` : 'Add a new category to your budget.'}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">Name</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+            {isEditing ? (
+                 <Input id="name" value={name} onChange={(e) => setName(e.target.value as Category)} className="col-span-3" />
+            ) : (
+                <Select value={name} onValueChange={(value) => setName(value as Category)}>
+                    <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {availableCategories.map(cat => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            )}
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="icon" className="text-right">Icon</Label>
@@ -58,7 +82,7 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, icon: in
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave}>Save Category</Button>
+          <Button onClick={handleSave} disabled={!name}>Save Category</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

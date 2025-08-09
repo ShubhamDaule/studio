@@ -32,6 +32,8 @@ export function BudgetingTab({
     onSetBudgetOverride,
     allCategories,
     setAllCategories,
+    budgetOverrides,
+    onDeleteBudgetOverride
 }: Props) {
     const [selectedMonth, setSelectedMonth] = React.useState("default");
     const {value: isDialogOpen, setTrue: openDialog, setFalse: closeDialog} = useBoolean(false);
@@ -70,8 +72,9 @@ export function BudgetingTab({
         if(selectedCategory && newCategory !== selectedCategory){
             const updatedCategories = allCategories.map(c => c === selectedCategory ? newCategory : c);
             setAllCategories(updatedCategories);
-        } else if (!selectedCategory && !allCategories.includes(newCategory)){
-            setAllCategories([...allCategories, newCategory]);
+        } else if (!allCategories.some(c => c === newCategory)) {
+             setAllCategories(prev => [...prev, newCategory]);
+             onMultipleBudgetChange([{ category: newCategory, amount: 0 }]);
         }
         closeDialog();
         setSelectedCategory(null);
@@ -83,6 +86,8 @@ export function BudgetingTab({
         !activeBudgets.some((b) => b.category === c) &&
         !['Payment', 'Rewards', 'Investments & Savings', 'Fees & Charges', 'Government & Taxes'].includes(c)
     );
+
+    const availableToAdd = allCategories.filter(c => !activeBudgets.some(b => b.category === c));
 
     return (
         <>
@@ -118,22 +123,13 @@ export function BudgetingTab({
                     <CardContent>
                         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                             {activeBudgets
+                                .sort((a,b) => a.category.localeCompare(b.category))
                                 .map(budget => (
                                 <CategoryBudget
                                     key={budget.category}
                                     category={budget.category}
                                     budget={budget.amount}
                                     spent={spendingByCategory[budget.category] || 0}
-                                    onBudgetChange={handleBudgetChange}
-                                    onEditCategory={handleEditCategory}
-                                />
-                            ))}
-                             {nonBudgetedCategories.map(category => (
-                                <CategoryBudget
-                                    key={category}
-                                    category={category}
-                                    budget={0}
-                                    spent={spendingByCategory[category] || 0}
                                     onBudgetChange={handleBudgetChange}
                                     onEditCategory={handleEditCategory}
                                 />
@@ -147,6 +143,7 @@ export function BudgetingTab({
                 onClose={() => { closeDialog(); setSelectedCategory(null); }}
                 onSave={handleSaveCategory}
                 category={selectedCategory}
+                availableCategories={availableToAdd}
             />
         </>
     );
