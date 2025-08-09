@@ -8,8 +8,16 @@ import type { Transaction, Category } from "@/lib/types";
 import { mockTransactions, mockCategories } from "@/lib/data";
 
 export function useTransactions(isPro: boolean, useMockData: boolean) {
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>(useMockData ? mockTransactions : []);
-  const [allCategories, setAllCategories] = useState<Category[]>(mockCategories);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    if (useMockData) {
+      setAllTransactions(mockTransactions);
+      setAllCategories(mockCategories);
+    }
+  }, [useMockData]);
+
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const end = new Date();
@@ -81,12 +89,12 @@ export function useTransactions(isPro: boolean, useMockData: boolean) {
   }, [allTransactions]);
   
   const minDate = useMemo(() => {
-    if (allTransactions.length === 0) return new Date();
+    if (allTransactions.length === 0) return undefined;
     return allTransactions.reduce((min, t) => new Date(t.date) < min ? new Date(t.date) : min, new Date());
   }, [allTransactions]);
   
   const maxDate = useMemo(() => {
-      if (allTransactions.length === 0) return new Date();
+      if (allTransactions.length === 0) return undefined;
       return allTransactions.reduce((max, t) => new Date(t.date) > max ? new Date(t.date) : max, new Date(0));
   }, [allTransactions]);
   
