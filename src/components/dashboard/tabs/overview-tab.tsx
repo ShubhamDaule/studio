@@ -3,12 +3,12 @@
 
 import * as React from "react";
 import { Wallet, ReceiptText, ArrowUpCircle, Calendar, Landmark } from "lucide-react";
-import { SpendingChart } from "@/components/spending-chart";
-import { SpendingByDayChart } from "@/components/spending-by-day-chart";
-import { SpendingBySourceChart } from "@/components/dashboard/spending-by-source-chart";
-import { TopMerchantsChart } from "@/components/dashboard/top-merchants-chart";
-import { BudgetSpendingChart } from "@/components/dashboard/budget-spending-chart";
-import { SpendingTrendChart } from "@/components/dashboard/spending-trend-chart";
+import { SpendingChart } from "@/components/charts/spending-chart";
+import { SpendingByDayChart } from "@/components/charts/spending-by-day-chart";
+import { SpendingBySourceChart } from "@/components/charts/spending-by-source-chart";
+import { TopMerchantsChart } from "@/components/charts/top-merchants-chart";
+import { BudgetSpendingChart } from "@/components/charts/budget-spending-chart";
+import { SpendingTrendChart } from "@/components/charts/spending-trend-chart";
 import type { Budget, Category, Transaction } from "@/lib/types";
 import StatsCard from "@/components/stats-card";
 import { format } from "date-fns";
