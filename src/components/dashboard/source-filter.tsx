@@ -3,6 +3,7 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { Banknote } from "lucide-react";
 
 type SourceFilterProps = {
     files: string[];
@@ -15,8 +16,11 @@ export function SourceFilter({ files, selectedSource, onSelectSource }: SourceFi
 
     return (
         <Select value={selectedSource} onValueChange={onSelectSource}>
-            <SelectTrigger className="w-full sm:w-[180px] h-9">
-                <SelectValue placeholder="Filter by source..." />
+            <SelectTrigger className="w-full sm:w-[240px] h-9">
+                 <div className="flex items-center gap-2">
+                    <Banknote className="h-4 w-4" />
+                    <SelectValue placeholder="Filter by source..." />
+                </div>
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value="all">All Sources</SelectItem>
