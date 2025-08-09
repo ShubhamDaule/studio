@@ -4,7 +4,6 @@
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Budget, BudgetOverride, Category, Transaction } from "@/lib/types";
 import { PlusCircle } from "lucide-react";
 import { EditCategoryDialog } from "../dialogs/edit-category-dialog";
@@ -31,15 +30,10 @@ export function BudgetingTab({
     activeBudgets,
     onMultipleBudgetChange,
     transactions,
-    availableMonths,
-    onSetBudgetOverride,
-    allCategories,
     setAllCategories,
-    budgetOverrides,
-    onDeleteBudgetOverride,
-    onAddBudget
+    onAddBudget,
+    allCategories
 }: Props) {
-    const [selectedMonth, setSelectedMonth] = React.useState("default");
     const {value: isDialogOpen, setTrue: openDialog, setFalse: closeDialog} = useBoolean(false);
     const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
 
@@ -54,15 +48,7 @@ export function BudgetingTab({
     }, [transactions]);
 
     const handleBudgetChange = (category: Category['name'], amount: number) => {
-        if(selectedMonth && selectedMonth !== 'default'){
-             onSetBudgetOverride({
-                month: selectedMonth,
-                category,
-                amount
-            });
-        } else {
-            onMultipleBudgetChange([{ category, amount }]);
-        }
+        onMultipleBudgetChange([{ category, amount }]);
     };
     
     const handleEditCategory = (category: Category) => {
@@ -102,28 +88,11 @@ export function BudgetingTab({
                                     Track and manage your spending for each category. Drag to reorder.
                                 </CardDescription>
                             </div>
-                             <div className="flex gap-2">
-                                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Select month" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="default">Default</SelectItem>
-                                        {availableMonths.map(month => (
-                                            <SelectItem key={month} value={month}>{month}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <Button variant="outline" onClick={() => { setSelectedCategory(null); openDialog(); }}>
-                                    <PlusCircle className="mr-2 h-4 w-4"/>
-                                    Add Category
-                                </Button>
-                            </div>
                         </div>
                     </CardHeader>
                     <CardContent>
                         <SortableContext items={budgetedCategories.map(c => c.name)} strategy={verticalListSortingStrategy}>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {budgetedCategories.map(cat => {
                                         const budget = activeBudgets.find(b => b.category === cat.name);
                                         if(!budget) return null;
@@ -140,6 +109,12 @@ export function BudgetingTab({
                                             />
                                         )
                                     })}
+                                 <div className="flex items-center justify-center min-h-[160px] border-2 border-dashed rounded-lg">
+                                    <Button variant="ghost" onClick={() => { setSelectedCategory(null); openDialog(); }}>
+                                        <PlusCircle className="mr-2 h-4 w-4"/>
+                                        Add Category
+                                    </Button>
+                                </div>
                             </div>
                         </SortableContext>
                     </CardContent>
