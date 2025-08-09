@@ -112,39 +112,39 @@ const LandingNav = () => {
     const { user } = useAuth();
 
     return (
-        <>
-        <div className="hidden md:flex items-center space-x-8">
-            <LandingNavLinks />
+        <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-8">
+                <LandingNavLinks />
+                {user ? (
+                    <UserNav />
+                ) : (
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
+                        <Button asChild><Link href="/signup">Get Started</Link></Button>
+                    </div>
+                )}
+            </div>
+            <div className="md:hidden flex items-center">
+                {user ? <UserNav /> : (
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <PanelLeft />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left">
+                            <div className="flex flex-col gap-8 pt-8">
+                                <LandingNavLinks />
+                                <div className="flex flex-col gap-4">
+                                    <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
+                                    <Button asChild><Link href="/signup">Get Started</Link></Button>
+                                </div>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                )}
+            </div>
         </div>
-        <div className="flex items-center gap-2">
-            {user ? (
-                <UserNav />
-            ) : (
-                <>
-                    <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
-                    <Button asChild><Link href="/signup">Get Started</Link></Button>
-                </>
-            )}
-        </div>
-        <Sheet>
-            <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                    <PanelLeft />
-                </Button>
-            </SheetTrigger>
-            <SheetContent side="left">
-                <div className="flex flex-col gap-8 pt-8">
-                    <LandingNavLinks />
-                    {!user && (
-                         <div className="flex flex-col gap-4">
-                            <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
-                            <Button asChild><Link href="/signup">Get Started</Link></Button>
-                        </div>
-                    )}
-                </div>
-            </SheetContent>
-        </Sheet>
-        </>
     )
 };
 
