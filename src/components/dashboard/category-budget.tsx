@@ -50,9 +50,13 @@ export function CategoryBudget({ category, budget, spent, onBudgetChange, onEdit
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col justify-end">
-        <Progress value={percentage} className={cn(
+        <Progress value={Math.min(percentage, 100)} className={cn(
             "h-3 rounded-full",
-            percentage > 100 ? "bg-destructive" : "bg-primary"
+            {
+              "bg-destructive": percentage > 100,
+              "bg-yellow-500": percentage > 75 && percentage <= 100,
+              "bg-primary": percentage <= 75
+            }
         )} />
         <div className="flex justify-between items-center mt-2 text-sm text-muted-foreground">
           <span>{formatCurrency(spent)}</span>
