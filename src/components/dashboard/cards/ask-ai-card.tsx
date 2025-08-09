@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Transaction, QueryResult, Budget } from "@/lib/types";
 import { Sparkles, Loader2, RefreshCw } from "lucide-react";
 import { getAiQueryResponse } from "@/lib/actions";
-import { DynamicChart } from "../charts/dynamic-chart";
+import { DynamicChart } from "@/components/dashboard/charts/dynamic-chart";
 import { AskAiCharacter } from "../../characters/ask-ai-character";
 
 interface AskAiCardProps {
