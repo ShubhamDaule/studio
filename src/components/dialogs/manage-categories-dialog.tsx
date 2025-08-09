@@ -95,18 +95,10 @@ export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeB
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md sm:max-w-3xl">
         <DialogHeader>
-            <div className='flex justify-between items-center'>
-                <div>
-                    <DialogTitle>Manage Budget Categories</DialogTitle>
-                    <DialogDescription>
-                        Add or remove categories from your main budget panel.
-                    </DialogDescription>
-                </div>
-                <Button variant="outline" size="sm" onClick={onAddCustomCategory}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Custom
-                </Button>
-            </div>
+            <DialogTitle>Manage Budget Categories</DialogTitle>
+            <DialogDescription>
+                Add or remove categories from your main budget panel.
+            </DialogDescription>
         </DialogHeader>
         <div className="mt-4 grid grid-cols-2 gap-4 items-start">
             <div className="border rounded-lg p-2">
@@ -141,9 +133,15 @@ export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeB
                 </ScrollArea>
             </div>
         </div>
-        <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleSaveChanges}>Save Changes</Button>
+        <DialogFooter className="justify-between">
+            <Button variant="outline" size="sm" onClick={onAddCustomCategory}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Custom Category
+            </Button>
+            <div className="flex gap-2">
+                <Button variant="ghost" onClick={onClose}>Cancel</Button>
+                <Button onClick={handleSaveChanges}>Save Changes</Button>
+            </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
