@@ -15,7 +15,7 @@ type RecentTransactionsProps = {
   data: Transaction[];
 };
 
-const categoryColors: Record<Transaction['category'], string> = {
+export const categoryColors: Record<Transaction['category'], string> = {
   'Food': 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30',
   'Shopping': 'bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30',
   'Utilities': 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30',

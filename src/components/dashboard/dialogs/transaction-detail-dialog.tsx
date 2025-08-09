@@ -5,7 +5,7 @@ import type { Transaction } from "@/lib/types";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { categoryColors } from "../recent-transactions"; // Using same colors
+import { categoryColors } from "../../recent-transactions"; // Using same colors
 
 type Props = {
   isOpen: boolean;
