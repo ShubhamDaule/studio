@@ -43,7 +43,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 transition-shadow px-8 py-6 text-lg font-semibold"
+                className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 transition-smooth px-8 py-6 text-lg font-semibold"
                 asChild
               >
                 <Link href="/dashboard">Try it yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
@@ -85,7 +85,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-card/50 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
                   <PieChart className="w-6 h-6 text-white" />
@@ -97,7 +97,7 @@ export default function LandingPage() {
               </CardHeader>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-card/50 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
                   <TrendingUp className="w-6 h-6 text-white" />
@@ -109,7 +109,7 @@ export default function LandingPage() {
               </CardHeader>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-card/50 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
                   <Target className="w-6 h-6 text-white" />
@@ -121,7 +121,7 @@ export default function LandingPage() {
               </CardHeader>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-card/50 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
                   <Calendar className="w-6 h-6 text-white" />
@@ -133,7 +133,7 @@ export default function LandingPage() {
               </CardHeader>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-card/50 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
                   <Shield className="w-6 h-6 text-white" />
@@ -145,7 +145,7 @@ export default function LandingPage() {
               </CardHeader>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-card/50 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
                   <Zap className="w-6 h-6 text-white" />

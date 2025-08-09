@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 @layer base {
   :root {
     --background: 220 13% 96%;
@@ -37,6 +41,8 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 240 5.9% 90%;
     --sidebar-ring: 120 100% 80%;
+    --brand-light: 142.1 76.2% 90%;
+    --glow-color: 142.1 76.2% 50%;
   }
 
   .dark {
@@ -72,6 +78,8 @@
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 120 100% 80%;
+    --brand-light: 142.1 76.2% 20%;
+    --glow-color: 142.1 76.2% 50%;
   }
 }
 
@@ -82,4 +90,13 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer components {
+    .card-interactive {
+      @apply transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1 cursor-pointer;
+    }
+    .transition-smooth {
+      @apply transition-all duration-300 ease-in-out;
+    }
 }
