@@ -2,18 +2,19 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, ReceiptText } from "lucide-react";
+import { Wallet, ReceiptText, ArrowUpCircle, Calendar, Landmark } from "lucide-react";
 import { SpendingChart } from "@/components/dashboard/spending-chart";
 import { SpendingByDayChart } from "@/components/dashboard/spending-by-day-chart";
-import { HighestTransactionCard } from "@/components/dashboard/highest-transaction-card";
-import { HighestDayCard } from "@/components/dashboard/highest-day-card";
 import { SpendingBySourceChart } from "@/components/dashboard/spending-by-source-chart";
 import { TopMerchantsChart } from "@/components/dashboard/top-merchants-chart";
 import { BudgetSpendingChart } from "@/components/dashboard/budget-spending-chart";
 import { SpendingTrendChart } from "@/components/dashboard/spending-trend-chart";
-import { CurrentBalanceCard } from "@/components/dashboard/current-balance-card";
 import type { Budget, Category, Transaction } from "@/lib/types";
+import StatsCard from "@/components/stats-card";
+import { format } from "date-fns";
+import { HighestTransactionCard } from "../highest-transaction-card";
+import { HighestDayCard } from "../highest-day-card";
+import { CurrentBalanceCard } from "../current-balance-card";
 
 type OverviewTabProps = {
     totalSpending: number;
@@ -45,40 +46,29 @@ export function OverviewTab({
     return (
         <div className="grid gap-8">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Spending</CardTitle>
-                        <Wallet className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-primary">
-                            {totalSpending.toLocaleString("en-US", {
-                                style: "currency",
-                                currency: "USD",
-                            })}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            {filterDescription}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Transactions</CardTitle>
-                        <ReceiptText className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-primary">{transactionCount}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {filterDescription}
-                        </p>
-                    </CardContent>
-                </Card>
-                <HighestTransactionCard transaction={highestTransaction} onClick={() => openDialog('transactionDetail', highestTransaction)} />
+                <StatsCard 
+                    title="Total Spending"
+                    value={totalSpending.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                    icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
+                    description={filterDescription}
+                />
+                <StatsCard 
+                    title="Transactions"
+                    value={String(transactionCount)}
+                    icon={<ReceiptText className="h-4 w-4 text-muted-foreground" />}
+                    description={filterDescription}
+                />
+                 <HighestTransactionCard 
+                    transaction={highestTransaction}
+                    onClick={() => openDialog('transactionDetail', highestTransaction)}
+                />
                 {currentBalance !== null ? (
-                    <CurrentBalanceCard balance={currentBalance} />
+                     <CurrentBalanceCard balance={currentBalance} />
                 ) : (
-                    <HighestDayCard day={highestDay} onClick={() => openDialog('day', highestDay?.date ?? null)} />
+                    <HighestDayCard 
+                        day={highestDay}
+                        onClick={() => openDialog('day', highestDay?.date ?? null)}
+                    />
                 )}
             </div>
             <div className="grid md:grid-cols-2 gap-8">
