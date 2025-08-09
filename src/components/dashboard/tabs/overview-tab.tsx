@@ -10,11 +10,11 @@ import { TopMerchantsChart } from "@/components/charts/top-merchants-chart";
 import { BudgetSpendingChart } from "@/components/charts/budget-spending-chart";
 import { SpendingTrendChart } from "@/components/charts/spending-trend-chart";
 import type { Budget, Category, Transaction } from "@/lib/types";
-import StatsCard from "@/components/stats-card";
+import StatsCard from "@/components/cards/stats-card";
 import { format } from "date-fns";
-import { HighestTransactionCard } from "@/components/highest-transaction-card";
-import { HighestDayCard } from "@/components/highest-day-card";
-import { CurrentBalanceCard } from "@/components/current-balance-card";
+import { HighestTransactionCard } from "@/components/cards/highest-transaction-card";
+import { HighestDayCard } from "@/components/cards/highest-day-card";
+import { CurrentBalanceCard } from "@/components/cards/current-balance-card";
 
 type OverviewTabProps = {
     totalSpending: number;

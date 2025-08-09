@@ -4,8 +4,8 @@
 import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
-import { AnomaliesCard } from "@/components/dashboard/anomalies-card";
-import { TipsPanel } from "@/components/dashboard/tips-panel";
+import { AnomaliesCard } from "@/components/cards/anomalies-card";
+import { TipsPanel } from "@/components/cards/tips-panel";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AskAiCharacter } from "@/components/dashboard/ask-ai-character";
 import type { Transaction } from "@/lib/types";
