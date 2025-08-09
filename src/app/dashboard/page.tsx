@@ -21,7 +21,7 @@ import { useDashboardContext } from "@/context/dashboard-context";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
-    const { setHasTransactions, setFilteredTransactions } = useDashboardContext();
+    const { setHasTransactions } = useDashboardContext();
     
     const {
         transactionFiles,
@@ -44,11 +44,11 @@ export default function DashboardPage() {
         setHasTransactions(allTransactions.length > 0);
     }, [allTransactions, setHasTransactions]);
     
-    React.useEffect(() => {
-        setFilteredTransactions(filteredTransactions);
-    }, [filteredTransactions, setFilteredTransactions]);
+  const { dateRange, setFilteredTransactions } = useDashboardContext();
 
-  const { dateRange } = useDashboardContext();
+  React.useEffect(() => {
+      setFilteredTransactions(filteredTransactions);
+  },[filteredTransactions, setFilteredTransactions]);
   
   const {
       budgets,

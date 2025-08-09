@@ -5,12 +5,14 @@ import React, { useMemo } from 'react';
 import { DashboardProvider as InnerDashboardProvider } from './dashboard-context';
 import { usePathname } from 'next/navigation';
 import { mockTransactions } from '@/lib/mock-data';
+import { useTransactions } from '@/hooks/useTransactions';
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isDashboard = pathname.startsWith('/dashboard');
 
-    // We can get some static data here if needed, but not data from hooks that depend on the context itself.
+    const { filteredTransactions } = useTransactions();
+
     const transactionFiles = useMemo(() => {
         if (!isDashboard) return [];
         return Array.from(new Set(mockTransactions.map((t) => t.fileSource)));
@@ -27,8 +29,9 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     const providerValue = React.useMemo(() => ({
         transactionFiles,
         minDate,
-        maxDate
-    }), [transactionFiles, minDate, maxDate]);
+        maxDate,
+        filteredTransactions,
+    }), [transactionFiles, minDate, maxDate, filteredTransactions]);
 
 
     return (

@@ -41,6 +41,7 @@ type DashboardProviderProps = {
     transactionFiles: string[];
     minDate: Date | undefined;
     maxDate: Date | undefined;
+    filteredTransactions: Transaction[];
   }
 };
 
@@ -51,11 +52,16 @@ export function DashboardProvider({ children, value: providerValue }: DashboardP
   });
   const [selectedSourceFilter, setSelectedSourceFilter] = React.useState<string>("all");
   const [hasTransactions, setHasTransactions] = React.useState(providerValue.transactionFiles.length > 0);
-  const [filteredTransactions, setFilteredTransactions] = React.useState<Transaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = React.useState<Transaction[]>(providerValue.filteredTransactions);
 
   React.useEffect(() => {
     setDateRange({ from: providerValue.minDate, to: providerValue.maxDate });
   }, [providerValue.minDate, providerValue.maxDate]);
+  
+  React.useEffect(() => {
+    setFilteredTransactions(providerValue.filteredTransactions);
+  }, [providerValue.filteredTransactions]);
+
 
   const triggerExport = (format: ExportFormat) => {
     const dataToExport = filteredTransactions.map(t => ({
