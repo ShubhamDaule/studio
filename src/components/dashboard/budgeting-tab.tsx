@@ -1,5 +1,4 @@
 
-
 "use client";
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -130,6 +129,7 @@ export function BudgetingTab({
                 activeBudgets={activeBudgets}
                 onAddBudget={onAddBudget}
                 onDeleteBudget={onDeleteBudget}
+                transactions={transactions}
             />
         </>
     );
