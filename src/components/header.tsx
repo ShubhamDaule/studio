@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { Download, LogOut, FileText, FileSpreadsheet, FileJson, PanelLeft } from "lucide-react";
+import { Download, LogOut, FileText, FileSpreadsheet, FileJson, PanelLeft, BarChart3 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -24,35 +24,10 @@ import { cn } from "@/lib/utils";
 
 const Logo = () => (
     <div className="flex items-center gap-2 flex-shrink-0">
-        <svg
-            width="32"
-            height="32"
-            viewBox="0 0 32 32"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8"
-        >
-            <defs>
-                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 1 }} />
-                    <stop offset="100%" style={{ stopColor: 'hsl(var(--accent))', stopOpacity: 1 }} />
-                </linearGradient>
-            </defs>
-            <path 
-                d="M16 30C23.732 30 30 23.732 30 16C30 8.26801 23.732 2 16 2C8.26801 2 2 8.26801 2 16C2 23.732 8.26801 30 16 30Z" 
-                stroke="url(#logoGradient)" 
-                strokeWidth="3"
-            />
-            <path 
-                d="M20.5 22C19.8333 22.8333 17.6 24.5 15.5 22C12.5 18.5 10.5 15.5 11.5 12C12.5 8.5 15.5 6.5 17 7.5C18.5 8.5 18 11.5 16 14C14.5 16 12.5 18 11.5 19" 
-                stroke="url(#logoGradient)" 
-                strokeWidth="2.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-            />
-        </svg>
-
-        <span className="hidden sm:inline-block text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
+        <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-white" />
+        </div>
+        <span className="hidden sm:inline-block text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
             SpendWise
         </span>
     </div>
@@ -113,8 +88,8 @@ const LandingNav = () => {
 
     return (
         <div className="flex items-center gap-4">
-             <div className="hidden md:flex items-center gap-8">
-                <div className="flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-8">
+                <div className="hidden md:flex items-center gap-8">
                     <LandingNavLinks />
                 </div>
                 {user ? (
@@ -126,7 +101,7 @@ const LandingNav = () => {
                     </div>
                 )}
             </div>
-            <div className="md:hidden flex items-center">
+             <div className="md:hidden flex items-center">
                 {user ? <UserNav /> : (
                     <Sheet>
                         <SheetTrigger asChild>
@@ -137,7 +112,7 @@ const LandingNav = () => {
                         <SheetContent side="left">
                             <div className="flex flex-col gap-8 pt-8">
                                 <LandingNavLinks />
-                                <div className="flex flex-col gap-4">
+                                 <div className="flex flex-col gap-4">
                                     <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
                                     <Button asChild><Link href="/signup">Get Started</Link></Button>
                                 </div>
