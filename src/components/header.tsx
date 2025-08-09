@@ -29,7 +29,7 @@ const Logo = () => (
             viewBox="0 0 32 32"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="text-primary h-8 w-8"
+            className="text-primary h-8 w-8 flex-shrink-0"
             >
             <rect width="32" height="32" rx="8" fill="currentColor" />
             <path
@@ -54,7 +54,7 @@ const Logo = () => (
                 strokeLinejoin="round"
             />
         </svg>
-        <span className="hidden sm:inline-block text-xl font-semibold text-primary">
+        <span className="hidden sm:inline-block text-lg font-semibold text-primary whitespace-nowrap">
             SpendWise Analyzer
         </span>
     </div>
