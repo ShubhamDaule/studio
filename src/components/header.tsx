@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { LogOut, PanelLeft, BarChart3 } from "lucide-react";
+import { LogOut, PanelLeft, BarChart3, Upload } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
