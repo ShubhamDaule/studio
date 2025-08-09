@@ -77,9 +77,9 @@ const UserNav = () => {
 
 const LandingNavLinks = ({ className }: { className?: string }) => (
     <div className={cn("flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-1", className)}>
-        <Button variant="subtle" asChild><Link href="/landing#features">Features</Link></Button>
-        <Button variant="subtle" asChild><Link href="/landing#benefits">Benefits</Link></Button>
-        <Button variant="subtle" asChild><Link href="/pricing">Pricing</Link></Button>
+        <Button variant="ghost" asChild><Link href="/landing#features">Features</Link></Button>
+        <Button variant="ghost" asChild><Link href="/landing#benefits">Benefits</Link></Button>
+        <Button variant="ghost" asChild><Link href="/pricing">Pricing</Link></Button>
     </div>
 );
 
@@ -96,7 +96,7 @@ const LandingNav = () => {
                     <UserNav />
                 ) : isLandingPage ? (
                     <div className="flex items-center gap-2 ml-4">
-                        <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
+                        <Button variant="outline" asChild><Link href="/login">Login</Link></Button>
                         <Button asChild><Link href="/signup">Get Started</Link></Button>
                     </div>
                 ): null}
@@ -113,7 +113,7 @@ const LandingNav = () => {
                             <div className="flex flex-col gap-8 pt-8">
                                 <LandingNavLinks />
                                  <div className="flex flex-col gap-4">
-                                    <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
+                                    <Button variant="outline" asChild><Link href="/login">Login</Link></Button>
                                     <Button asChild><Link href="/signup">Get Started</Link></Button>
                                 </div>
                             </div>
