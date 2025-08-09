@@ -71,18 +71,7 @@ const UserNav = () => {
   }
 
   if (!user) {
-    return (
-        <div className="hidden md:flex items-center gap-2">
-            <Link href="/login">
-                <Button variant="outline" size="sm">
-                    Login
-                </Button>
-            </Link>
-            <Button asChild size="sm" className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90">
-                <Link href="/dashboard">Get Started</Link>
-            </Button>
-        </div>
-    );
+    return null;
   }
   
   return (
@@ -130,7 +119,7 @@ const LandingNav = () => {
         <div className="hidden md:flex items-center space-x-8">
             <LandingNavLinks />
         </div>
-        <div className="hidden md:flex items-center gap-2">
+        <div className="flex items-center gap-2">
             <UserNav />
         </div>
         <Sheet>
@@ -142,18 +131,6 @@ const LandingNav = () => {
             <SheetContent side="left">
                 <div className="flex flex-col gap-8 pt-8">
                     <LandingNavLinks />
-                     { !user && (
-                        <div className="flex flex-col gap-4">
-                            <Link href="/login">
-                                <Button variant="outline" className="w-full">
-                                    Login
-                                </Button>
-                            </Link>
-                            <Button asChild className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 w-full">
-                                <Link href="/dashboard">Get Started</Link>
-                            </Button>
-                        </div>
-                    )}
                 </div>
             </SheetContent>
         </Sheet>
