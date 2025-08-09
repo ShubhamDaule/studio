@@ -80,7 +80,7 @@ export const iconList = [
   "HeartHandshake", "HeartOff", "HeartPulse", "Heart", "HelpCircle", "HelpingHand", "Hexagon", "Highlighter", "History", "Home", 
   "HopOff", "Hop", "Hotel", "Hourglass", "IceCream2", "IceCream", "ImageDown", "ImageMinus", "ImageOff", "ImagePlus", "Image", 
   "Import", "Inbox", "Indent", "IndianRupee", "Infinity", "Info", "Inspect", "Instagram", "Italic", "IterationCcw", "IterationCw", 
-  "JapaneseYen", "Joystick", "Kanban", "KeyRound", "KeySquare", "Key", "Keyboard", "LampCeiling", "LampDesk", "LampFloor", "LampWallDown", 
+  "JapaneseYen", "Joystick", "KanbanSquare", "KeyRound", "KeySquare", "Key", "Keyboard", "LampCeiling", "LampDesk", "LampFloor", "LampWallDown", 
   "LampWallUp", "Lamp", "Landmark", "Languages", "Laptop2", "Laptop", "LassoSelect", "Lasso", "Laugh", "Layers2", "Layers3", "Layers", 
   "LayoutDashboard", "LayoutGrid", "LayoutList", "LayoutPanelLeft", "LayoutPanelTop", "LayoutTemplate", "Layout", "Leaf", 
   "LeafyGreen", "Library", "LifeBuoy", "Ligature", "LightbulbOff", "Lightbulb", "LineChart", "Link2Off", "Link2", "Link", 
