@@ -27,7 +27,7 @@ const Logo = () => (
         <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
             <BarChart3 className="w-5 h-5 text-white" />
         </div>
-        <span className="hidden sm:inline-block text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
+        <span className="hidden sm:inline-block text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
             SpendWise
         </span>
     </div>
@@ -85,6 +85,8 @@ const LandingNavLinks = ({ className }: { className?: string }) => (
 
 const LandingNav = () => {
     const { user } = useAuth();
+    const pathname = usePathname();
+    const isLandingPage = pathname === '/landing' || pathname === '/';
 
     return (
         <div className="flex items-center gap-4">
@@ -94,12 +96,12 @@ const LandingNav = () => {
                 </div>
                 {user ? (
                     <UserNav />
-                ) : (
+                ) : isLandingPage ? (
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
                         <Button asChild><Link href="/signup">Get Started</Link></Button>
                     </div>
-                )}
+                ): null}
             </div>
              <div className="md:hidden flex items-center">
                 {user ? <UserNav /> : (
