@@ -71,7 +71,7 @@ export default function DashboardPage() {
         <main className="container mx-auto p-4 sm:p-6 lg:p-8">
             <Tabs defaultValue="overview" className="mt-4 sm:mt-8 w-full">
               <div className="overflow-x-auto pb-2 -mx-4 px-4">
-                <TabsList className="whitespace-nowrap">
+                <TabsList className="whitespace-nowrap bg-transparent p-0 border-b-2 border-transparent">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="transactions">Transactions</TabsTrigger>
                   <TabsTrigger value="insights">Insights</TabsTrigger>
