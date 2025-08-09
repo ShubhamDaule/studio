@@ -1,82 +1,166 @@
+"use client";
 
-"use client"
-import * as React from "react"
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import type { Budget, Category, Transaction } from "@/lib/types"
+import * as React from 'react';
+import { Pie, PieChart, Tooltip, Cell, Sector } from 'recharts';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import type { Transaction, Budget, Category } from '@/lib/types';
+import { PieChart as PieChartIcon } from 'lucide-react';
 
-const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
+const chartConfigBase = {
+  amount: {
+    label: "Amount",
+  },
+  groceries: { label: "Groceries", color: "hsl(var(--chart-1))" },
+  dining: { label: "Dining", color: "hsl(var(--chart-2))" },
+  'travel-&-transport': { label: "Travel & Transport", color: "hsl(var(--chart-3))" },
+  shopping: { label: "Shopping", color: "hsl(var(--chart-4))" },
+  entertainment: { label: "Entertainment", color: "hsl(var(--chart-5))" },
+  utilities: { label: "Utilities", color: "hsl(var(--chart-1))" },
+  'payment': { label: "Payment", color: "hsl(var(--chart-4))" },
+  other: { label: "Other", color: "hsl(var(--chart-3))" },
+};
 
-const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, payload }: any) => {
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+interface SpendingChartProps {
+  transactions: Transaction[];
+  onPieClick: (data: any) => void;
+  budgets: Budget[];
+  allCategories: Category[];
+}
 
+const renderActiveShape = (props: any) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
   return (
-    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 4} // This makes the hovered slice pop out
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+      />
+    </g>
   );
 };
 
-export function SpendingChart({ transactions, onPieClick, budgets, allCategories }: { transactions: Transaction[], onPieClick: (data: any) => void, budgets: Budget[], allCategories: Category[] }) {
-  const spendingByCategory = React.useMemo(() => {
-    const data: { [key: string]: number } = {};
-    transactions
-      .filter(t => t.amount > 0 && t.category !== "Payment" && t.category !== 'Investment')
-      .forEach(transaction => {
-        data[transaction.category] = (data[transaction.category] || 0) + transaction.amount;
-      });
-    return Object.entries(data)
-      .map(([category, total]) => ({ category: category as Category, total }))
-      .sort((a,b) => b.total - a.total);
-  }, [transactions]);
+
+export function SpendingChart({ transactions, onPieClick, budgets, allCategories }: SpendingChartProps) {
+  const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
+
+  const { aggregatedData, chartConfig } = React.useMemo(() => {
+    if (!transactions) return { aggregatedData: [], chartConfig: {} };
+    // Filter out credits/payments for the spending chart
+    const spendingTransactions = transactions.filter(t => t.amount > 0);
+    
+    const categoryTotals = spendingTransactions.reduce((acc, transaction) => {
+      const category = transaction.category as string;
+      acc[category] = (acc[category] || 0) + transaction.amount;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const dynamicChartConfig: ChartConfig = { ...chartConfigBase };
+
+    // Sort categories alphabetically to ensure consistent order between server and client
+    const sortedCategories = [...allCategories].sort((a, b) => a.localeCompare(b));
+
+    sortedCategories.forEach((cat, index) => {
+        const key = cat.toLowerCase().replace(/ & /g, '-&-').replace(/\//g,'-').replace(/ /g, '-');
+        if (!dynamicChartConfig[key]) {
+            dynamicChartConfig[key] = {
+                label: cat as string,
+                color: `hsl(var(--chart-${(index % 5) + 1}))`
+            }
+        }
+    });
+
+    const aggregated = Object.entries(categoryTotals)
+      .map(([category, amount]) => {
+        const key = category.toLowerCase().replace(/ & /g, '-&-').replace(/\//g,'-').replace(/ /g, '-');
+        return {
+            category,
+            amount,
+            fill: `var(--color-${key})`,
+        }
+      })
+      .sort((a, b) => b.amount - a.amount);
+
+      return { aggregatedData: aggregated, chartConfig: dynamicChartConfig satisfies ChartConfig };
+  }, [transactions, allCategories]);
+
+  const onPieEnter = (_: any, index: number) => {
+    setActiveIndex(index);
+  };
+
+  const onPieLeave = () => {
+    setActiveIndex(undefined);
+  };
+
+  const formatCurrency = (value: number) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   
-  if (spendingByCategory.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Spending Breakdown</CardTitle>
-          <CardDescription>How you're spending your money.</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[300px] flex items-center justify-center">
-            <p className="text-muted-foreground">No spending data for this period.</p>
-        </CardContent>
-      </Card>
-    );
+  const tooltipFormatter = (value: number, name: string, props: any) => {
+    const { category } = props.payload;
+    const budget = budgets.find(b => b.category === category)?.amount;
+    const spentFormatted = formatCurrency(value as number);
+
+    if (budget && budget > 0) {
+      const budgetFormatted = formatCurrency(budget);
+      return `${category}: ${spentFormatted} of ${budgetFormatted}`;
+    }
+    
+    return `${category}: ${spentFormatted}`;
   }
 
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
-        <CardTitle>Spending Breakdown</CardTitle>
-        <CardDescription>How you're spending your money by category.</CardDescription>
+        <CardTitle className='flex items-center gap-2'>
+            <PieChartIcon className="h-6 w-6" />
+            Spending Breakdown
+        </CardTitle>
+        <CardDescription>Monthly spending by category. Click a slice to see details.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
+      <CardContent className="flex-1 pb-0">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px]"
+        >
+          <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+            <Tooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel formatter={tooltipFormatter} hideIndicator />}
+            />
             <Pie
-              data={spendingByCategory}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={renderCustomizedLabel}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="total"
+              activeIndex={activeIndex}
+              activeShape={renderActiveShape}
+              data={aggregatedData}
+              dataKey="amount"
               nameKey="category"
+              innerRadius={60}
+              strokeWidth={2}
               onClick={(data) => onPieClick(data)}
+              onMouseEnter={onPieEnter}
+              onMouseLeave={onPieLeave}
+              className="cursor-pointer"
             >
-              {spendingByCategory.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              {aggregatedData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}
             </Pie>
-            <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} />
-            <Legend />
           </PieChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }
