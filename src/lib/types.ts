@@ -1,8 +1,12 @@
 
 
 import type { icons } from "lucide-react";
-import type { defaultCategoryIcons } from "@/components/icons";
-export type Category = keyof typeof defaultCategoryIcons | "Miscellaneous";
+
+export type Category = {
+  name: string;
+  icon: keyof typeof icons;
+  isDefault?: boolean;
+};
 
 
 export type Transaction = {
@@ -10,18 +14,18 @@ export type Transaction = {
   date: string; // YYYY-MM-DD
   merchant: string;
   amount: number;
-  category: Category;
+  category: Category['name'];
   fileSource: string;
 };
 
 export type Budget = {
-    category: Category;
+    category: Category['name'];
     amount: number;
 };
 
 export type BudgetOverride = {
     month: string; // YYYY-MM
-    category: Category;
+    category: Category['name'];
     amount: number;
 };
 

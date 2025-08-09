@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
-import { getYear, getMonth, format } from "date-fns";
+import { format } from "date-fns";
 import type { Transaction, Category, Budget, BudgetOverride } from "@/lib/types";
 
 // Default monthly budgets
@@ -39,14 +39,14 @@ export function useBudgets({ allCategories, dateRange, transactions }: UseBudget
     const currentMonth = dateRange?.from ? format(dateRange.from, 'yyyy-MM') : format(new Date(), 'yyyy-MM');
     
     return allCategories
-        .filter(cat => !['Payment', 'Rewards', 'Investments & Savings', 'Fees & Charges', 'Government & Taxes'].includes(cat))
+        .filter(cat => !['Payment', 'Rewards', 'Investments & Savings', 'Fees & Charges', 'Government & Taxes'].includes(cat.name))
         .map(category => {
-            const override = budgetOverrides.find(o => o.month === currentMonth && o.category === category);
+            const override = budgetOverrides.find(o => o.month === currentMonth && o.category === category.name);
             if (override) {
-                return { category, amount: override.amount };
+                return { category: category.name, amount: override.amount };
             }
-            const defaultBudget = budgets.find(b => b.category === category);
-            return { category, amount: defaultBudget?.amount || 0 };
+            const defaultBudget = budgets.find(b => b.category === category.name);
+            return { category: category.name, amount: defaultBudget?.amount || 0 };
     });
   }, [allCategories, budgets, budgetOverrides, dateRange]);
 
@@ -78,7 +78,7 @@ export function useBudgets({ allCategories, dateRange, transactions }: UseBudget
     });
   };
 
-  const handleDeleteBudgetOverride = (month: string, category: Category) => {
+  const handleDeleteBudgetOverride = (month: string, category: Category['name']) => {
     setBudgetOverrides(prev => prev.filter(o => !(o.month === month && o.category === category)));
   };
 

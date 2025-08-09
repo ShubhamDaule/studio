@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -16,7 +17,7 @@ type Props = {
   category: Category;
   budget: number;
   spent: number;
-  onBudgetChange: (category: Category, amount: number) => void;
+  onBudgetChange: (category: Category['name'], amount: number) => void;
   onEditCategory: (category: Category) => void;
 };
 
@@ -32,7 +33,7 @@ export function CategoryBudget({ category, budget, spent, onBudgetChange, onEdit
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
   const handleSave = () => {
-    onBudgetChange(category, localBudget);
+    onBudgetChange(category.name, localBudget);
     stopEditing();
   };
 
@@ -42,7 +43,7 @@ export function CategoryBudget({ category, budget, spent, onBudgetChange, onEdit
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CategoryIcon category={category} className="w-6 h-6" />
-            <CardTitle className="text-lg">{category}</CardTitle>
+            <CardTitle className="text-lg">{category.name}</CardTitle>
           </div>
            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEditCategory(category)}>
              <Edit className="h-4 w-4" />

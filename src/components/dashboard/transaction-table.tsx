@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -29,7 +30,7 @@ import { format, parseISO } from "date-fns";
 
 interface TransactionTableProps {
   transactions: Transaction[];
-  onCategoryChange: (transactionId: string, newCategory: Category) => void;
+  onCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
   allCategories: Category[];
   isPro: boolean;
 }
@@ -142,16 +143,16 @@ export function TransactionTable({
                     </TableCell>
                     <TableCell className="w-[200px]">
                       <Select
-                        value={transaction.category as string}
+                        value={transaction.category}
                         onValueChange={(value: string) =>
-                          onCategoryChange(transaction.id, value as Category)
+                          onCategoryChange(transaction.id, value)
                         }
                       >
                         <SelectTrigger className="border-0 bg-transparent shadow-none hover:bg-muted focus:ring-0">
                           <SelectValue>
                             <Badge variant="outline" className="py-1 border-border font-normal text-foreground">
                               <CategoryIcon
-                                category={transaction.category}
+                                category={allCategories.find(c => c.name === transaction.category)}
                                 className="mr-2 h-4 w-4"
                               />
                               {transaction.category}
@@ -160,13 +161,13 @@ export function TransactionTable({
                         </SelectTrigger>
                         <SelectContent>
                           {allCategories.map((cat) => (
-                            <SelectItem key={cat as string} value={cat as string}>
+                            <SelectItem key={cat.name} value={cat.name}>
                               <div className="flex items-center">
                                 <CategoryIcon
                                   category={cat}
                                   className="mr-2 h-4 w-4"
                                 />
-                                {cat}
+                                {cat.name}
                               </div>
                             </SelectItem>
                           ))}

@@ -1,4 +1,5 @@
 
+
 "use client";
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -21,7 +22,7 @@ type Props = {
     allCategories: Category[];
     setAllCategories: React.Dispatch<React.SetStateAction<Category[]>>;
     budgetOverrides: BudgetOverride[];
-    onDeleteBudgetOverride: (month: string, category: Category) => void;
+    onDeleteBudgetOverride: (month: string, category: Category['name']) => void;
 };
 
 export function BudgetingTab({
@@ -49,7 +50,7 @@ export function BudgetingTab({
         }, {} as Record<string, number>);
     }, [transactions]);
 
-    const handleBudgetChange = (category: Category, amount: number) => {
+    const handleBudgetChange = (category: Category['name'], amount: number) => {
         if(selectedMonth && selectedMonth !== 'default'){
              onSetBudgetOverride({
                 month: selectedMonth,
@@ -66,28 +67,25 @@ export function BudgetingTab({
         openDialog();
     };
     
-    const handleSaveCategory = (newCategory: Category, icon: string) => {
-        // This is a placeholder for a more robust implementation
-        // For now, we just update the local state.
-        if(selectedCategory && newCategory !== selectedCategory){
-            const updatedCategories = allCategories.map(c => c === selectedCategory ? newCategory : c);
-            setAllCategories(updatedCategories);
-        } else if (!allCategories.some(c => c === newCategory)) {
-             setAllCategories(prev => [...prev, newCategory]);
-             onMultipleBudgetChange([{ category: newCategory, amount: 0 }]);
+    const handleSaveCategory = (updatedCategory: Category) => {
+        if(selectedCategory){
+            // Editing existing category
+             setAllCategories(prev => prev.map(c => c.name === selectedCategory.name ? updatedCategory : c));
+        } else {
+            // Adding new category
+             setAllCategories(prev => [...prev, updatedCategory]);
+             onMultipleBudgetChange([{ category: updatedCategory.name, amount: 0 }]);
         }
         closeDialog();
         setSelectedCategory(null);
     }
     
 
-    const nonBudgetedCategories = allCategories.filter(
-      (c) =>
-        !activeBudgets.some((b) => b.category === c) &&
-        !['Payment', 'Rewards', 'Investments & Savings', 'Fees & Charges', 'Government & Taxes'].includes(c)
+    const budgetedCategories = allCategories.filter(
+      (c) => activeBudgets.some((b) => b.category === c.name)
     );
 
-    const availableToAdd = allCategories.filter(c => !activeBudgets.some(b => b.category === c));
+    const availableToAdd = allCategories.filter(c => !activeBudgets.some(b => b.category === c.name));
 
     return (
         <>
@@ -122,18 +120,23 @@ export function BudgetingTab({
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {activeBudgets
-                                .sort((a,b) => a.category.localeCompare(b.category))
-                                .map(budget => (
-                                <CategoryBudget
-                                    key={budget.category}
-                                    category={budget.category}
-                                    budget={budget.amount}
-                                    spent={spendingByCategory[budget.category] || 0}
-                                    onBudgetChange={handleBudgetChange}
-                                    onEditCategory={handleEditCategory}
-                                />
-                            ))}
+                            {budgetedCategories
+                                .sort((a,b) => a.name.localeCompare(b.name))
+                                .map(cat => {
+                                    const budget = activeBudgets.find(b => b.category === cat.name);
+                                    if(!budget) return null;
+
+                                    return (
+                                        <CategoryBudget
+                                            key={cat.name}
+                                            category={cat}
+                                            budget={budget.amount}
+                                            spent={spendingByCategory[budget.category] || 0}
+                                            onBudgetChange={handleBudgetChange}
+                                            onEditCategory={handleEditCategory}
+                                        />
+                                    )
+                                })}
                         </div>
                     </CardContent>
                 </Card>

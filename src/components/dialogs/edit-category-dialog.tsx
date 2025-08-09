@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -8,74 +9,85 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { IconPicker } from '../icon-picker';
 import type { Category } from '@/lib/types';
-import { defaultCategoryIcons } from '../icons';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { mockCategories } from '@/lib/mock-data';
+import type { icons } from 'lucide-react';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (category: Category, icon: string) => void;
+  onSave: (category: Category) => void;
   category?: Category | null;
-  icon?: string | null;
   availableCategories?: Category[];
 };
 
 const CREATE_NEW_VALUE = '__CREATE_NEW__';
 
-export function EditCategoryDialog({ isOpen, onClose, onSave, category, icon: initialIcon, availableCategories = [] }: Props) {
-  const [name, setName] = useState<Category | '' | typeof CREATE_NEW_VALUE>('');
+export function EditCategoryDialog({ isOpen, onClose, onSave, category, availableCategories = [] }: Props) {
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
   const [customName, setCustomName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState('Smile');
+  const [selectedIcon, setSelectedIcon] = useState<keyof typeof icons>('Package');
   
   const isEditing = !!category;
-  const isPredefined = category ? mockCategories.includes(category) : false;
+  const isPredefined = category?.isDefault || false;
 
   useEffect(() => {
     if (isOpen) {
-      setName(category || '');
-      setCustomName('');
-      const defaultIcon = category ? (Object.keys(defaultCategoryIcons).includes(category) ? category : 'Package') : 'Package';
-      setSelectedIcon(initialIcon || defaultIcon);
+      if (category) {
+        setSelectedCategoryName(category.name);
+        setCustomName('');
+        setSelectedIcon(category.icon);
+      } else {
+        setSelectedCategoryName('');
+        setCustomName('');
+        setSelectedIcon('Package');
+      }
     }
-  }, [isOpen, category, initialIcon]);
+  }, [isOpen, category]);
   
   const handleSave = () => {
-    const finalName = name === CREATE_NEW_VALUE ? customName.trim() : name;
+    const finalName = selectedCategoryName === CREATE_NEW_VALUE ? customName.trim() : selectedCategoryName;
     if (finalName) {
-      onSave(finalName as Category, selectedIcon);
+      const existingCategory = allCategories.find(c => c.name === finalName);
+      onSave({
+        name: finalName,
+        icon: existingCategory ? existingCategory.icon : selectedIcon,
+        isDefault: existingCategory?.isDefault || false,
+      });
       onClose();
     }
   };
+
+  const allCategories = mockCategories.concat(availableCategories.filter(ac => !mockCategories.some(mc => mc.name === ac.name)));
   
   useEffect(() => {
-      if(name && name !== CREATE_NEW_VALUE && defaultCategoryIcons[name as keyof typeof defaultCategoryIcons]) {
-          const newIconName = Object.keys(defaultCategoryIcons).find(key => key === name);
-          if (newIconName) setSelectedIcon(newIconName);
+      if(selectedCategoryName && selectedCategoryName !== CREATE_NEW_VALUE) {
+          const cat = allCategories.find(c => c.name === selectedCategoryName);
+          if (cat) {
+            setSelectedIcon(cat.icon);
+          }
       }
-  }, [name]);
+  }, [selectedCategoryName, allCategories]);
 
   const renderNameInput = () => {
     if (isEditing) {
-        return (
-            <Input id="name" value={name} className="col-span-3" disabled />
-        )
+        return <Input id="name" value={category?.name} className="col-span-3" disabled={isPredefined} onChange={(e) => setCustomName(e.target.value)} />;
     }
 
     return (
         <div className="col-span-3 space-y-2">
-            <Select value={name} onValueChange={(value) => setName(value as Category)}>
+            <Select value={selectedCategoryName} onValueChange={setSelectedCategoryName}>
                 <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
                     {availableCategories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        <SelectItem key={cat.name} value={cat.name}>{cat.name}</SelectItem>
                     ))}
                     <SelectItem value={CREATE_NEW_VALUE}>Create new category...</SelectItem>
                 </SelectContent>
             </Select>
-            {name === CREATE_NEW_VALUE && (
+            {selectedCategoryName === CREATE_NEW_VALUE && (
                 <Input 
                     placeholder="Enter custom category name"
                     value={customName}
@@ -91,9 +103,9 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, icon: in
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{category ? 'Edit' : 'Add'} Category</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit' : 'Add'} Category</DialogTitle>
           <DialogDescription>
-            {category ? `Editing the "${category}" category.` : 'Add a new category to your budget.'}
+            {isEditing ? `Editing the "${category?.name}" category.` : 'Add a new category to your budget.'}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -108,7 +120,7 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, icon: in
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!name || (name === CREATE_NEW_VALUE && !customName.trim())}>Save Category</Button>
+          <Button onClick={handleSave} disabled={!selectedCategoryName || (selectedCategoryName === CREATE_NEW_VALUE && !customName.trim())}>Save Category</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

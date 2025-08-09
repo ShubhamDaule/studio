@@ -1,7 +1,8 @@
 
+
 "use client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, Category } from "@/lib/types";
 import { format, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -12,9 +13,10 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   transaction?: Transaction | null;
+  allCategories: Category[];
 };
 
-export function TransactionDetailDialog({ isOpen, onClose, transaction }: Props) {
+export function TransactionDetailDialog({ isOpen, onClose, transaction, allCategories }: Props) {
   if (!transaction) return null;
 
   const formatCurrency = (amount: number) => {
@@ -32,6 +34,8 @@ export function TransactionDetailDialog({ isOpen, onClose, transaction }: Props)
         return dateString;
     }
   }
+
+  const categoryObj = allCategories.find(c => c.name === transaction.category);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -74,7 +78,7 @@ export function TransactionDetailDialog({ isOpen, onClose, transaction }: Props)
                 </div>
                 <Badge variant="outline" className="py-1 text-sm">
                     <CategoryIcon
-                        category={transaction.category}
+                        category={categoryObj}
                         className="mr-2 h-4 w-4"
                     />
                     {transaction.category}

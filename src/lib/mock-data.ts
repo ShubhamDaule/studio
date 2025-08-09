@@ -1,31 +1,20 @@
+
 import type { Category, Transaction } from './types';
+import { defaultCategoryIcons } from '@/components/icons';
+import { icons } from 'lucide-react';
 
 const mockFile1 = 'statement-q1.pdf';
 const mockFile2 = 'statement-q2.pdf';
 const mockFile3 = 'statement-q3.csv';
 
-export const mockCategories: Category[] = [
-  'Payment',
-  'Rewards',
-  'Groceries',
-  'Dining',
-  'Entertainment',
-  'Shopping',
-  'Travel & Transport',
-  'Subscriptions',
-  'Health',
-  'Utilities',
-  'Education',
-  'Housing & Rent',
-  'Insurance',
-  'Investments & Savings',
-  'Charity & Donations',
-  'Government & Taxes',
-  'Fees & Charges',
-  'Home Improvement & Hardware',
-  'Office Supplies',
-  'Miscellaneous'
-];
+const defaultCategoryNames = Object.keys(defaultCategoryIcons) as (keyof typeof defaultCategoryIcons)[];
+
+export const mockCategories: Category[] = defaultCategoryNames.map(name => ({
+  name,
+  icon: defaultCategoryIcons[name] ? (Object.keys(icons).find(key => key.toLowerCase() === defaultCategoryIcons[name].displayName?.toLowerCase()) as keyof typeof icons || 'MoreHorizontal') : 'MoreHorizontal',
+  isDefault: true,
+}));
+
 
 export const mockTransactions: Transaction[] = [
   // Rent payments

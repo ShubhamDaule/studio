@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { TransactionTable } from "@/components/dashboard/transaction-table";
@@ -7,7 +8,7 @@ import { useTiers } from "@/hooks/use-tiers";
 
 type TransactionsTabProps = {
     filteredTransactions: Transaction[];
-    handleCategoryChange: (transactionId: string, newCategory: Category) => void;
+    handleCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
     allCategories: Category[];
 };
 

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useMemo, useCallback } from 'react';
@@ -12,14 +13,14 @@ type DialogState = {
 };
 
 type DialogData = {
-    category?: Category;
+    category?: Category['name'];
     date?: string;
     source?: string;
     merchant?: string;
     transaction?: Transaction | null;
     transactions: Transaction[];
     allCategories: Category[];
-    onCategoryChange: (transactionId: string, newCategory: Category) => void;
+    onCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
     isPro: boolean;
 }
 
@@ -27,7 +28,7 @@ type UseDialogsProps = {
     transactions: Transaction[];
     allTransactions: Transaction[];
     allCategories: Category[];
-    handleCategoryChange: (transactionId: string, newCategory: Category) => void;
+    handleCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
 };
 
 export const useDialogs = ({ transactions, allTransactions, allCategories, handleCategoryChange }: UseDialogsProps) => {
@@ -68,7 +69,7 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
         if (dialogState.category) {
             return {
                 ...baseData,
-                category: activeDialogKey as Category,
+                category: activeDialogKey,
                 transactions: transactions.filter(t => t.category === activeDialogKey),
             };
         }

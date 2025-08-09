@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from 'react';
@@ -22,14 +23,6 @@ const chartConfigBase = {
   amount: {
     label: "Amount",
   },
-  groceries: { label: "Groceries", color: "hsl(var(--chart-1))" },
-  dining: { label: "Dining", color: "hsl(var(--chart-2))" },
-  'travel-&-transport': { label: "Travel & Transport", color: "hsl(var(--chart-3))" },
-  shopping: { label: "Shopping", color: "hsl(var(--chart-4))" },
-  entertainment: { label: "Entertainment", color: "hsl(var(--chart-5))" },
-  utilities: { label: "Utilities", color: "hsl(var(--chart-1))" },
-  'payment': { label: "Payment", color: "hsl(var(--chart-4))" },
-  other: { label: "Other", color: "hsl(var(--chart-3))" },
 };
 
 interface SpendingChartProps {
@@ -65,19 +58,19 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
     const spendingTransactions = transactions.filter(t => t.amount > 0);
     
     const categoryTotals = spendingTransactions.reduce((acc, transaction) => {
-      const category = transaction.category as string;
+      const category = transaction.category;
       acc[category] = (acc[category] || 0) + transaction.amount;
       return acc;
     }, {} as Record<string, number>);
     
     const dynamicChartConfig: ChartConfig = { ...chartConfigBase };
-    const sortedCategories = [...allCategories].sort((a, b) => a.localeCompare(b));
+    const sortedCategories = [...allCategories].sort((a, b) => a.name.localeCompare(b.name));
 
     sortedCategories.forEach((cat, index) => {
-        const key = cat.toLowerCase().replace(/ & /g, '-&-').replace(/\//g,'-').replace(/ /g, '-');
+        const key = cat.name.toLowerCase().replace(/ & /g, '-&-').replace(/\//g,'-').replace(/ /g, '-');
         if (!dynamicChartConfig[key]) {
             dynamicChartConfig[key] = {
-                label: cat as string,
+                label: cat.name,
                 color: `hsl(var(--chart-${(index % 5) + 1}))`
             }
         }

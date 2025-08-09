@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { FC } from 'react';
@@ -55,16 +56,26 @@ export const defaultCategoryIcons: Record<string, LucideIcon> = {
 };
 
 type CategoryIconProps = {
-  category: Category | null;
+  category: Category | Category['name'] | null;
   className?: string;
-  iconName?: string | null;
+  iconName?: keyof typeof icons | null;
 };
 
 export const CategoryIcon: FC<CategoryIconProps> = ({ category, className, iconName }) => {
-  const IconComponent = 
-    (iconName && (icons as Record<string, LucideIcon>)[iconName]) ||
-    (category && defaultCategoryIcons[category as string]) 
-    || MoreHorizontal;
+  let finalIconName: keyof typeof icons = 'MoreHorizontal';
+
+  if (iconName) {
+    finalIconName = iconName;
+  } else if (category) {
+    if (typeof category === 'string') {
+      const cat = defaultCategoryIcons[category];
+      finalIconName = cat ? Object.keys(icons).find(key => icons[key as keyof typeof icons].displayName === cat.displayName) as keyof typeof icons || 'MoreHorizontal' : 'MoreHorizontal';
+    } else if (typeof category === 'object' && category.icon) {
+      finalIconName = category.icon;
+    }
+  }
+  
+  const IconComponent = icons[finalIconName] || MoreHorizontal;
   return <IconComponent className={className} />;
 };
 

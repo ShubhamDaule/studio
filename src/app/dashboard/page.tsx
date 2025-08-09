@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -104,7 +105,7 @@ export default function DashboardPage() {
         return `across ${transactionFiles.length} files`;
     }, [selectedSourceFilter, transactionFiles]);
 
-    const handleCategoryChange = React.useCallback((transactionId: string, newCategory: Category) => {
+    const handleCategoryChange = React.useCallback((transactionId: string, newCategory: Category['name']) => {
         setAllTransactions(prev => 
         prev.map(t => 
             t.id === transactionId ? { ...t, category: newCategory } : t
@@ -182,7 +183,6 @@ export default function DashboardPage() {
                     </TabsContent>
                     <TabsContent value="budgeting" className="mt-4">
                         <BudgetingTab
-                            defaultBudgets={budgets}
                             activeBudgets={activeBudgets}
                             onMultipleBudgetChange={handleMultipleBudgetChange}
                             transactions={filteredTransactions}
@@ -223,6 +223,7 @@ export default function DashboardPage() {
                 isOpen={dialogState.transactionDetail}
                 onClose={() => closeDialog('transactionDetail')}
                 transaction={dialogData.transaction}
+                allCategories={allCategories}
             />
         </div>
     );

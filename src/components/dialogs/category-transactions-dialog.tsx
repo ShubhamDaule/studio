@@ -1,4 +1,5 @@
 
+
 "use client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TransactionTable } from "../dashboard/transaction-table";
@@ -8,22 +9,23 @@ import { CategoryIcon } from "../icons";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  category?: Category;
+  category?: Category['name'];
   transactions: Transaction[];
   allCategories: Category[];
-  onCategoryChange: (transactionId: string, newCategory: Category) => void;
+  onCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
   isPro: boolean;
 };
 
 export function CategoryTransactionsDialog({ isOpen, onClose, category, transactions, allCategories, onCategoryChange, isPro }: Props) {
   if (!category) return null;
+  const categoryObj = allCategories.find(c => c.name === category);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CategoryIcon category={category} className="w-6 h-6" />
+            <CategoryIcon category={categoryObj} className="w-6 h-6" />
             Transactions for {category}
           </DialogTitle>
           <DialogDescription>
