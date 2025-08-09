@@ -160,6 +160,10 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
                   <Cell key={`cell-${entry.key}`} fill={entry.fill} />
                 ))}
               </Pie>
+               <ChartLegend
+                content={<ChartLegendContent />}
+                className="-translate-y-2 flex-wrap"
+                />
             </PieChart>
           </ResponsiveContainer>
         </ChartContainer>
