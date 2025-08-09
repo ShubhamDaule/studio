@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2 } from 'lucide-react';
 import type { Budget, BudgetOverride, Category, Transaction } from "@/lib/types";
+import { Label } from "@/components/ui/label";
 
 type Props = {
     defaultBudgets: Budget[];
