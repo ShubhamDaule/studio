@@ -2,7 +2,7 @@
 "use client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TransactionTable } from "../dashboard/transaction-table";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, Category } from "@/lib/types";
 import { format, parseISO } from "date-fns";
 import { Calendar } from "lucide-react";
 
@@ -11,9 +11,12 @@ type Props = {
   onClose: () => void;
   date?: string;
   transactions: Transaction[];
+  allCategories: Category[];
+  onCategoryChange: (transactionId: string, newCategory: Category) => void;
+  isPro: boolean;
 };
 
-export function DayTransactionsDialog({ isOpen, onClose, date, transactions }: Props) {
+export function DayTransactionsDialog({ isOpen, onClose, date, transactions, allCategories, onCategoryChange, isPro }: Props) {
   if (!date) return null;
   const formattedDate = format(parseISO(date), "PPP");
   return (
@@ -29,7 +32,12 @@ export function DayTransactionsDialog({ isOpen, onClose, date, transactions }: P
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[60vh] overflow-auto">
-          <TransactionTable transactions={transactions} isPro={true} onCategoryChange={() => {}} allCategories={[]} />
+          <TransactionTable 
+            transactions={transactions} 
+            isPro={isPro} 
+            onCategoryChange={onCategoryChange} 
+            allCategories={allCategories}
+          />
         </div>
       </DialogContent>
     </Dialog>

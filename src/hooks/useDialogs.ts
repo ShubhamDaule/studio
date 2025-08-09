@@ -2,7 +2,9 @@
 "use client";
 
 import { useState, useMemo, useCallback } from 'react';
-import type { Transaction } from '@/lib/types';
+import type { Transaction, Category } from '@/lib/types';
+import { useTiers } from './use-tiers';
+import { useTransactions } from './useTransactions';
 
 type DialogType = 'category' | 'day' | 'source' | 'merchant' | 'transactionDetail';
 
@@ -11,12 +13,15 @@ type DialogState = {
 };
 
 type DialogData = {
-    category?: string;
+    category?: Category;
     date?: string;
     source?: string;
     merchant?: string;
     transaction?: Transaction | null;
     transactions: Transaction[];
+    allCategories: Category[];
+    onCategoryChange: (transactionId: string, newCategory: Category) => void;
+    isPro: boolean;
 }
 
 type UseDialogsProps = {
@@ -25,6 +30,9 @@ type UseDialogsProps = {
 };
 
 export const useDialogs = ({ transactions, allTransactions }: UseDialogsProps) => {
+  const { isPro } = useTiers();
+  const { allCategories, handleCategoryChange } = useTransactions();
+
   const [dialogState, setDialogState] = useState<DialogState>({
     category: false,
     day: false,
@@ -33,7 +41,7 @@ export const useDialogs = ({ transactions, allTransactions }: UseDialogsProps) =
     transactionDetail: false,
   });
   
-  const [activeDialogKey, setActiveDialogKey] = useState<string | null | Transaction>(null);
+  const [activeDialogKey, setActiveDialogKey] = useState<string | Transaction | null>(null);
 
   const openDialog = useCallback((type: DialogType, key: string | Transaction | null) => {
     setActiveDialogKey(key);
@@ -46,29 +54,40 @@ export const useDialogs = ({ transactions, allTransactions }: UseDialogsProps) =
   }, []);
   
   const dialogData: DialogData = useMemo(() => {
-    if (!activeDialogKey) return { transactions: [] };
+    const baseData = {
+        allCategories,
+        onCategoryChange: handleCategoryChange,
+        isPro,
+        transactions: []
+    };
+
+    if (!activeDialogKey) return baseData;
     
     if (typeof activeDialogKey === 'string') {
         if (dialogState.category) {
             return {
-                category: activeDialogKey,
+                ...baseData,
+                category: activeDialogKey as Category,
                 transactions: transactions.filter(t => t.category === activeDialogKey),
             };
         }
         if (dialogState.day) {
             return {
+                ...baseData,
                 date: activeDialogKey,
                 transactions: transactions.filter(t => t.date === activeDialogKey),
             };
         }
         if (dialogState.source) {
             return {
+                ...baseData,
                 source: activeDialogKey,
                 transactions: allTransactions.filter(t => t.fileSource === activeDialogKey),
             };
         }
         if (dialogState.merchant) {
             return {
+                ...baseData,
                 merchant: activeDialogKey,
                 transactions: transactions.filter(t => t.merchant === activeDialogKey),
             };
@@ -77,13 +96,13 @@ export const useDialogs = ({ transactions, allTransactions }: UseDialogsProps) =
     
     if (typeof activeDialogKey === 'object' && activeDialogKey !== null && 'id' in activeDialogKey && dialogState.transactionDetail) {
         return {
+            ...baseData,
             transaction: activeDialogKey,
-            transactions: [],
         };
     }
 
-    return { transactions: [] };
-  }, [activeDialogKey, dialogState, transactions, allTransactions]);
+    return baseData;
+  }, [activeDialogKey, dialogState, transactions, allTransactions, allCategories, handleCategoryChange, isPro]);
 
   return {
     dialogState,

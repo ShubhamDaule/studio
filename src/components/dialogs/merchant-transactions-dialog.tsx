@@ -2,7 +2,7 @@
 "use client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TransactionTable } from "../dashboard/transaction-table";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, Category } from "@/lib/types";
 import { TopMerchantIcon } from "../icons";
 
 type Props = {
@@ -10,9 +10,12 @@ type Props = {
   onClose: () => void;
   merchant?: string;
   transactions: Transaction[];
+  allCategories: Category[];
+  onCategoryChange: (transactionId: string, newCategory: Category) => void;
+  isPro: boolean;
 };
 
-export function MerchantTransactionsDialog({ isOpen, onClose, merchant, transactions }: Props) {
+export function MerchantTransactionsDialog({ isOpen, onClose, merchant, transactions, allCategories, onCategoryChange, isPro }: Props) {
   if (!merchant) return null;
 
   return (
@@ -28,7 +31,12 @@ export function MerchantTransactionsDialog({ isOpen, onClose, merchant, transact
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[60vh] overflow-auto">
-          <TransactionTable transactions={transactions} isPro={true} onCategoryChange={() => {}} allCategories={[]} />
+          <TransactionTable 
+            transactions={transactions} 
+            isPro={isPro} 
+            onCategoryChange={onCategoryChange} 
+            allCategories={allCategories}
+          />
         </div>
       </DialogContent>
     </Dialog>

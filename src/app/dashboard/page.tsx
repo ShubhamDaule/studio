@@ -126,26 +126,22 @@ export default function DashboardPage() {
         <CategoryTransactionsDialog
             isOpen={dialogState.category}
             onClose={() => closeDialog('category')}
-            category={dialogData.category}
-            transactions={dialogData.transactions}
+            {...dialogData}
         />
         <DayTransactionsDialog
             isOpen={dialogState.day}
             onClose={() => closeDialog('day')}
-            date={dialogData.date}
-            transactions={dialogData.transactions}
+            {...dialogData}
         />
         <SourceTransactionsDialog
             isOpen={dialogState.source}
             onClose={() => closeDialog('source')}
-            source={dialogData.source}
-            transactions={dialogData.transactions}
+            {...dialogData}
         />
         <MerchantTransactionsDialog
             isOpen={dialogState.merchant}
             onClose={() => closeDialog('merchant')}
-            merchant={dialogData.merchant}
-            transactions={dialogData.transactions}
+            {...dialogData}
         />
         <TransactionDetailDialog
             isOpen={dialogState.transactionDetail}

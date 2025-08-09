@@ -2,7 +2,7 @@
 "use client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TransactionTable } from "../dashboard/transaction-table";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, Category } from "@/lib/types";
 import { FileText } from "lucide-react";
 
 type Props = {
@@ -10,9 +10,12 @@ type Props = {
   onClose: () => void;
   source?: string;
   transactions: Transaction[];
+  allCategories: Category[];
+  onCategoryChange: (transactionId: string, newCategory: Category) => void;
+  isPro: boolean;
 };
 
-export function SourceTransactionsDialog({ isOpen, onClose, source, transactions }: Props) {
+export function SourceTransactionsDialog({ isOpen, onClose, source, transactions, allCategories, onCategoryChange, isPro }: Props) {
   if (!source) return null;
 
   return (
@@ -28,7 +31,12 @@ export function SourceTransactionsDialog({ isOpen, onClose, source, transactions
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[60vh] overflow-auto">
-          <TransactionTable transactions={transactions} isPro={true} onCategoryChange={() => {}} allCategories={[]} />
+          <TransactionTable 
+            transactions={transactions} 
+            isPro={isPro} 
+            onCategoryChange={onCategoryChange} 
+            allCategories={allCategories} 
+          />
         </div>
       </DialogContent>
     </Dialog>

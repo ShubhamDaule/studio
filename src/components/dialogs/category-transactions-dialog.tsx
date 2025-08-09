@@ -10,9 +10,12 @@ type Props = {
   onClose: () => void;
   category?: Category;
   transactions: Transaction[];
+  allCategories: Category[];
+  onCategoryChange: (transactionId: string, newCategory: Category) => void;
+  isPro: boolean;
 };
 
-export function CategoryTransactionsDialog({ isOpen, onClose, category, transactions }: Props) {
+export function CategoryTransactionsDialog({ isOpen, onClose, category, transactions, allCategories, onCategoryChange, isPro }: Props) {
   if (!category) return null;
 
   return (
@@ -28,7 +31,12 @@ export function CategoryTransactionsDialog({ isOpen, onClose, category, transact
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[60vh] overflow-auto">
-          <TransactionTable transactions={transactions} isPro={true} onCategoryChange={() => {}} allCategories={[]} />
+          <TransactionTable 
+            transactions={transactions} 
+            isPro={isPro} 
+            onCategoryChange={onCategoryChange} 
+            allCategories={allCategories} 
+          />
         </div>
       </DialogContent>
     </Dialog>
