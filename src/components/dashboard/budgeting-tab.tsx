@@ -57,13 +57,15 @@ export function BudgetingTab({
     };
     
     const handleSaveCategory = (updatedCategory: Category) => {
-        if(selectedCategory){
-            // Editing existing category
+        const isEditing = !!selectedCategory;
+        if(isEditing){
              setAllCategories(prev => prev.map(c => c.name === selectedCategory.name ? updatedCategory : c));
         } else {
-            // Adding new category
-             setAllCategories(prev => [...prev, updatedCategory]);
-             onAddBudget({ category: updatedCategory.name, amount: 0 });
+            const isNewCustomCategory = !allCategories.some(c => c.name === updatedCategory.name);
+            if (isNewCustomCategory) {
+                setAllCategories(prev => [...prev, updatedCategory]);
+            }
+            onAddBudget({ category: updatedCategory.name, amount: 0 });
         }
         closeDialog();
         setSelectedCategory(null);
