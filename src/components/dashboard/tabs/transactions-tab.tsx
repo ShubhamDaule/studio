@@ -3,20 +3,21 @@
 
 import { TransactionTable } from "@/components/dashboard/transaction-table";
 import type { Category, Transaction } from "@/lib/types";
+import { useTiers } from "@/hooks/use-tiers";
 
 type TransactionsTabProps = {
     filteredTransactions: Transaction[];
     handleCategoryChange: (transactionId: string, newCategory: Category) => void;
     allCategories: Category[];
-    isPro: boolean;
 };
 
 export function TransactionsTab({
     filteredTransactions,
     handleCategoryChange,
     allCategories,
-    isPro,
 }: TransactionsTabProps) {
+    const { isPro } = useTiers();
+
     return (
         <TransactionTable
             transactions={filteredTransactions}
