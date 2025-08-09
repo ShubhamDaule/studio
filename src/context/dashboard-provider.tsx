@@ -5,13 +5,10 @@ import React, { useMemo } from 'react';
 import { DashboardProvider as InnerDashboardProvider } from './dashboard-context';
 import { usePathname } from 'next/navigation';
 import { mockTransactions } from '@/lib/mock-data';
-import { useTransactions } from '@/hooks/useTransactions';
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isDashboard = pathname.startsWith('/dashboard');
-
-    const { filteredTransactions } = useTransactions();
 
     const transactionFiles = useMemo(() => {
         if (!isDashboard) return [];
@@ -30,8 +27,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         transactionFiles,
         minDate,
         maxDate,
-        filteredTransactions,
-    }), [transactionFiles, minDate, maxDate, filteredTransactions]);
+    }), [transactionFiles, minDate, maxDate]);
 
 
     return (

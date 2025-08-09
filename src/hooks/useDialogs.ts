@@ -44,6 +44,7 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
   const [activeDialogKey, setActiveDialogKey] = useState<string | Transaction | null>(null);
 
   const openDialog = useCallback((type: DialogType, key: string | Transaction | null) => {
+    if(!key) return;
     setActiveDialogKey(key);
     setDialogState(prev => ({ ...prev, [type]: true }));
   }, []);
@@ -58,7 +59,7 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
         allCategories,
         onCategoryChange: handleCategoryChange,
         isPro,
-        transactions: []
+        transactions: [] as Transaction[]
     };
 
     if (!activeDialogKey) return baseData;

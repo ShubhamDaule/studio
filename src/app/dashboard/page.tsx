@@ -11,147 +11,207 @@ import { TransactionDetailDialog } from "@/components/dialogs/transaction-detail
 import { BudgetingTab } from "@/components/dashboard/budgeting-tab";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useTransactions } from "@/hooks/useTransactions";
 import { useTiers } from "@/hooks/use-tiers";
 import { OverviewTab } from "@/components/dashboard/tabs/overview-tab";
 import { TransactionsTab } from "@/components/dashboard/tabs/transactions-tab";
 import { InsightsTab } from "@/components/dashboard/tabs/insights-tab";
 import { useDashboardContext } from "@/context/dashboard-context";
-
+import { mockTransactions, mockCategories } from "@/lib/mock-data";
+import type { Transaction, Category } from "@/lib/types";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
-    const { setHasTransactions } = useDashboardContext();
+    const { setHasTransactions, dateRange, selectedSourceFilter, setFilteredTransactions: setContextFilteredTransactions } = useDashboardContext();
+
+    const [allTransactions, setAllTransactions] = React.useState<Transaction[]>(mockTransactions);
+    const [allCategories, setAllCategories] = React.useState<Category[]>(mockCategories);
     
-    const {
-        transactionFiles,
-        allTransactions,
-        setAllTransactions,
-        filteredTransactions,
-        totalSpending,
-        highestTransaction,
-        transactionCount,
-        highestDay,
-        availableMonths,
-        filterDescription,
-        currentBalance,
-        allCategories,
-        setAllCategories,
-        handleCategoryChange,
-    } = useTransactions();
+    const transactionFiles = React.useMemo(() => {
+        return Array.from(new Set(allTransactions.map((t) => t.fileSource)));
+    }, [allTransactions]);
+
+    const filteredTransactions = React.useMemo(() => {
+        return allTransactions.filter((t) => {
+        const transactionDate = new Date(t.date);
+        const isInDateRange =
+            dateRange?.from && dateRange?.to
+            ? transactionDate >= dateRange.from && transactionDate <= dateRange.to
+            : true;
+        const matchesSource =
+            selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter;
+        return isInDateRange && matchesSource;
+        });
+    }, [allTransactions, dateRange, selectedSourceFilter]);
+
+    React.useEffect(() => {
+        setContextFilteredTransactions(filteredTransactions);
+    }, [filteredTransactions, setContextFilteredTransactions]);
 
     React.useEffect(() => {
         setHasTransactions(allTransactions.length > 0);
     }, [allTransactions, setHasTransactions]);
+
+    const totalSpending = React.useMemo(() => {
+        return filteredTransactions
+        .filter((t) => t.amount > 0 && t.category !== "Payment" && t.category !== "Investment")
+        .reduce((acc, t) => acc + t.amount, 0);
+    }, [filteredTransactions]);
+
+    const highestTransaction = React.useMemo(() => {
+        if (filteredTransactions.length === 0) return null;
+        return filteredTransactions.reduce((max, t) => (t.amount > max.amount ? t : max), filteredTransactions[0]);
+    }, [filteredTransactions]);
+
+    const transactionCount = React.useMemo(() => {
+        return filteredTransactions.length;
+    }, [filteredTransactions]);
+
+    const spendingByDay = React.useMemo(() => {
+        const byDay: { [date: string]: number } = {};
+        filteredTransactions
+        .filter((t) => t.amount > 0 && t.category !== "Payment" && t.category !== "Investment")
+        .forEach((t) => {
+            byDay[t.date] = (byDay[t.date] || 0) + t.amount;
+        });
+        return Object.entries(byDay).map(([date, total]) => ({ date, total }));
+    }, [filteredTransactions]);
+
+    const highestDay = React.useMemo(() => {
+        if (spendingByDay.length === 0) return null;
+        return spendingByDay.reduce((max, day) => (day.total > max.total ? day : max), spendingByDay[0]);
+    }, [spendingByDay]);
+
+    const currentBalance = React.useMemo(() => {
+        if (selectedSourceFilter === 'all') return null; // Can't calculate balance for all sources
+        const sourceTransactions = allTransactions.filter(t => t.fileSource === selectedSourceFilter);
+        return sourceTransactions.reduce((acc, t) => acc - t.amount, 0);
+    }, [allTransactions, selectedSourceFilter]);
+
+    const availableMonths = React.useMemo(() => {
+        const months = new Set<string>();
+        allTransactions.forEach(t => {
+        months.add(t.date.substring(0, 7)); // YYYY-MM
+        });
+        return Array.from(months).sort().reverse();
+    }, [allTransactions]);
     
-  const { dateRange, setFilteredTransactions } = useDashboardContext();
+    const filterDescription = React.useMemo(() => {
+        if (selectedSourceFilter !== "all") {
+          const file = transactionFiles.find(f => f === selectedSourceFilter);
+          return `for ${file}`;
+        }
+        return `across ${transactionFiles.length} files`;
+    }, [selectedSourceFilter, transactionFiles]);
 
-  React.useEffect(() => {
-      setFilteredTransactions(filteredTransactions);
-  },[filteredTransactions, setFilteredTransactions]);
-  
-  const {
-      budgets,
-      budgetOverrides,
-      activeBudgets,
-      handleMultipleBudgetChange,
-      handleSetBudgetOverride,
-      handleDeleteBudgetOverride
-  } = useBudgets({allCategories, dateRange, transactions: filteredTransactions});
+    const handleCategoryChange = React.useCallback((transactionId: string, newCategory: Category) => {
+        setAllTransactions(prev => 
+        prev.map(t => 
+            t.id === transactionId ? { ...t, category: newCategory } : t
+        )
+        );
+    }, []);
 
-  const {
-    dialogState,
-    openDialog,
-    closeDialog,
-    dialogData
-  } = useDialogs({
-    transactions: filteredTransactions, 
-    allTransactions,
-    allCategories,
-    handleCategoryChange,
-  });
+    const {
+        budgets,
+        budgetOverrides,
+        activeBudgets,
+        handleMultipleBudgetChange,
+        handleSetBudgetOverride,
+        handleDeleteBudgetOverride
+    } = useBudgets({allCategories, dateRange, transactions: filteredTransactions});
 
+    const {
+        dialogState,
+        openDialog,
+        closeDialog,
+        dialogData
+    } = useDialogs({
+        transactions: filteredTransactions,
+        allTransactions,
+        allCategories,
+        handleCategoryChange
+    });
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
-        <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                <TabsTrigger value="insights">Insights</TabsTrigger>
-                <TabsTrigger value="budgeting">Budgeting</TabsTrigger>
-              </TabsList>
-              <TabsContent value="overview" className="mt-4">
-                <OverviewTab 
-                  totalSpending={totalSpending}
-                  filterDescription={filterDescription}
-                  transactionCount={transactionCount}
-                  highestTransaction={highestTransaction}
-                  openDialog={openDialog}
-                  currentBalance={currentBalance}
-                  highestDay={highestDay}
-                  filteredTransactions={filteredTransactions}
-                  allTransactions={allTransactions}
-                  activeBudgets={activeBudgets}
-                  allCategories={allCategories}
-                />
-              </TabsContent>
-              <TabsContent value="transactions" className="mt-4">
-                <TransactionsTab 
-                  filteredTransactions={filteredTransactions}
-                  handleCategoryChange={handleCategoryChange}
-                  allCategories={allCategories}
-                  isPro={isPro}
-                />
-              </TabsContent>
-                <TabsContent value="insights" className="mt-4">
-                  <InsightsTab allTransactions={allTransactions}/>
-                </TabsContent>
-                <TabsContent value="budgeting" className="mt-4">
-                  <BudgetingTab
-                    defaultBudgets={budgets}
-                    activeBudgets={activeBudgets}
-                    onMultipleBudgetChange={handleMultipleBudgetChange}
-                    transactions={filteredTransactions}
-                    onTransactionsUpdate={setAllTransactions}
-                    onIncomeDetailsChange={() => {}} // This state is now local to the tab
-                    availableMonths={availableMonths}
-                    onSetBudgetOverride={handleSetBudgetOverride}
-                    allCategories={allCategories}
-                    setAllCategories={setAllCategories}
-                    budgetOverrides={budgetOverrides}
-                    onDeleteBudgetOverride={handleDeleteBudgetOverride}
-                  />
-                </TabsContent>
-            </Tabs>
-        </main>
-        
-        <CategoryTransactionsDialog
-            isOpen={dialogState.category}
-            onClose={() => closeDialog('category')}
-            {...dialogData}
-        />
-        <DayTransactionsDialog
-            isOpen={dialogState.day}
-            onClose={() => closeDialog('day')}
-            {...dialogData}
-        />
-        <SourceTransactionsDialog
-            isOpen={dialogState.source}
-            onClose={() => closeDialog('source')}
-            {...dialogData}
-        />
-        <MerchantTransactionsDialog
-            isOpen={dialogState.merchant}
-            onClose={() => closeDialog('merchant')}
-            {...dialogData}
-        />
-        <TransactionDetailDialog
-            isOpen={dialogState.transactionDetail}
-            onClose={() => closeDialog('transactionDetail')}
-            transaction={dialogData.transaction}
-        />
-    </div>
-  );
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
+            <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+                <Tabs defaultValue="overview" className="w-full">
+                    <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="overview">Overview</TabsTrigger>
+                        <TabsTrigger value="transactions">Transactions</TabsTrigger>
+                        <TabsTrigger value="insights">Insights</TabsTrigger>
+                        <TabsTrigger value="budgeting">Budgeting</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="overview" className="mt-4">
+                        <OverviewTab 
+                        totalSpending={totalSpending}
+                        filterDescription={filterDescription}
+                        transactionCount={transactionCount}
+                        highestTransaction={highestTransaction}
+                        openDialog={openDialog}
+                        currentBalance={currentBalance}
+                        highestDay={highestDay}
+                        filteredTransactions={filteredTransactions}
+                        allTransactions={allTransactions}
+                        activeBudgets={activeBudgets}
+                        allCategories={allCategories}
+                        />
+                    </TabsContent>
+                    <TabsContent value="transactions" className="mt-4">
+                        <TransactionsTab 
+                        filteredTransactions={filteredTransactions}
+                        handleCategoryChange={handleCategoryChange}
+                        allCategories={allCategories}
+                        isPro={isPro}
+                        />
+                    </TabsContent>
+                    <TabsContent value="insights" className="mt-4">
+                        <InsightsTab allTransactions={allTransactions}/>
+                    </TabsContent>
+                    <TabsContent value="budgeting" className="mt-4">
+                        <BudgetingTab
+                            defaultBudgets={budgets}
+                            activeBudgets={activeBudgets}
+                            onMultipleBudgetChange={handleMultipleBudgetChange}
+                            transactions={filteredTransactions}
+                            onTransactionsUpdate={setAllTransactions}
+                            onIncomeDetailsChange={() => {}} // This state is now local to the tab
+                            availableMonths={availableMonths}
+                            onSetBudgetOverride={handleSetBudgetOverride}
+                            allCategories={allCategories}
+                            setAllCategories={setAllCategories}
+                            budgetOverrides={budgetOverrides}
+                            onDeleteBudgetOverride={handleDeleteBudgetOverride}
+                        />
+                    </TabsContent>
+                </Tabs>
+            </main>
+            
+            <CategoryTransactionsDialog
+                isOpen={dialogState.category}
+                onClose={() => closeDialog('category')}
+                {...dialogData}
+            />
+            <DayTransactionsDialog
+                isOpen={dialogState.day}
+                onClose={() => closeDialog('day')}
+                {...dialogData}
+            />
+            <SourceTransactionsDialog
+                isOpen={dialogState.source}
+                onClose={() => closeDialog('source')}
+                {...dialogData}
+            />
+            <MerchantTransactionsDialog
+                isOpen={dialogState.merchant}
+                onClose={() => closeDialog('merchant')}
+                {...dialogData}
+            />
+            <TransactionDetailDialog
+                isOpen={dialogState.transactionDetail}
+                onClose={() => closeDialog('transactionDetail')}
+                transaction={dialogData.transaction}
+            />
+        </div>
+    );
 }

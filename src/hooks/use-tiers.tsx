@@ -20,7 +20,7 @@ export const useTiers = () => {
 };
 
 export const TiersProvider = ({ children }: { children: ReactNode }) => {
-  const [isPro, setIsPro] = useState(false);
+  const [isPro, setIsPro] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
 
   return (
