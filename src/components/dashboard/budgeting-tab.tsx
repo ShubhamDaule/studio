@@ -59,16 +59,13 @@ export function BudgetingTab({
         openEditDialog();
     };
     
-    const handleSaveCategory = (updatedCategory: Category) => {
-        const isNew = !allCategories.some(c => c.name === selectedCategory?.name);
-
+    const handleSaveCategory = (updatedCategory: Category, isNew: boolean) => {
         if (isNew) {
             setAllCategories(prev => [...prev, updatedCategory]);
             onAddBudget({ category: updatedCategory.name, amount: 0 });
         } else {
              setAllCategories(prev => prev.map(c => c.name === selectedCategory?.name ? updatedCategory : c));
         }
-
         closeEditDialog();
         setSelectedCategory(null);
     }
@@ -116,6 +113,14 @@ export function BudgetingTab({
                                         )
                                     })}
                             </SortableContext>
+                             <Card className="flex items-center justify-center border-dashed card-interactive" onClick={() => { setSelectedCategory(null); openEditDialog(); }}>
+                                <div className="text-center p-6">
+                                    <Plus className="mx-auto h-8 w-8 text-muted-foreground" />
+                                    <p className="mt-2 text-sm font-medium text-muted-foreground">
+                                        Add New Category
+                                    </p>
+                                </div>
+                            </Card>
                         </div>
                     </CardContent>
                 </Card>

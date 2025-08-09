@@ -50,7 +50,7 @@ export function CategoryBudget({ category, budget, spent, onBudgetChange, onEdit
   };
 
   return (
-    <Card className="flex flex-col group">
+    <Card className="flex flex-col group card-interactive">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
