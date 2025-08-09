@@ -5,7 +5,6 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDashboardContext } from "@/context/dashboard-context";
 import { Download, LogOut, FileText, FileSpreadsheet, FileJson, PanelLeft, BarChart3 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
@@ -51,12 +50,7 @@ const UserNav = () => {
   return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.photoURL ?? "https://placehold.co/40x40.png"} alt={user.displayName ?? "User"} data-ai-hint="user avatar" />
-                  <AvatarFallback>{user.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
-              </Avatar>
-          </Button>
+            <div className="w-8 h-8 rounded-full bg-gray-200 cursor-pointer" />
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
@@ -79,9 +73,9 @@ const UserNav = () => {
 
 const LandingNavLinks = ({ className }: { className?: string }) => (
     <div className={cn("flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-1", className)}>
-        <Button variant="ghost" asChild><Link href="/landing#features">Features</Link></Button>
-        <Button variant="ghost" asChild><Link href="/landing#benefits">Benefits</Link></Button>
-        <Button variant="ghost" asChild><Link href="/pricing">Pricing</Link></Button>
+        <Button variant="subtle" asChild><Link href="/landing#features">Features</Link></Button>
+        <Button variant="subtle" asChild><Link href="/landing#benefits">Benefits</Link></Button>
+        <Button variant="subtle" asChild><Link href="/pricing">Pricing</Link></Button>
     </div>
 );
 
@@ -93,12 +87,12 @@ const LandingNav = () => {
     return (
         <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-x-1">
-                <LandingNavLinks />
                 {user ? (
                     <UserNav />
                 ) : isLandingPage ? (
                     <div className="flex items-center gap-2 ml-4">
-                        <Button variant="outline" asChild><Link href="/login">Login</Link></Button>
+                        <LandingNavLinks />
+                        <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
                         <Button asChild><Link href="/signup">Get Started</Link></Button>
                     </div>
                 ): null}
@@ -127,7 +121,7 @@ const LandingNav = () => {
     )
 };
 
-const triggerExport = async (format: ExportFormat, transactions: Transaction[]) => {
+const triggerExport = async (format: 'csv' | 'pdf', transactions: Transaction[]) => {
     const dataToExport = transactions.map(t => ({
       ID: t.id,
       Date: t.date,
@@ -137,7 +131,7 @@ const triggerExport = async (format: ExportFormat, transactions: Transaction[]) 
       Source: t.fileSource
     }));
 
-    if (format === 'csv' || format === 'xlsx') {
+    if (format === 'csv') {
       const [{ utils, write }, { saveAs }] = await Promise.all([
         import('xlsx'),
         import('file-saver')
@@ -146,8 +140,8 @@ const triggerExport = async (format: ExportFormat, transactions: Transaction[]) 
       const worksheet = utils.json_to_sheet(dataToExport);
       const workbook = utils.book_new();
       utils.book_append_sheet(workbook, worksheet, "Transactions");
-      const fileType = format === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' : 'text/csv;charset=utf-8;';
-      const fileExtension = format === 'xlsx' ? '.xlsx' : '.csv';
+      const fileType = 'text/csv;charset=utf-8;';
+      const fileExtension = '.csv';
       const excelBuffer = write(workbook, { bookType: format, type: 'array' });
       const data = new Blob([excelBuffer], { type: fileType });
       saveAs(data, "transactions" + fileExtension);
@@ -209,10 +203,6 @@ const DashboardNav = () => {
                     <DropdownMenuItem onClick={() => triggerExport('csv', filteredTransactions)}>
                       <FileText className="mr-2 h-4 w-4" />
                       <span>CSV</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => triggerExport('xlsx', filteredTransactions)}>
-                      <FileSpreadsheet className="mr-2 h-4 w-4" />
-                      <span>XLSX</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => triggerExport('pdf', filteredTransactions)}>
                       <FileJson className="mr-2 h-4 w-4" />
