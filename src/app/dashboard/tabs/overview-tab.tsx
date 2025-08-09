@@ -2,16 +2,18 @@
 "use client";
 
 import * as React from "react";
-import { Wallet, ReceiptText, ArrowUpCircle, Calendar, Landmark } from "lucide-react";
-import { SpendingChart } from "@/components/dashboard/spending-chart";
-import { SpendingByDayChart } from "@/components/dashboard/spending-by-day-chart";
-import { SpendingBySourceChart } from "@/components/dashboard/spending-by-source-chart";
-import { TopMerchantsChart } from "@/components/dashboard/top-merchants-chart";
-import { BudgetSpendingChart } from "@/components/dashboard/budget-spending-chart";
-import { SpendingTrendChart } from "@/components/dashboard/spending-trend-chart";
+import { Wallet, ReceiptText } from "lucide-react";
+import { SpendingChart } from "@/components/charts/spending-chart";
+import { SpendingByDayChart } from "@/components/charts/spending-by-day-chart";
+import { SpendingBySourceChart } from "@/components/charts/spending-by-source-chart";
+import { TopMerchantsChart } from "@/components/charts/top-merchants-chart";
+import { BudgetSpendingChart } from "@/components/charts/budget-spending-chart";
+import { SpendingTrendChart } from "@/components/charts/spending-trend-chart";
 import type { Budget, Category, Transaction } from "@/lib/types";
-import StatsCard from "@/components/stats-card";
-import { format } from "date-fns";
+import StatsCard from "@/components/cards/stats-card";
+import { HighestTransactionCard } from "@/components/cards/highest-transaction-card";
+import { HighestDayCard } from "@/components/cards/highest-day-card";
+import { CurrentBalanceCard } from "@/components/cards/current-balance-card";
 
 type OverviewTabProps = {
     totalSpending: number;
@@ -55,26 +57,15 @@ export function OverviewTab({
                     icon={<ReceiptText className="h-4 w-4 text-muted-foreground" />}
                     description={filterDescription}
                 />
-                 <StatsCard
-                    title="Highest Transaction"
-                    value={highestTransaction ? highestTransaction.amount.toLocaleString("en-US", { style: "currency", currency: "USD" }) : "N/A"}
-                    icon={<ArrowUpCircle className="h-4 w-4 text-muted-foreground" />}
-                    description={highestTransaction ? `at ${highestTransaction.merchant}` : "No transactions found"}
+                 <HighestTransactionCard 
+                    transaction={highestTransaction}
                     onClick={() => openDialog('transactionDetail', highestTransaction)}
                 />
                 {currentBalance !== null ? (
-                     <StatsCard
-                        title="Current Balance"
-                        value={currentBalance.toLocaleString("en-US", { style: "currency", currency: "USD" })}
-                        icon={<Landmark className="h-4 w-4 text-muted-foreground" />}
-                        description="Reflects all transactions from source"
-                    />
+                     <CurrentBalanceCard balance={currentBalance} />
                 ) : (
-                    <StatsCard
-                        title="Highest Spending Day"
-                        value={highestDay ? highestDay.total.toLocaleString("en-US", { style: "currency", currency: "USD" }) : "N/A"}
-                        icon={<Calendar className="h-4 w-4 text-muted-foreground" />}
-                        description={highestDay ? `on ${format(new Date(highestDay.date), "PPP")}` : "No spending data"}
+                    <HighestDayCard 
+                        day={highestDay}
                         onClick={() => openDialog('day', highestDay?.date ?? null)}
                     />
                 )}
