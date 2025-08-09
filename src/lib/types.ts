@@ -31,3 +31,5 @@ export type BudgetOverride = {
     category: Category;
     amount: number;
 };
+
+export type ExportFormat = 'csv' | 'xlsx' | 'pdf';

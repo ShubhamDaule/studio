@@ -21,6 +21,8 @@ import { DateRangePicker } from "./dashboard/date-range-picker";
 import { SourceFilter } from "./dashboard/source-filter";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { cn } from "@/lib/utils";
+import type { Transaction } from "@/lib/types";
+import type { ExportFormat } from "@/lib/types";
 
 const Logo = () => (
     <div className="flex items-center gap-2 flex-shrink-0">
@@ -125,6 +127,46 @@ const LandingNav = () => {
     )
 };
 
+const triggerExport = async (format: ExportFormat, transactions: Transaction[]) => {
+    const dataToExport = transactions.map(t => ({
+      ID: t.id,
+      Date: t.date,
+      Merchant: t.merchant,
+      Amount: t.amount,
+      Category: t.category,
+      Source: t.fileSource
+    }));
+
+    if (format === 'csv' || format === 'xlsx') {
+      const [{ utils, write }, { saveAs }] = await Promise.all([
+        import('xlsx'),
+        import('file-saver')
+      ]);
+
+      const worksheet = utils.json_to_sheet(dataToExport);
+      const workbook = utils.book_new();
+      utils.book_append_sheet(workbook, worksheet, "Transactions");
+      const fileType = format === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' : 'text/csv;charset=utf-8;';
+      const fileExtension = format === 'xlsx' ? '.xlsx' : '.csv';
+      const excelBuffer = write(workbook, { bookType: format, type: 'array' });
+      const data = new Blob([excelBuffer], { type: fileType });
+      saveAs(data, "transactions" + fileExtension);
+
+    } else if (format === 'pdf') {
+      const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable')
+      ]);
+      const doc = new jsPDF();
+      autoTable(doc, {
+        head: [['ID', 'Date', 'Merchant', 'Amount', 'Category', 'Source']],
+        body: dataToExport.map(t => [t.ID, t.date, t.merchant, t.amount, t.category, t.source]),
+      });
+      doc.save('transactions.pdf');
+    }
+  };
+
+
 const DashboardNav = () => {
     const { 
         dateRange,
@@ -135,7 +177,7 @@ const DashboardNav = () => {
         selectedSourceFilter,
         setSelectedSourceFilter,
         hasTransactions,
-        triggerExport,
+        filteredTransactions,
     } = useDashboardContext();
 
     return (
@@ -164,15 +206,15 @@ const DashboardNav = () => {
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Export As</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => triggerExport('csv')}>
+                    <DropdownMenuItem onClick={() => triggerExport('csv', filteredTransactions)}>
                       <FileText className="mr-2 h-4 w-4" />
                       <span>CSV</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => triggerExport('xlsx')}>
+                    <DropdownMenuItem onClick={() => triggerExport('xlsx', filteredTransactions)}>
                       <FileSpreadsheet className="mr-2 h-4 w-4" />
                       <span>XLSX</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => triggerExport('pdf')}>
+                    <DropdownMenuItem onClick={() => triggerExport('pdf', filteredTransactions)}>
                       <FileJson className="mr-2 h-4 w-4" />
                       <span>PDF</span>
                     </DropdownMenuItem>
