@@ -3,8 +3,8 @@
 
 import * as React from "react";
 import { Wallet, ReceiptText, ArrowUpCircle, Calendar, Landmark } from "lucide-react";
-import { SpendingChart } from "@/components/dashboard/spending-chart";
-import { SpendingByDayChart } from "@/components/dashboard/spending-by-day-chart";
+import { SpendingChart } from "@/components/spending-chart";
+import { SpendingByDayChart } from "@/components/spending-by-day-chart";
 import { SpendingBySourceChart } from "@/components/dashboard/spending-by-source-chart";
 import { TopMerchantsChart } from "@/components/dashboard/top-merchants-chart";
 import { BudgetSpendingChart } from "@/components/dashboard/budget-spending-chart";
