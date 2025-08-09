@@ -1,26 +1,26 @@
 
 "use client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { TransactionTable } from "../transaction-table";
+import { TransactionTable } from "../dashboard/transaction-table";
 import type { Transaction } from "@/lib/types";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  category?: string;
+  source?: string;
   transactions: Transaction[];
 };
 
-export function CategoryTransactionsDialog({ isOpen, onClose, category, transactions }: Props) {
-  if (!category) return null;
+export function SourceTransactionsDialog({ isOpen, onClose, source, transactions }: Props) {
+  if (!source) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Transactions for {category}</DialogTitle>
+          <DialogTitle>Transactions from {source}</DialogTitle>
           <DialogDescription>
-            Showing all transactions in the "{category}" category for the selected period.
+            Showing all transactions from the file "{source}".
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[60vh] overflow-auto">

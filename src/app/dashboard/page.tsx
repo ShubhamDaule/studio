@@ -3,11 +3,11 @@
 
 import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CategoryTransactionsDialog } from "@/components/dashboard/dialogs/category-transactions-dialog";
-import { DayTransactionsDialog } from "@/components/dashboard/dialogs/day-transactions-dialog";
-import { SourceTransactionsDialog } from "@/components/dashboard/dialogs/source-transactions-dialog";
-import { MerchantTransactionsDialog } from "@/components/dashboard/dialogs/merchant-transactions-dialog";
-import { TransactionDetailDialog } from "@/components/dashboard/dialogs/transaction-detail-dialog";
+import { CategoryTransactionsDialog } from "@/components/dialogs/category-transactions-dialog";
+import { DayTransactionsDialog } from "@/components/dialogs/day-transactions-dialog";
+import { SourceTransactionsDialog } from "@/components/dialogs/source-transactions-dialog";
+import { MerchantTransactionsDialog } from "@/components/dialogs/merchant-transactions-dialog";
+import { TransactionDetailDialog } from "@/components/dialogs/transaction-detail-dialog";
 import { BudgetingTab } from "@/components/dashboard/budgeting-tab";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useDialogs } from "@/hooks/useDialogs";
