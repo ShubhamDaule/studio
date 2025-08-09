@@ -66,7 +66,9 @@ export default function DashboardPage() {
     dialogData
   } = useDialogs({
     transactions: filteredTransactions, 
-    allTransactions
+    allTransactions,
+    allCategories,
+    handleCategoryChange,
   });
 
 

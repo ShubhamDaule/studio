@@ -4,7 +4,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import type { Transaction, Category } from '@/lib/types';
 import { useTiers } from './use-tiers';
-import { useTransactions } from './useTransactions';
 
 type DialogType = 'category' | 'day' | 'source' | 'merchant' | 'transactionDetail';
 
@@ -27,11 +26,12 @@ type DialogData = {
 type UseDialogsProps = {
     transactions: Transaction[];
     allTransactions: Transaction[];
+    allCategories: Category[];
+    handleCategoryChange: (transactionId: string, newCategory: Category) => void;
 };
 
-export const useDialogs = ({ transactions, allTransactions }: UseDialogsProps) => {
+export const useDialogs = ({ transactions, allTransactions, allCategories, handleCategoryChange }: UseDialogsProps) => {
   const { isPro } = useTiers();
-  const { allCategories, handleCategoryChange } = useTransactions();
 
   const [dialogState, setDialogState] = useState<DialogState>({
     category: false,
