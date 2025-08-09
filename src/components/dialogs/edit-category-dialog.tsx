@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -7,11 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { IconPicker } from '../icon-picker';
 import type { Category } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { mockCategories } from '@/lib/mock-data';
-import type { icons } from 'lucide-react';
 
 type Props = {
   isOpen: boolean;
@@ -26,7 +23,6 @@ const CREATE_NEW_VALUE = '__CREATE_NEW__';
 export function EditCategoryDialog({ isOpen, onClose, onSave, category, availableCategories = [] }: Props) {
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
   const [customName, setCustomName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState<keyof typeof icons>('Package');
   
   const isEditing = !!category;
   const isPredefined = category?.isDefault || false;
@@ -36,11 +32,9 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
       if (category) {
         setSelectedCategoryName(category.name);
         setCustomName(category.isDefault ? '' : category.name);
-        setSelectedIcon(category.icon);
       } else {
         setSelectedCategoryName('');
         setCustomName('');
-        setSelectedIcon('Package');
       }
     }
   }, [isOpen, category]);
@@ -51,7 +45,7 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
       const existingCategory = allCategories.find(c => c.name === finalName);
       onSave({
         name: finalName,
-        icon: isEditing ? selectedIcon : (existingCategory ? existingCategory.icon : selectedIcon),
+        icon: isEditing ? category.icon : (existingCategory ? existingCategory.icon : 'Package'),
         isDefault: isEditing ? category.isDefault : (existingCategory?.isDefault || false),
       });
       onClose();
@@ -60,15 +54,6 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
 
   const allCategories = mockCategories.concat(availableCategories.filter(ac => !mockCategories.some(mc => mc.name === ac.name)));
   
-  useEffect(() => {
-      if(selectedCategoryName && selectedCategoryName !== CREATE_NEW_VALUE) {
-          const cat = allCategories.find(c => c.name === selectedCategoryName);
-          if (cat) {
-            setSelectedIcon(cat.icon);
-          }
-      }
-  }, [selectedCategoryName, allCategories]);
-
   const renderNameInput = () => {
     if (isEditing) {
         return <Input id="name" value={customName || category?.name} className="col-span-3" disabled={isPredefined} onChange={(e) => setCustomName(e.target.value)} />;
@@ -112,10 +97,6 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
           <div className="grid grid-cols-4 items-start gap-4">
             <Label htmlFor="name" className="text-right pt-2">Name</Label>
             {renderNameInput()}
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="icon" className="text-right">Icon</Label>
-            <IconPicker selectedIcon={selectedIcon} onIconChange={setSelectedIcon} className="col-span-3" disabled={isPredefined} />
           </div>
         </div>
         <DialogFooter>
