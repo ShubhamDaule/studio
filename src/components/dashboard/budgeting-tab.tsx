@@ -29,7 +29,7 @@ export function BudgetingTab({
     allCategories,
     setAllCategories,
 }: Props) {
-    const [selectedMonth, setSelectedMonth] = React.useState(availableMonths[0] || "");
+    const [selectedMonth, setSelectedMonth] = React.useState(availableMonths[0] || "default");
     const {value: isDialogOpen, setTrue: openDialog, setFalse: closeDialog} = useBoolean(false);
     const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
 
@@ -44,7 +44,7 @@ export function BudgetingTab({
     }, [transactions]);
 
     const handleBudgetChange = (category: Category, amount: number) => {
-        if(selectedMonth){
+        if(selectedMonth && selectedMonth !== 'default'){
              onSetBudgetOverride({
                 month: selectedMonth,
                 category,
@@ -97,7 +97,7 @@ export function BudgetingTab({
                                         <SelectValue placeholder="Select month" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">Default</SelectItem>
+                                        <SelectItem value="default">Default</SelectItem>
                                         {availableMonths.map(month => (
                                             <SelectItem key={month} value={month}>{month}</SelectItem>
                                         ))}
