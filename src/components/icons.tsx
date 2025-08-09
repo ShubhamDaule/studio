@@ -22,7 +22,6 @@ import {
   Popcorn,
   PiggyBank
 } from 'lucide-react';
-import { getIcon } from '@/lib/icon-store';
 
 export type Category = 
   | 'Groceries'
@@ -57,8 +56,7 @@ type CategoryIconProps = {
 };
 
 export const CategoryIcon: FC<CategoryIconProps> = ({ category, className }) => {
-  const customIconName = getIcon(category);
-  const IconComponent = (icons as Record<string, LucideIcon>)[customIconName] || defaultCategoryIcons[category as string] || ShoppingBag;
+  const IconComponent = defaultCategoryIcons[category as string] || MoreHorizontal;
   return <IconComponent className={className} />;
 };
 
