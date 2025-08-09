@@ -69,8 +69,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
         <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-            <Tabs defaultValue="overview" className="mt-8">
-              <div className="overflow-x-auto">
+            <Tabs defaultValue="overview" className="mt-4 sm:mt-8">
+              <div className="overflow-x-auto pb-2">
                 <TabsList className="whitespace-nowrap">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="transactions">Transactions</TabsTrigger>
@@ -104,7 +104,7 @@ export default function DashboardPage() {
                 <TabsContent value="insights" className="mt-4">
                   <InsightsTab allTransactions={allTransactions}/>
                 </TabsContent>
-                <TabsContent value="budgeting">
+                <TabsContent value="budgeting" className="mt-4">
                   <BudgetingTab
                     defaultBudgets={budgets}
                     activeBudgets={activeBudgets}

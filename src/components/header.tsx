@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { Download, LogOut, FileText, FileSpreadsheet, FileJson } from "lucide-react";
+import { Download, LogOut, FileText, FileSpreadsheet, FileJson, PanelLeft } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -19,16 +19,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DateRangePicker } from "./dashboard/date-range-picker";
 import { SourceFilter } from "./dashboard/source-filter";
+import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 const Logo = () => (
     <div className="flex items-center gap-2">
         <svg
-            width="40"
-            height="40"
+            width="32"
+            height="32"
             viewBox="0 0 32 32"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="text-primary"
+            className="text-primary h-8 w-8"
             >
             <rect width="32" height="32" rx="8" fill="currentColor" />
             <path
@@ -53,7 +54,7 @@ const Logo = () => (
                 strokeLinejoin="round"
             />
         </svg>
-        <span className="text-2xl font-semibold text-primary">
+        <span className="text-xl sm:text-2xl font-semibold text-primary">
             SpendWise Analyzer
         </span>
     </div>
@@ -99,14 +100,23 @@ const UserNav = () => {
   )
 }
 
+const LandingNavLinks = ({ className }: { className?: string }) => (
+    <div className={cn("flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-8", className)}>
+        <Link href="/landing#features" className="text-foreground hover:text-primary transition-smooth font-semibold">Features</Link>
+        <Link href="/landing#benefits" className="text-foreground hover:text-primary transition-smooth font-semibold">Benefits</Link>
+        <Link href="/pricing" className="text-foreground hover:text-primary transition-smooth font-semibold">Pricing</Link>
+    </div>
+);
+
 const LandingNav = () => {
     const { user } = useAuth();
 
     return (
+        <>
         <div className="hidden md:flex items-center space-x-8">
-            <Link href="/landing#features" className="text-foreground hover:text-primary transition-smooth font-semibold">Features</Link>
-            <Link href="/landing#benefits" className="text-foreground hover:text-primary transition-smooth font-semibold">Benefits</Link>
-            <Link href="/pricing" className="text-foreground hover:text-primary transition-smooth font-semibold">Pricing</Link>
+            <LandingNavLinks />
+        </div>
+        <div className="hidden md:flex items-center gap-2">
             { user ? (
                 <UserNav />
             ) : (
@@ -122,6 +132,31 @@ const LandingNav = () => {
                 </>
             )}
         </div>
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                    <PanelLeft />
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+                <div className="flex flex-col gap-8 pt-8">
+                    <LandingNavLinks />
+                     { !user && (
+                        <div className="flex flex-col gap-4">
+                            <Link href="/login">
+                                <Button variant="outline" className="w-full">
+                                    Login
+                                </Button>
+                            </Link>
+                            <Button asChild className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 w-full">
+                                <Link href="/dashboard">Get Started</Link>
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            </SheetContent>
+        </Sheet>
+        </>
     )
 };
 
@@ -139,7 +174,7 @@ const DashboardNav = () => {
     } = useDashboardContext();
 
     return (
-        <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-2 sm:gap-4">
+        <div className="flex w-full items-center justify-end gap-2 sm:gap-4 ml-auto">
             <div className="flex items-center gap-2">
                 <DateRangePicker
                     date={dateRange}
@@ -157,7 +192,7 @@ const DashboardNav = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button size="sm" disabled={!hasTransactions}>
-                      <Download className="mr-2 h-4 w-4" />
+                      <Download className="mr-2 h-4 w-4 hidden sm:inline-block" />
                       Export
                     </Button>
                   </DropdownMenuTrigger>

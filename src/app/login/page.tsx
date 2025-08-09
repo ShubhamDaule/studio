@@ -38,7 +38,7 @@ export default function LoginPage() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Left - Marketing panel (matches landing styles) */}
-          <div>
+          <div className="hidden lg:block">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 text-primary bg-primary/10 mb-6">
               <span className="text-sm">Welcome back</span>
             </div>
@@ -75,7 +75,7 @@ export default function LoginPage() {
           </div>
 
           {/* Right - Auth Card */}
-          <div className="w-full">
+          <div className="w-full max-w-md mx-auto">
             <Card className="border-0 shadow-lg bg-card/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-2xl">Sign in</CardTitle>

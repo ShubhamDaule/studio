@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import type { Category, Transaction } from "@/lib/types";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "../ui/button";
 
 type TransactionTableProps = {
   transactions: Transaction[];
@@ -52,15 +53,15 @@ export function TransactionTable({ transactions, onCategoryChange, allCategories
             <TableBody>
                 {paginatedTransactions.map((t) => (
                 <TableRow key={t.id}>
-                    <TableCell>{format(new Date(t.date), "PPP")}</TableCell>
-                    <TableCell>{t.merchant}</TableCell>
+                    <TableCell className="whitespace-nowrap">{format(new Date(t.date), "PPP")}</TableCell>
+                    <TableCell className="font-medium">{t.merchant}</TableCell>
                     <TableCell>
                       {isPro ? (
                         <Select
                             value={t.category}
                             onValueChange={(newCategory: Category) => onCategoryChange(t.id, newCategory)}
                         >
-                            <SelectTrigger className="w-40 h-8">
+                            <SelectTrigger className="w-auto sm:w-40 h-8 text-xs sm:text-sm">
                                 <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
@@ -73,7 +74,7 @@ export function TransactionTable({ transactions, onCategoryChange, allCategories
                         t.category
                       )}
                     </TableCell>
-                    <TableCell className={`text-right font-medium ${t.amount < 0 ? 'text-green-600' : ''}`}>
+                    <TableCell className={`text-right font-medium whitespace-nowrap ${t.amount < 0 ? 'text-green-600' : ''}`}>
                     {t.amount < 0 ? `-$${Math.abs(t.amount).toFixed(2)}` : `$${t.amount.toFixed(2)}`}
                     </TableCell>
                 </TableRow>
@@ -86,20 +87,22 @@ export function TransactionTable({ transactions, onCategoryChange, allCategories
             Showing {Math.min(transactions.length, (currentPage - 1) * transactionsPerPage + 1)}-{Math.min(transactions.length, currentPage * transactionsPerPage)} of {transactions.length} transactions.
           </p>
           <div className="flex gap-2">
-            <button
+            <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-2 py-1 text-sm border rounded"
             >
                 Previous
-            </button>
-            <button
+            </Button>
+            <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="px-2 py-1 text-sm border rounded"
             >
                 Next
-            </button>
+            </Button>
           </div>
         </div>
       </CardContent>

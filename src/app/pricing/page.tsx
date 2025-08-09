@@ -101,9 +101,9 @@ export default function Pricing() {
         {/* Plans */}
         <section className="py-12 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
               {plans.map((plan) => (
-                <Card key={plan.name} className={`border ${plan.highlight ? "ring-2 ring-primary shadow-glow" : ""}`}>
+                <Card key={plan.name} className={`flex flex-col h-full border ${plan.highlight ? "ring-2 ring-primary shadow-glow" : ""}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-2xl">{plan.name}</CardTitle>
@@ -116,7 +116,7 @@ export default function Pricing() {
                       {plan.price !== 0 && <span className="text-muted-foreground">/ {plan.period}</span>}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="flex-1 flex flex-col space-y-6">
                     <div className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-primary" />
                       <p className="text-sm text-muted-foreground">{plan.tokens} tokens/month included</p>
@@ -128,16 +128,16 @@ export default function Pricing() {
                       </div>
                     )}
 
-                    <ul className="space-y-3 pt-2">
+                    <ul className="space-y-3 pt-2 flex-1">
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-start gap-3">
-                          <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+                          <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                           <span>{f}</span>
                         </li>
                       ))}
                     </ul>
 
-                    <Button onClick={() => choosePlan(plan)} className="w-full h-11 bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90">
+                    <Button onClick={() => choosePlan(plan)} className="w-full h-11 bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 mt-auto">
                       {plan.name === "Free" ? "Start for free" : `Choose ${plan.name}`} <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </CardContent>
@@ -145,7 +145,7 @@ export default function Pricing() {
               ))}
             </div>
 
-            <p className="text-xs text-muted-foreground mt-6">
+            <p className="text-xs text-muted-foreground mt-6 text-center sm:text-left">
               Prices in USD. You can change or cancel your plan anytime.
             </p>
           </div>

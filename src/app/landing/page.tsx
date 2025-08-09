@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -29,13 +30,13 @@ export default function LandingPage() {
               ✨ Level up your financial insights
             </Badge>
             
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent leading-tight">
               Master Your Spending with
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> AI-Powered </span>
               Analytics
             </h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
               Transform your financial data into actionable insights. Track spending patterns, 
               identify trends, and make smarter financial decisions with our intelligent analytics platform.
             </p>
@@ -43,7 +44,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 transition-smooth px-8 py-6 text-lg font-semibold"
+                className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 transition-smooth px-8 py-6 text-lg font-semibold w-full sm:w-auto"
                 asChild
               >
                 <Link href="/dashboard">Try it yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
@@ -51,14 +52,14 @@ export default function LandingPage() {
               <Button 
                 variant="outline" 
                 size="lg"
-                className="border-primary/20 text-primary hover:bg-primary/5 px-8 py-6 text-lg font-semibold"
+                className="border-primary/20 text-primary hover:bg-primary/5 px-8 py-6 text-lg font-semibold w-full sm:w-auto"
                 asChild
               >
                 <Link href="/dashboard">Try Mock Data</Link>
               </Button>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-8 text-sm text-muted-foreground">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-primary" />
                 <span>No credit card required</span>
@@ -73,18 +74,18 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-muted/30">
+      <section id="features" className="py-16 sm:py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               Powerful Financial <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Analytics</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               Everything you need to understand and optimize your spending habits
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
@@ -161,15 +162,15 @@ export default function LandingPage() {
       </section>
 
       {/* Benefits Section */}
-      <section id="benefits" className="py-20">
+      <section id="benefits" className="py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 sm:gap-16 items-center">
             <div>
-              <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
                 Take Control of Your 
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> Financial Future</span>
               </h2>
-              <p className="text-xl text-muted-foreground mb-8">
+              <p className="text-lg sm:text-xl text-muted-foreground mb-8">
                 Stop wondering where your money goes. Our platform gives you the clarity and insights 
                 you need to make confident financial decisions.
               </p>
@@ -207,20 +208,20 @@ export default function LandingPage() {
               </div>
             </div>
             
-            <div className="relative">
-              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 backdrop-blur-sm">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="bg-card rounded-lg p-6 shadow-lg">
+            <div className="relative mt-8 lg:mt-0">
+              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-6 sm:p-8 backdrop-blur-sm">
+                <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                  <div className="bg-card rounded-lg p-4 sm:p-6 shadow-lg">
                     <DollarSign className="w-8 h-8 text-primary mb-3" />
                     <div className="text-2xl font-bold mb-1">$8,847</div>
                     <div className="text-sm text-muted-foreground">Total Spending</div>
                   </div>
-                  <div className="bg-card rounded-lg p-6 shadow-lg">
+                  <div className="bg-card rounded-lg p-4 sm:p-6 shadow-lg">
                     <BarChart3 className="w-8 h-8 text-accent mb-3" />
                     <div className="text-2xl font-bold mb-1">37</div>
                     <div className="text-sm text-muted-foreground">Transactions</div>
                   </div>
-                  <div className="bg-card rounded-lg p-6 shadow-lg col-span-2">
+                  <div className="bg-card rounded-lg p-4 sm:p-6 shadow-lg col-span-2">
                     <TrendingUp className="w-8 h-8 text-primary mb-3" />
                     <div className="text-lg font-semibold mb-2">Spending Trend</div>
                     <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -235,12 +236,12 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section id="pricing" className="py-20 bg-gradient-to-r from-primary to-accent">
+      <section id="pricing" className="py-16 sm:py-20 bg-gradient-to-r from-primary to-accent">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to Transform Your Financial Life?
           </h2>
-          <p className="text-xl text-white/90 mb-8">
+          <p className="text-lg sm:text-xl text-white/90 mb-8">
             Join thousands of users who have already taken control of their finances with SpendWise Analyzer.
           </p>
           
@@ -248,7 +249,7 @@ export default function LandingPage() {
             <Button 
               size="lg" 
               variant="secondary"
-              className="bg-white text-primary hover:bg-white/90 px-8 py-6 text-lg font-semibold"
+              className="bg-white text-primary hover:bg-white/90 px-8 py-6 text-lg font-semibold w-full sm:w-auto"
               asChild
             >
               <Link href="/dashboard">Start Free Trial <ArrowRight className="ml-2 w-5 h-5" /></Link>
@@ -256,7 +257,7 @@ export default function LandingPage() {
             <Button 
               size="lg" 
               variant="outline"
-              className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold"
+              className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold w-full sm:w-auto"
               asChild
             >
               <Link href="/dashboard">Try Mock Data</Link>

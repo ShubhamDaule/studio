@@ -21,7 +21,7 @@ export function DayTransactionsDialog({ isOpen, onClose, date, transactions, all
   const formattedDate = format(parseISO(date), "PPP");
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-md sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="w-6 h-6" />

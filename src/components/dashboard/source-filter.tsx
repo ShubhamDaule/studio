@@ -16,7 +16,7 @@ export function SourceFilter({ files, selectedSource, onSelectSource }: SourceFi
 
     return (
         <Select value={selectedSource} onValueChange={onSelectSource}>
-            <SelectTrigger className="w-full sm:w-[240px] h-9">
+            <SelectTrigger className="w-full sm:w-auto h-9">
                  <div className="flex items-center gap-2">
                     <Banknote className="h-4 w-4" />
                     <SelectValue placeholder="Filter by source..." />

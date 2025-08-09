@@ -20,7 +20,7 @@ export function CategoryTransactionsDialog({ isOpen, onClose, category, transact
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-md sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CategoryIcon category={category} className="w-6 h-6" />
