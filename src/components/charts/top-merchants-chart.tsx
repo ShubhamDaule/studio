@@ -75,7 +75,7 @@ export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChar
   };
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full card-interactive">
       <CardHeader>
         <CardTitle className='flex items-center gap-2'>
             <TopMerchantIcon className="h-6 w-6" />

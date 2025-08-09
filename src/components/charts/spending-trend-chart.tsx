@@ -64,7 +64,7 @@ export function SpendingTrendChart({ transactions }: SpendingTrendChartProps) {
 
   if (aggregatedData.length < 2) {
       return (
-        <Card className="flex flex-col h-full">
+        <Card className="flex flex-col h-full card-interactive">
             <CardHeader>
                 <CardTitle className='flex items-center gap-2'>
                     <AreaChartIcon className="h-6 w-6" />
@@ -80,7 +80,7 @@ export function SpendingTrendChart({ transactions }: SpendingTrendChartProps) {
   }
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full card-interactive">
       <CardHeader>
         <CardTitle className='flex items-center gap-2'>
             <AreaChartIcon className="h-6 w-6" />

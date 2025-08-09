@@ -77,7 +77,7 @@ export function SpendingByDayChart({ transactions, onBarClick }: SpendingByDayCh
   const formatCurrency = (value: number) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full card-interactive">
       <CardHeader>
         <CardTitle className='flex items-center gap-2'>
             <BarChart3 className="h-6 w-6" />
