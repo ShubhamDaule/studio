@@ -108,7 +108,7 @@ export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeB
                             <CategoryRow 
                                 key={cat.name} 
                                 category={cat} 
-                                action="add" 
+                                action="remove" 
                                 onAction={() => handleRemoveFromBudgeted(cat.name)}
                                 disabled={categoriesWithTransactions.has(cat.name)}
                             />
@@ -124,7 +124,7 @@ export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeB
                             <CategoryRow 
                                 key={cat.name} 
                                 category={cat} 
-                                action="remove" 
+                                action="add" 
                                 onAction={() => handleAddToBudgeted(cat.name)}
                             />
                         ))}
