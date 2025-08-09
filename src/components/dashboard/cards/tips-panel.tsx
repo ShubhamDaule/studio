@@ -1,108 +1,190 @@
 
 "use client";
-import * as React from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { Lightbulb, TrendingDown, Repeat } from 'lucide-react';
-import type { Transaction } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 
-type Tip = {
-  icon: React.ElementType;
-  title: string;
-  description: string;
-};
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { getSpendingTips } from "@/lib/actions";
+import type { Transaction, Tip } from "@/lib/types";
+import { Lightbulb, Sparkles, icons, type LucideIcon, ListChecks } from "lucide-react";
+import { useTiers } from "@/hooks/use-tiers";
+import { FinancialCoach } from "../../characters/financial-coach";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const generateTips = (transactions: Transaction[]): Tip[] => {
-    const tips: Tip[] = [];
-    if (transactions.length === 0) return tips;
+interface TipsPanelProps {
+  transactions: Transaction[];
+}
 
-    // Tip 1: Top Spending Category
-    const spendingByCategory: { [key: string]: number } = {};
-    transactions.filter(t => t.amount > 0 && t.category !== "Payment" && t.category !== "Investment").forEach(t => {
-        spendingByCategory[t.category] = (spendingByCategory[t.category] || 0) + t.amount;
-    });
-
-    const topCategory = Object.entries(spendingByCategory).sort(([,a],[,b]) => b - a)[0];
-    if (topCategory) {
-        tips.push({
-            icon: TrendingDown,
-            title: `Focus on ${topCategory[0]}`,
-            description: `Your highest spending is in ${topCategory[0]}. Look for ways to reduce costs there.`,
-        });
-    }
-
-    // Tip 2: Recurring Subscriptions
-    const potentialSubscriptions = transactions.filter(t => {
-        const desc = t.merchant.toLowerCase();
-        return ['netflix', 'spotify', 'hulu', 'disney', 'amazon prime'].some(sub => desc.includes(sub));
-    });
-    if (potentialSubscriptions.length > 0) {
-        tips.push({
-            icon: Repeat,
-            title: 'Review Subscriptions',
-            description: 'We noticed a few subscriptions. Are you using all of them?',
-        });
-    }
-    
-    // Generic Tip
-    tips.push({
-        icon: Lightbulb,
-        title: 'Set a Budget',
-        description: 'Use the budgeting tab to set spending goals and track your progress throughout the month.'
-    });
-
-    return tips.slice(0, 3);
-};
-
-
-export const TipsPanel = ({ transactions }: { transactions: Transaction[] }) => {
-    const [tips, setTips] = React.useState<Tip[]>([]);
-    const [isLoading, setIsLoading] = React.useState(true);
-    
-    React.useEffect(() => {
-        setIsLoading(true);
-        setTimeout(() => {
-            const generated = generateTips(transactions);
-            setTips(generated);
-            setIsLoading(false);
-        }, 500);
-    }, [transactions]);
-
+const TipCard = ({ tip }: { tip: Tip }) => {
+    const Icon = (icons as Record<string, LucideIcon>)[tip.icon] || Lightbulb;
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Financial Tips</CardTitle>
-                <CardDescription>Personalized advice to improve your finances.</CardDescription>
+        <Card className="bg-background/70 backdrop-blur-sm h-full flex flex-col">
+            <CardHeader className="flex flex-row items-center gap-4">
+                <Icon className="w-8 h-8 text-primary" />
+                <CardTitle>{tip.title}</CardTitle>
             </CardHeader>
-            <CardContent>
-                {isLoading ? (
-                    <div className="space-y-4">
-                        {[...Array(3)].map((_, i) => (
-                             <div key={i} className="flex items-start gap-4">
-                                <Skeleton className="h-8 w-8 rounded-full" />
-                                <div className="space-y-2 flex-1">
-                                    <Skeleton className="h-4 w-1/3" />
-                                    <Skeleton className="h-4 w-full" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        {tips.map((tip, index) => (
-                            <div key={index} className="flex items-start gap-4">
-                                <div className="bg-primary/10 text-primary p-2 rounded-full">
-                                    <tip.icon className="h-4 w-4" />
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold">{tip.title}</h4>
-                                    <p className="text-sm text-muted-foreground">{tip.description}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+            <CardContent className="flex-1">
+                <p className="text-sm text-muted-foreground">{tip.description}</p>
             </CardContent>
         </Card>
     );
 };
+
+
+export function TipsPanel({ transactions }: TipsPanelProps) {
+  const [tips, setTips] = React.useState<Tip[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const { toast } = useToast();
+  const { isPro } = useTiers();
+
+  const handleGenerateTips = React.useCallback(async () => {
+    if (!isPro) {
+        toast({
+            title: "Pro Feature",
+            description: "Personalized AI tips are a Pro feature. Please upgrade to use.",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    if (transactions.length === 0) {
+      setTips([{
+        icon: 'Smile',
+        title: "No data yet!",
+        description: "No transactions to analyze. Upload a statement to get started."
+      }]);
+      return;
+    }
+
+    setIsLoading(true);
+    setTips([]);
+    const result = await getSpendingTips(transactions);
+    if (result.error) {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+      setTips([]);
+    } else {
+      setTips(result.tips || []);
+      if (!result.tips || result.tips.length === 0) {
+        toast({
+            title: "No specific tips could be generated at this time."
+        });
+      }
+    }
+    setIsLoading(false);
+  }, [transactions, toast, isPro]);
+  
+  // When transactions change, clear tips
+  React.useEffect(() => {
+    setTips([]);
+  }, [transactions]);
+
+
+  return (
+    <Card className="h-full flex flex-col overflow-hidden bg-muted/20">
+      <CardHeader className="z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-20 h-20">
+             <FinancialCoach />
+          </div>
+          <div>
+            <CardTitle className="text-xl">Financial Coach</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {isPro ? "AI-powered savings tips just for you." : "Unlock AI savings tips with Pro."}
+            </p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1 flex flex-col justify-center items-center text-center">
+        {isLoading ? (
+          <div className="w-full max-w-sm p-4">
+            <Skeleton className="h-8 w-3/4 mb-4" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-5/6" />
+          </div>
+        ) : tips.length > 0 ? (
+          <Carousel className="w-full max-w-sm" opts={{loop: true}}>
+            <CarouselContent>
+              {tips.map((tip, index) => (
+                <CarouselItem key={index}>
+                  <div className="p-1">
+                    <TipCard tip={tip} />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            {tips.length > 1 && (
+                <>
+                    <CarouselPrevious className="-left-4" />
+                    <CarouselNext className="-right-4" />
+                </>
+            )}
+          </Carousel>
+        ) : (
+          <div className="flex flex-col items-center gap-2">
+            {isPro ? (
+                <>
+                    <Lightbulb className="w-10 h-10 text-primary" />
+                    <p className="font-semibold">Ready for your insights?</p>
+                    <p className="text-sm text-muted-foreground max-w-xs">Click the button below to have your Financial Coach analyze your spending.</p>
+                </>
+            ) : (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="text-center cursor-help">
+                                <Sparkles className="w-10 h-10 text-primary mx-auto" />
+                                <p className="font-semibold mt-2">Unlock AI-Powered Insights</p>
+                                <p className="text-sm text-muted-foreground max-w-xs">Upgrade to Pro to get personalized tips from your Financial Coach.</p>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="p-0 max-w-sm" side="top" align="center">
+                            <div className="space-y-3 p-2">
+                                <p className="text-center font-bold text-lg text-primary">Unlock Pro Features!</p>
+                                <ul className="list-none space-y-2 text-sm text-foreground text-left">
+                                    <li className="flex items-start gap-2">
+                                        <ListChecks className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                                        <span>Advanced date filtering and detailed analytics charts.</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <ListChecks className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                                        <span>Full budgeting suite to set, track, and manage your financial goals.</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <ListChecks className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                                        <span>Export all your cleaned and categorized transaction data to CSV.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="z-10">
+        <Button
+          onClick={() => handleGenerateTips()}
+          disabled={isLoading || !isPro}
+          className="w-full"
+        >
+          <Sparkles className="mr-2 h-4 w-4" />
+          {isLoading ? "Analyzing..." : "Ask the Coach"}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}

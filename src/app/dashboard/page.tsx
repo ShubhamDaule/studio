@@ -139,7 +139,7 @@ export default function DashboardPage() {
                     <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                        <TabsTrigger value="insights">Insights</TabsTrigger>
+                        <TabsTrigger value="insights">AI Insights</TabsTrigger>
                         <TabsTrigger value="budgeting">Budgeting</TabsTrigger>
                     </TabsList>
                     <TabsContent value="overview" className="mt-4">
@@ -162,11 +162,10 @@ export default function DashboardPage() {
                         filteredTransactions={filteredTransactions}
                         handleCategoryChange={handleCategoryChange}
                         allCategories={allCategories}
-                        isPro={isPro}
                         />
                     </TabsContent>
                     <TabsContent value="insights" className="mt-4">
-                        <InsightsTab allTransactions={allTransactions}/>
+                        <InsightsTab allTransactions={allTransactions} budgets={activeBudgets}/>
                     </TabsContent>
                     <TabsContent value="budgeting" className="mt-4">
                         <BudgetingTab

@@ -1,6 +1,7 @@
+
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, Tip, QueryResult, Budgets } from "@/lib/types";
 
 export async function getAIInsights(transactions: Transaction[]) {
   try {
@@ -11,4 +12,40 @@ export async function getAIInsights(transactions: Transaction[]) {
     console.error("Error generating AI insights:", error);
     return { success: false, error: "Failed to generate insights. Please try again." };
   }
+}
+
+export async function getSpendingTips(transactions: Transaction[]): Promise<{ tips?: Tip[]; error?: string }> {
+    // This would in reality call a Genkit flow. For now, it returns mock data.
+    return { tips: [
+        { icon: 'ShoppingCart', title: 'Optimize Grocery Trips', description: 'Your grocery spending is consistent. Try buying in bulk to save on frequently purchased items.'},
+        { icon: 'UtensilsCrossed', title: 'Dining Out vs. Cooking', description: 'You spent $250 on dining this month. Cooking at home could save you over 50%.'},
+        { icon: 'Ticket', title: 'Subscription Review', description: 'We noticed 3 active subscriptions. Review them to ensure you\'re getting value from each.'}
+    ]};
+}
+
+export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budgets): Promise<{ result?: QueryResult; error?: string }> {
+    // This would in reality call a Genkit flow. For now, it returns mock data.
+    if (query.toLowerCase().includes("groceries")) {
+        return { 
+            result: {
+                answer: "You spent $422.72 on groceries in October. Your budget was $400.",
+                chartData: {
+                    type: 'pie',
+                    data: [
+                        { name: 'Whole Foods', value: 75.50 },
+                        { name: 'Target', value: 55.43 },
+                        { name: 'Safeway', value: 95.12 },
+                        { name: 'Trader Joe\'s', value: 62.10 },
+                        { name: 'Walmart', value: 78.32 },
+                         { name: 'Costco', value: 450.78 },
+                    ]
+                }
+            }
+        };
+    }
+     return { 
+            result: {
+                answer: "I can help with that. Here is a breakdown of your spending.",
+            }
+        };
 }

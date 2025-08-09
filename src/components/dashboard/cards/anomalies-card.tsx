@@ -1,148 +1,156 @@
 
 "use client";
+
 import * as React from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { AlertTriangle, TrendingUp, CircleDollarSign } from 'lucide-react';
-import type { Transaction } from "@/lib/types";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import type { Transaction, Anomaly } from "@/lib/types";
+import { Sparkles, Wand2, Loader2 } from "lucide-react";
+import { CategoryIcon } from "../../icons";
+import { detectAnomalies } from "@/lib/analytics";
+import { AnomalyDetective } from "../../characters/anomaly-detective";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
-type Anomaly = {
-  type: 'Large Purchase' | 'Category Outlier' | 'Potential Duplicate' | 'Multiple Charges in a Day';
-  description: string;
-  transaction: Transaction;
-};
+interface AnomaliesCardProps {
+  transactions: Transaction[];
+}
 
-const ANOMALY_RULES = {
-  LARGE_PURCHASE: {
-    'Dining': 150,
-    'Shopping': 200,
-    'Groceries': 250,
-    'Other': 100,
-    'Travel & Transport': 300,
-  },
-  CATEGORY_OUTLIER_MULTIPLIER: 2.5,
-  DUPLICATE_WINDOW_HOURS: 48
-};
+const AnomalyItem = ({ anomaly, transaction }: { anomaly: Anomaly; transaction: Transaction | undefined }) => {
+  if (!transaction) return null;
 
-const detectAnomalies = (transactions: Transaction[]): Anomaly[] => {
-  const anomalies: Anomaly[] = [];
-  if (transactions.length === 0) return anomalies;
-
-  const categoryAverages: { [key: string]: { total: number; count: number } } = {};
-  
-  transactions.forEach(t => {
-    if (t.amount > 0) {
-      if (!categoryAverages[t.category]) {
-        categoryAverages[t.category] = { total: 0, count: 0 };
-      }
-      categoryAverages[t.category].total += t.amount;
-      categoryAverages[t.category].count += 1;
-    }
-  });
-
-  const categoryAvgValues: { [key: string]: number } = {};
-  for (const cat in categoryAverages) {
-    categoryAvgValues[cat] = categoryAverages[cat].total / categoryAverages[cat].count;
-  }
-  
-  const sortedTransactions = [...transactions].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  for (let i = 0; i < sortedTransactions.length; i++) {
-    const t = sortedTransactions[i];
-    if (t.amount <= 0) continue;
-
-    // Rule 1: Large Purchase
-    const largePurchaseThreshold = (ANOMALY_RULES.LARGE_PURCHASE as any)[t.category];
-    if (largePurchaseThreshold && t.amount > largePurchaseThreshold) {
-      anomalies.push({ type: 'Large Purchase', description: `High spending of $${t.amount.toFixed(2)} in ${t.category}.`, transaction: t });
-    }
-
-    // Rule 2: Category Outlier
-    const avg = categoryAvgValues[t.category];
-    if (avg && t.amount > avg * ANOMALY_RULES.CATEGORY_OUTLIER_MULTIPLIER) {
-       anomalies.push({ type: 'Category Outlier', description: `Unusually high $${t.amount.toFixed(2)} purchase in ${t.category}. Average is $${avg.toFixed(2)}.`, transaction: t });
-    }
-    
-    // Rule 3: Potential Duplicate
-    if (i > 0) {
-      const prev = sortedTransactions[i-1];
-      const timeDiff = new Date(t.date).getTime() - new Date(prev.date).getTime();
-      if (
-        t.merchant === prev.merchant && 
-        t.amount === prev.amount && 
-        timeDiff < 1000 * 60 * 60 * ANOMALY_RULES.DUPLICATE_WINDOW_HOURS
-      ) {
-         anomalies.push({ type: 'Potential Duplicate', description: `Possible duplicate transaction at ${t.merchant}.`, transaction: t });
-      }
-    }
-    
-    // Rule 4: Multiple Charges in a day
-    const sameDayCharges = transactions.filter(other => other.id !== t.id && other.date === t.date && other.merchant === t.merchant);
-    if (sameDayCharges.length > 1) {
-        const alreadyReported = anomalies.some(a => a.type === 'Multiple Charges in a Day' && a.transaction.merchant === t.merchant && a.transaction.date === t.date);
-        if(!alreadyReported) {
-             anomalies.push({ type: 'Multiple Charges in a Day', description: `Multiple charges at ${t.merchant} on the same day.`, transaction: t });
-        }
-    }
-  }
-
-  return anomalies;
-};
-
-export const AnomaliesCard = ({ transactions }: { transactions: Transaction[] }) => {
-  const [anomalies, setAnomalies] = React.useState<Anomaly[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    setIsLoading(true);
-    // Simulate async detection
-    setTimeout(() => {
-      const detected = detectAnomalies(transactions);
-      setAnomalies(detected);
-      setIsLoading(false);
-    }, 500);
-  }, [transactions]);
-  
-  const getIcon = (type: Anomaly['type']) => {
-    switch (type) {
-      case 'Large Purchase': return <CircleDollarSign className="h-4 w-4" />;
-      case 'Category Outlier': return <TrendingUp className="h-4 w-4" />;
-      default: return <AlertTriangle className="h-4 w-4" />;
-    }
-  }
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  };
 
   return (
-    <Card className="col-span-1 lg:col-span-2">
-      <CardHeader>
-        <CardTitle>Spending Anomalies</CardTitle>
-        <CardDescription>Unusual spending patterns we've detected.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-            <div className="space-y-4">
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
+    <Card className="bg-background/70 backdrop-blur-sm h-full flex flex-col">
+        <CardHeader className="flex flex-row items-center gap-4">
+            <CategoryIcon category={transaction.category} className="h-8 w-8 text-primary" />
+            <CardTitle>{transaction.merchant}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 space-y-2">
+            <div className="flex justify-between items-baseline">
+                <span className="text-sm text-muted-foreground">{transaction.date}</span>
+                <span className="font-bold text-lg text-primary">{formatCurrency(transaction.amount)}</span>
             </div>
-        ) : anomalies.length > 0 ? (
-          <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
-            {anomalies.map((anomaly, index) => (
-              <Alert key={index} variant={index % 2 === 0 ? "default" : "destructive"}>
-                {getIcon(anomaly.type)}
-                <AlertTitle>{anomaly.type}</AlertTitle>
-                <AlertDescription>
-                  {anomaly.description}
-                </AlertDescription>
-              </Alert>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center text-muted-foreground py-8">
-            <AlertTriangle className="mx-auto h-12 w-12" />
-            <p className="mt-4">No anomalies detected in the selected period.</p>
-          </div>
-        )}
-      </CardContent>
+            <p className="text-sm text-amber-700 dark:text-amber-500 pt-2 italic">
+            &ldquo;{anomaly.reason}&rdquo;
+            </p>
+        </CardContent>
     </Card>
   );
 };
+
+export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
+  const { toast } = useToast();
+  const [anomalies, setAnomalies] = React.useState<Anomaly[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    // Clear anomalies when transactions change
+    setAnomalies([]);
+  }, [transactions]);
+
+  const handleScan = async () => {
+    setIsLoading(true);
+    toast({
+      title: "Scanning for Anomalies",
+      description: "The detective is on the case, analyzing your transactions...",
+    });
+
+    const result = await detectAnomalies(transactions);
+
+    if (result.error || !result.anomalies) {
+      toast({
+        title: "Scan Failed",
+        description: result.error || "An unknown error occurred.",
+        variant: "destructive",
+      });
+      setAnomalies([]);
+    } else {
+      setAnomalies(result.anomalies);
+      toast({
+        title: "Scan Complete!",
+        description: `Found ${result.anomalies.length} potential unusual transaction(s) for you to review.`,
+      });
+    }
+    setIsLoading(false);
+  };
+  
+  const transactionMap = React.useMemo(() => 
+    new Map(transactions.map(t => [t.id, t])),
+  [transactions]);
+
+  return (
+    <Card className="h-full flex flex-col overflow-hidden bg-muted/20">
+      <CardHeader className="z-10">
+        <div className="flex items-center gap-3">
+            <div className="w-20 h-20">
+             <AnomalyDetective />
+          </div>
+            <div>
+                <CardTitle className="text-xl">Anomaly Detective</CardTitle>
+                <CardDescription>
+                Use statistical analysis to find unusual spending.
+                </CardDescription>
+            </div>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1 flex flex-col justify-center items-center text-center">
+        {isLoading ? (
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        ) : anomalies.length > 0 ? (
+          <Carousel className="w-full max-w-sm" opts={{loop: true}}>
+            <CarouselContent>
+              {anomalies.map((anomaly) => (
+                 <CarouselItem key={anomaly.transactionId}>
+                  <div className="p-1">
+                    <AnomalyItem
+                        key={anomaly.transactionId}
+                        anomaly={anomaly}
+                        transaction={transactionMap.get(anomaly.transactionId)}
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+             {anomalies.length > 1 && (
+                <>
+                    <CarouselPrevious className="-left-4" />
+                    <CarouselNext className="-right-4" />
+                </>
+            )}
+          </Carousel>
+        ) : (
+             <div className="flex flex-col items-center gap-2">
+                <Wand2 className="w-10 h-10 text-primary" />
+                <p className="font-semibold">Ready for inspection</p>
+                <p className="text-sm text-muted-foreground max-w-xs">Click the button below to have the Detective inspect your spending.</p>
+            </div>
+        )}
+      </CardContent>
+       <CardFooter className="z-10">
+        <Button
+          onClick={handleScan}
+          disabled={isLoading || transactions.length === 0}
+          className="w-full"
+        >
+          {isLoading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles className="mr-2 h-4 w-4" />
+          )}
+          {isLoading ? "Analyzing..." : "Ask the Detective"}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}

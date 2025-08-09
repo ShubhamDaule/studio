@@ -1,5 +1,6 @@
 
 
+import type { icons } from "lucide-react";
 import type { Category } from "@/components/icons";
 export type { Category };
 
@@ -24,3 +25,28 @@ export type BudgetOverride = {
 };
 
 export type ExportFormat = 'csv' | 'pdf';
+
+export type Anomaly = {
+  transactionId: string;
+  reason: string;
+}
+
+export type Tip = {
+  icon: keyof typeof icons;
+  title: string;
+  description: string;
+}
+
+export type ChartType = 'pie' | 'bar' | 'line';
+
+export type ChartData = {
+  type: ChartType;
+  data: { name: string; value: number }[];
+};
+
+export type QueryResult = {
+  answer: string;
+  chartData?: ChartData;
+};
+
+export type Budgets = Budget[];
