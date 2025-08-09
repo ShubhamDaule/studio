@@ -25,12 +25,11 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
   const [customName, setCustomName] = useState('');
   
   const isEditing = !!category;
-  const isPredefined = category?.isDefault || false;
+  const isPredefined = !!category?.isDefault;
 
   useEffect(() => {
     if (isOpen) {
       if (category) {
-        setSelectedCategoryName(category.name);
         setCustomName(category.isDefault ? '' : category.name);
       } else {
         setSelectedCategoryName('');
@@ -40,9 +39,9 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
   }, [isOpen, category]);
   
   const handleSave = () => {
-    const finalName = isEditing ? category.name : (selectedCategoryName === CREATE_NEW_VALUE ? customName.trim() : selectedCategoryName);
+    const finalName = isEditing ? customName.trim() || category.name : (selectedCategoryName === CREATE_NEW_VALUE ? customName.trim() : selectedCategoryName);
     if (finalName) {
-      const existingCategory = allCategories.find(c => c.name === finalName);
+      const existingCategory = mockCategories.find(c => c.name === finalName);
       onSave({
         name: finalName,
         icon: isEditing ? category.icon : (existingCategory ? existingCategory.icon : 'Package'),
@@ -51,9 +50,9 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
       onClose();
     }
   };
-
-  const allCategories = mockCategories.concat(availableCategories.filter(ac => !mockCategories.some(mc => mc.name === ac.name)));
   
+  const uniqueAvailableCategories = Array.from(new Map(availableCategories.map(item => [item.name, item])).values());
+
   const renderNameInput = () => {
     if (isEditing) {
         return <Input id="name" value={customName || category?.name} className="col-span-3" disabled={isPredefined} onChange={(e) => setCustomName(e.target.value)} />;
@@ -66,7 +65,7 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
                     <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                    {availableCategories.map(cat => (
+                    {uniqueAvailableCategories.map(cat => (
                         <SelectItem key={cat.name} value={cat.name}>{cat.name}</SelectItem>
                     ))}
                     <SelectItem value={CREATE_NEW_VALUE}>Create new category...</SelectItem>
@@ -101,7 +100,7 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={isEditing ? false : (!selectedCategoryName || (selectedCategoryName === CREATE_NEW_VALUE && !customName.trim()))}>Save Category</Button>
+          <Button onClick={handleSave} disabled={isEditing ? (isPredefined ? false : !customName.trim()) : (!selectedCategoryName || (selectedCategoryName === CREATE_NEW_VALUE && !customName.trim()))}>Save Category</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
