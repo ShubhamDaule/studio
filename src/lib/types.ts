@@ -1,8 +1,9 @@
 
 
 import type { icons } from "lucide-react";
-import type { Category } from "@/components/icons";
-export type { Category };
+import type { defaultCategoryIcons } from "@/components/icons";
+export type Category = keyof typeof defaultCategoryIcons | "Other";
+
 
 export type Transaction = {
   id: string;
@@ -40,8 +41,8 @@ export type Tip = {
 export type ChartType = 'pie' | 'bar' | 'line';
 
 export type ChartData = {
-  type: ChartType;
   data: { name: string; value: number }[];
+  type: ChartType;
 };
 
 export type QueryResult = {

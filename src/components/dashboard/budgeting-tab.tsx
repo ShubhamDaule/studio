@@ -2,151 +2,148 @@
 "use client";
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2 } from 'lucide-react';
 import type { Budget, BudgetOverride, Category, Transaction } from "@/lib/types";
-import { Label } from "@/components/ui/label";
+import { PlusCircle } from "lucide-react";
+import { CategoryBudget } from "./category-budget";
+import { EditCategoryDialog } from "../dialogs/edit-category-dialog";
+import { useBoolean } from "@/hooks/use-boolean";
 
 type Props = {
-    defaultBudgets: Budget[];
     activeBudgets: Budget[];
     onMultipleBudgetChange: (budgets: Budget[]) => void;
     transactions: Transaction[];
-    onTransactionsUpdate: (transactions: Transaction[]) => void;
-    onIncomeDetailsChange: (details: any) => void;
     availableMonths: string[];
     onSetBudgetOverride: (override: BudgetOverride) => void;
     allCategories: Category[];
-    setAllCategories: (categories: Category[]) => void;
-    budgetOverrides: BudgetOverride[];
-    onDeleteBudgetOverride: (month: string, category: Category) => void;
+    setAllCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
 export function BudgetingTab({
-    defaultBudgets,
     activeBudgets,
     onMultipleBudgetChange,
+    transactions,
     availableMonths,
     onSetBudgetOverride,
     allCategories,
-    budgetOverrides,
-    onDeleteBudgetOverride
+    setAllCategories,
 }: Props) {
-    const [localBudgets, setLocalBudgets] = React.useState(defaultBudgets);
     const [selectedMonth, setSelectedMonth] = React.useState(availableMonths[0] || "");
+    const {value: isDialogOpen, setTrue: openDialog, setFalse: closeDialog} = useBoolean(false);
+    const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
 
-    React.useEffect(() => {
-        setLocalBudgets(defaultBudgets);
-    }, [defaultBudgets]);
+
+    const spendingByCategory = React.useMemo(() => {
+        return transactions.reduce((acc, t) => {
+            if (t.amount > 0) {
+                acc[t.category] = (acc[t.category] || 0) + t.amount;
+            }
+            return acc;
+        }, {} as Record<string, number>);
+    }, [transactions]);
 
     const handleBudgetChange = (category: Category, amount: number) => {
-        const newBudgets = localBudgets.map(b => 
-            b.category === category ? { ...b, amount } : b
-        );
-        const budgetExists = newBudgets.some(b => b.category === category);
-        if (!budgetExists) {
-            newBudgets.push({ category, amount });
-        }
-        setLocalBudgets(newBudgets);
-    };
-
-    const handleSaveDefaults = () => {
-        onMultipleBudgetChange(localBudgets);
-    };
-
-    const handleOverrideChange = (category: Category, amount: string) => {
-        if (selectedMonth && !isNaN(parseFloat(amount))) {
-            onSetBudgetOverride({
+        if(selectedMonth){
+             onSetBudgetOverride({
                 month: selectedMonth,
                 category,
-                amount: parseFloat(amount)
+                amount
             });
+        } else {
+            onMultipleBudgetChange([{ category, amount }]);
         }
     };
+    
+    const handleEditCategory = (category: Category) => {
+        setSelectedCategory(category);
+        openDialog();
+    };
+    
+    const handleSaveCategory = (newCategory: Category) => {
+        if(selectedCategory && newCategory !== selectedCategory){
+            const updatedCategories = allCategories.map(c => c === selectedCategory ? newCategory : c);
+            setAllCategories(updatedCategories);
+        } else if (!selectedCategory && !allCategories.includes(newCategory)){
+            setAllCategories([...allCategories, newCategory]);
+        }
+        closeDialog();
+        setSelectedCategory(null);
+    }
+    
+
+    const nonBudgetedCategories = allCategories.filter(
+      (c) =>
+        !activeBudgets.some((b) => b.category === c) &&
+        c !== "Payment" &&
+        c !== "Investment"
+    );
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="md:col-span-2">
-                <CardHeader>
-                    <CardTitle>Monthly Budgets</CardTitle>
-                    <CardDescription>
-                        Set your default monthly budget for each category. These can be overridden for specific months.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Category</TableHead>
-                                <TableHead className="text-right">Budget Amount ($)</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {allCategories.filter(c => c !== 'Payment' && c !== 'Investment' && c !== 'Cash').map(category => (
-                                <TableRow key={category}>
-                                    <TableCell>{category}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Input
-                                            type="number"
-                                            className="w-32 ml-auto"
-                                            value={localBudgets.find(b => b.category === category)?.amount || ''}
-                                            onChange={(e) => handleBudgetChange(category, parseFloat(e.target.value) || 0)}
-                                            placeholder="0.00"
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                    <Button onClick={handleSaveDefaults} className="mt-4">Save Default Budgets</Button>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Budget Overrides</CardTitle>
-                    <CardDescription>
-                        Set a specific budget for a category in a single month.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a month" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {availableMonths.map(month => (
-                                    <SelectItem key={month} value={month}>{month}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                            {allCategories.filter(c => c !== 'Payment' && c !== 'Investment' && c !== 'Cash').map(category => {
-                                const override = budgetOverrides.find(o => o.month === selectedMonth && o.category === category);
-                                return (
-                                <div key={category} className="flex items-center gap-2">
-                                    <Label className="flex-1">{category}</Label>
-                                    <Input
-                                        type="number"
-                                        placeholder="Override amount"
-                                        className="w-32"
-                                        value={override?.amount || ""}
-                                        onChange={(e) => handleOverrideChange(category, e.target.value)}
-                                    />
-                                    {override && (
-                                        <Button variant="ghost" size="icon" onClick={() => onDeleteBudgetOverride(selectedMonth, category)}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    )}
-                                </div>
-                            )})}
+        <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                <Card className="col-span-1 md:col-span-3">
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle>Monthly Budgets</CardTitle>
+                                <CardDescription>
+                                    Track and manage your spending for each category.
+                                </CardDescription>
+                            </div>
+                             <div className="flex gap-2">
+                                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Select month" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="">Default</SelectItem>
+                                        {availableMonths.map(month => (
+                                            <SelectItem key={month} value={month}>{month}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button variant="outline" onClick={() => { setSelectedCategory(null); openDialog(); }}>
+                                    <PlusCircle className="mr-2 h-4 w-4"/>
+                                    Add Category
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {activeBudgets
+                                .filter(b => b.category !== 'Payment' && b.category !== 'Investment')
+                                .map(budget => (
+                                <CategoryBudget
+                                    key={budget.category}
+                                    category={budget.category}
+                                    budget={budget.amount}
+                                    spent={spendingByCategory[budget.category] || 0}
+                                    onBudgetChange={handleBudgetChange}
+                                    onEditCategory={handleEditCategory}
+                                />
+                            ))}
+                             {nonBudgetedCategories.map(category => (
+                                <CategoryBudget
+                                    key={category}
+                                    category={category}
+                                    budget={0}
+                                    spent={spendingByCategory[category] || 0}
+                                    onBudgetChange={handleBudgetChange}
+                                    onEditCategory={handleEditCategory}
+                                />
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+            <EditCategoryDialog
+                isOpen={isDialogOpen}
+                onClose={() => { closeDialog(); setSelectedCategory(null); }}
+                onSave={handleSaveCategory}
+                category={selectedCategory}
+            />
+        </>
     );
 }

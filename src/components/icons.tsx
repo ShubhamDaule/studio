@@ -22,19 +22,7 @@ import {
   Popcorn,
   PiggyBank
 } from 'lucide-react';
-
-export type Category = 
-  | 'Groceries'
-  | 'Dining'
-  | 'Travel & Transport'
-  | 'Shopping'
-  | 'Entertainment'
-  | 'Utilities'
-  | 'Rent'
-  | 'Cash'
-  | 'Investment'
-  | 'Payment'
-  | 'Other';
+import type { Category } from "@/lib/types";
 
 export const defaultCategoryIcons: Record<string, LucideIcon> = {
   Groceries: ShoppingCart,
@@ -47,18 +35,22 @@ export const defaultCategoryIcons: Record<string, LucideIcon> = {
   Cash: HandCoins,
   Investment: PiggyBank,
   Payment: CreditCard,
-  Other: MoreHorizontal,
 };
 
 type CategoryIconProps = {
-  category: Category;
+  category: Category | null;
   className?: string;
+  iconName?: string | null;
 };
 
-export const CategoryIcon: FC<CategoryIconProps> = ({ category, className }) => {
-  const IconComponent = defaultCategoryIcons[category as string] || MoreHorizontal;
+export const CategoryIcon: FC<CategoryIconProps> = ({ category, className, iconName }) => {
+  const IconComponent = 
+    (iconName && (icons as Record<string, LucideIcon>)[iconName]) ||
+    (category && defaultCategoryIcons[category as string]) 
+    || MoreHorizontal;
   return <IconComponent className={className} />;
 };
+
 
 export const TopMerchantIcon = ShoppingBag;
 
