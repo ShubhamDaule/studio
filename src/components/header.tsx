@@ -30,33 +30,30 @@ const Logo = () => (
             viewBox="0 0 32 32"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="text-primary h-8 w-8"
-            >
-            <rect width="32" height="32" rx="8" fill="currentColor" />
-            <path
-                d="M9 22V17"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            className="h-8 w-8"
+        >
+            <defs>
+                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 1 }} />
+                    <stop offset="100%" style={{ stopColor: 'hsl(var(--accent))', stopOpacity: 1 }} />
+                </linearGradient>
+            </defs>
+            <path 
+                d="M16 30C23.732 30 30 23.732 30 16C30 8.26801 23.732 2 16 2C8.26801 2 2 8.26801 2 16C2 23.732 8.26801 30 16 30Z" 
+                stroke="url(#logoGradient)" 
+                strokeWidth="3"
             />
-            <path
-                d="M16 22V10"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-            <path
-                d="M23 22V14"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
+            <path 
+                d="M20.5 22C19.8333 22.8333 17.6 24.5 15.5 22C12.5 18.5 10.5 15.5 11.5 12C12.5 8.5 15.5 6.5 17 7.5C18.5 8.5 18 11.5 16 14C14.5 16 12.5 18 11.5 19" 
+                stroke="url(#logoGradient)" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
                 strokeLinejoin="round"
             />
         </svg>
-        <span className="hidden sm:inline-block text-lg font-semibold text-primary whitespace-nowrap">
-            SpendWise Analyzer
+
+        <span className="hidden sm:inline-block text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
+            SpendWise
         </span>
     </div>
 );
