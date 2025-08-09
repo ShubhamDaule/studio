@@ -21,12 +21,6 @@ import { useDashboardContext } from "@/context/dashboard-context";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
-    const {
-        dateRange,
-        setDateRange,
-        selectedSourceFilter,
-        setSelectedSourceFilter,
-    } = useDashboardContext();
     
     const {
         transactionFiles,
@@ -38,15 +32,15 @@ export default function DashboardPage() {
         transactionCount,
         highestDay,
         availableMonths,
-        minDate,
-        maxDate,
         filterDescription,
         currentBalance,
         allCategories,
         setAllCategories,
         handleCategoryChange,
-    } = useTransactions(isPro);
+    } = useTransactions();
 
+  const { dateRange } = useDashboardContext();
+  
   const {
       budgets,
       budgetOverrides,
@@ -65,11 +59,6 @@ export default function DashboardPage() {
     transactions: filteredTransactions, 
     allTransactions
   });
-  
-  React.useEffect(() => {
-    // This effect can be used for any future logic that needs to run on mount
-    // For now, it's kept empty as the data loading is handled by the useTransactions hook.
-  }, []);
 
 
   return (

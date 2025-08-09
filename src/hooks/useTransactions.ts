@@ -1,17 +1,18 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
-import type { DateRange } from "react-day-picker";
-import { subMonths } from "date-fns";
-import type { Transaction, Category } from "@/lib/types";
+import { useState, useMemo, useCallback } from "react";
 import { useDashboardContext } from "@/context/dashboard-context";
+import { mockTransactions, mockCategories } from "@/lib/mock-data";
+import type { Transaction, Category } from "@/lib/types";
 
-export function useTransactions(isPro: boolean) {
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
-  const [allCategories, setAllCategories] = useState<Category[]>([]);
+export function useTransactions() {
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>(mockTransactions);
+  const [allCategories, setAllCategories] = useState<Category[]>(mockCategories);
+  
+  // This hook now gets its filter state from the context.
+  // The context is the single source of truth for the date range and source filter.
   const { dateRange, selectedSourceFilter } = useDashboardContext();
-
 
   const transactionFiles = useMemo(() => {
     return Array.from(new Set(allTransactions.map((t) => t.fileSource)));
@@ -76,12 +77,14 @@ export function useTransactions(isPro: boolean) {
   
   const minDate = useMemo(() => {
     if (allTransactions.length === 0) return undefined;
-    return allTransactions.reduce((min, t) => new Date(t.date) < min ? new Date(t.date) : min, new Date());
+    const dates = allTransactions.map(t => new Date(t.date));
+    return new Date(Math.min.apply(null, dates.map(d => d.getTime())));
   }, [allTransactions]);
   
   const maxDate = useMemo(() => {
       if (allTransactions.length === 0) return undefined;
-      return allTransactions.reduce((max, t) => new Date(t.date) > max ? new Date(t.date) : max, new Date(0));
+      const dates = allTransactions.map(t => new Date(t.date));
+      return new Date(Math.max.apply(null, dates.map(d => d.getTime())));
   }, [allTransactions]);
   
   const filterDescription = useMemo(() => {

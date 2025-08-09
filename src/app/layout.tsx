@@ -6,7 +6,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { DashboardProvider } from '@/context/dashboard-context';
+import { DashboardProvider } from '@/context/dashboard-provider';
 import { AuthProvider } from '@/context/auth-context';
 import { usePathname } from 'next/navigation';
 import { TiersProvider } from '@/hooks/use-tiers';
@@ -23,6 +23,7 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const noHeaderFooter = ['/login', '/signup', '/pricing'].includes(pathname);
+  const isDashboard = pathname.startsWith('/dashboard');
 
   return (
     <html lang="en" suppressHydrationWarning>
