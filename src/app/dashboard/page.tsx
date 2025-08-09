@@ -150,9 +150,7 @@ export default function DashboardPage() {
     };
     
     const handleDeleteCategory = (categoryName: Category['name']) => {
-        // Remove from master category list
         setAllCategories(prev => prev.filter(c => c.name !== categoryName));
-        // Remove from budget
         deleteBudget(categoryName);
     };
 
@@ -211,13 +209,13 @@ export default function DashboardPage() {
                                 transactions={filteredTransactions}
                                 onTransactionsUpdate={setAllTransactions}
                                 onIncomeDetailsChange={() => {}} // This state is now local to the tab
-                                availableMonths={availableMonths}
                                 onSetBudgetOverride={handleSetBudgetOverride}
                                 allCategories={allCategories}
                                 setAllCategories={setAllCategories}
                                 budgetOverrides={budgetOverrides}
                                 onDeleteBudgetOverride={handleDeleteBudgetOverride}
                                 onAddBudget={addBudget}
+                                onDeleteBudget={deleteBudget}
                                 onDeleteCategory={handleDeleteCategory}
                             />
                         </TabsContent>

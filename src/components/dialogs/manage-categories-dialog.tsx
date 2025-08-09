@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -14,7 +15,7 @@ type Props = {
   allCategories: Category[];
   activeBudgets: Budget[];
   onAddBudget: (budget: Budget) => void;
-  onDeleteCategory: (categoryName: Category['name']) => void;
+  onDeleteBudget: (categoryName: Category['name']) => void;
 };
 
 const CategoryRow = ({ category, action, onAction }: { category: Category; action: 'add' | 'remove'; onAction: () => void; }) => {
@@ -31,7 +32,7 @@ const CategoryRow = ({ category, action, onAction }: { category: Category; actio
     )
 }
 
-export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeBudgets, onAddBudget, onDeleteCategory }: Props) {
+export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeBudgets, onAddBudget, onDeleteBudget }: Props) {
   
   const budgetedCategories = allCategories.filter(c => activeBudgets.some(b => b.category === c.name));
   const availableCategories = allCategories.filter(c => !activeBudgets.some(b => b.category === c.name) && !['Payment', 'Rewards', 'Investments & Savings', 'Fees & Charges', 'Government & Taxes'].includes(c.name));
@@ -70,7 +71,7 @@ export function ManageCategoriesDialog({ isOpen, onClose, allCategories, activeB
                                 key={cat.name} 
                                 category={cat} 
                                 action="remove" 
-                                onAction={() => onDeleteCategory(cat.name)}
+                                onAction={() => onDeleteBudget(cat.name)}
                             />
                         ))}
                     </div>

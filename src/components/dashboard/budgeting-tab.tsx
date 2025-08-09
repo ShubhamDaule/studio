@@ -5,7 +5,7 @@ import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Budget, BudgetOverride, Category, Transaction } from "@/lib/types";
-import { ListPlus, Settings2 } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import { EditCategoryDialog } from "../dialogs/edit-category-dialog";
 import { useBoolean } from "@/hooks/use-boolean";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -18,13 +18,13 @@ type Props = {
     transactions: Transaction[];
     onTransactionsUpdate: (transactions: Transaction[]) => void;
     onIncomeDetailsChange: (details: any) => void;
-    availableMonths: string[];
     onSetBudgetOverride: (override: BudgetOverride) => void;
     allCategories: Category[];
     setAllCategories: React.Dispatch<React.SetStateAction<Category[]>>;
     budgetOverrides: BudgetOverride[];
     onDeleteBudgetOverride: (month: string, category: Category['name']) => void;
     onAddBudget: (budget: Budget) => void;
+    onDeleteBudget: (categoryName: Category['name']) => void;
     onDeleteCategory: (categoryName: Category['name']) => void;
 };
 
@@ -35,6 +35,7 @@ export function BudgetingTab({
     setAllCategories,
     onAddBudget,
     allCategories,
+    onDeleteBudget,
     onDeleteCategory
 }: Props) {
     const {value: isEditDialogOpen, setTrue: openEditDialog, setFalse: closeEditDialog} = useBoolean(false);
@@ -61,6 +62,8 @@ export function BudgetingTab({
     };
     
     const handleSaveCategory = (updatedCategory: Category) => {
+        // This is only for editing an existing custom category's name now.
+        // Adding is handled by onAddBudget.
         setAllCategories(prev => prev.map(c => c.name === selectedCategory?.name ? updatedCategory : c));
         closeEditDialog();
         setSelectedCategory(null);
@@ -70,8 +73,6 @@ export function BudgetingTab({
     const budgetedCategories = allCategories.filter(
       (c) => activeBudgets.some((b) => b.category === c.name)
     );
-
-    const availableToAdd = allCategories.filter(c => !activeBudgets.some(b => b.category === c.name));
 
     return (
         <>
@@ -128,7 +129,7 @@ export function BudgetingTab({
                 allCategories={allCategories}
                 activeBudgets={activeBudgets}
                 onAddBudget={onAddBudget}
-                onDeleteCategory={onDeleteCategory}
+                onDeleteBudget={onDeleteBudget}
             />
         </>
     );
