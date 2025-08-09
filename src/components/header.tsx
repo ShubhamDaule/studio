@@ -1,12 +1,22 @@
+
 "use client";
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { Upload, Download, Loader2 } from "lucide-react";
+import { Upload, Download, Loader2, LogOut } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Logo = () => (
     <div className="flex items-center gap-2">
@@ -47,21 +57,71 @@ const Logo = () => (
     </div>
 );
 
-const LandingNav = () => (
-    <div className="hidden md:flex items-center space-x-8">
-        <Link href="/landing#features" className="text-foreground hover:text-primary transition-smooth font-semibold">Features</Link>
-        <Link href="/landing#benefits" className="text-foreground hover:text-primary transition-smooth font-semibold">Benefits</Link>
-        <Link href="/pricing" className="text-foreground hover:text-primary transition-smooth font-semibold">Pricing</Link>
-        <Link href="/login">
-            <Button variant="outline" size="sm">
-                Login
-            </Button>
-        </Link>
-        <Button asChild size="sm" className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90">
-            <Link href="/dashboard">Get Started</Link>
-        </Button>
-    </div>
-);
+const UserNav = () => {
+  const { user, signOut } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  }
+
+  if (!user) return null;
+  
+  return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.photoURL ?? "https://placehold.co/40x40.png"} alt={user.displayName ?? "User"} data-ai-hint="user avatar" />
+                  <AvatarFallback>{user.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
+              </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.displayName}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Log out</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+  )
+}
+
+const LandingNav = () => {
+    const { user } = useAuth();
+
+    return (
+        <div className="hidden md:flex items-center space-x-8">
+            <Link href="/landing#features" className="text-foreground hover:text-primary transition-smooth font-semibold">Features</Link>
+            <Link href="/landing#benefits" className="text-foreground hover:text-primary transition-smooth font-semibold">Benefits</Link>
+            <Link href="/pricing" className="text-foreground hover:text-primary transition-smooth font-semibold">Pricing</Link>
+            { user ? (
+                <UserNav />
+            ) : (
+                <>
+                <Link href="/login">
+                    <Button variant="outline" size="sm">
+                        Login
+                    </Button>
+                </Link>
+                <Button asChild size="sm" className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90">
+                    <Link href="/dashboard">Get Started</Link>
+                </Button>
+                </>
+            )}
+        </div>
+    )
+};
 
 const DashboardNav = () => {
     const pathname = usePathname();
@@ -96,10 +156,7 @@ const DashboardNav = () => {
                 )}
                 </>
             )}
-            <Avatar className="h-8 w-8">
-                <AvatarImage src="https://placehold.co/40x40.png" alt="User" data-ai-hint="user avatar" />
-                <AvatarFallback>DU</AvatarFallback>
-            </Avatar>
+            <UserNav />
             </div>
         </div>
     )
