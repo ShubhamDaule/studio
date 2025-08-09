@@ -1,12 +1,17 @@
-import type {Metadata} from 'next';
+
+"use client";
+
+import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { DashboardProvider } from '@/context/dashboard-context';
 import { AuthProvider } from '@/context/auth-context';
+import { usePathname } from 'next/navigation';
+import { TiersProvider } from '@/hooks/use-tiers';
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: 'SpendWise Analyzer',
   description: 'AI-powered spending analysis and insights.',
 };
@@ -16,6 +21,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const noHeaderFooter = ['/login', '/signup', '/pricing'].includes(pathname);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -25,13 +33,15 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          <DashboardProvider>
-              <div className="flex flex-col min-h-screen">
-                <Header />
-                <main className="flex-grow">{children}</main>
-                <Footer />
-              </div>
-          </DashboardProvider>
+          <TiersProvider>
+            <DashboardProvider>
+                <div className="flex flex-col min-h-screen">
+                  {!noHeaderFooter && <Header />}
+                  <main className="flex-grow">{children}</main>
+                  {!noHeaderFooter && <Footer />}
+                </div>
+            </DashboardProvider>
+          </TiersProvider>
         </AuthProvider>
         <Toaster />
       </body>
