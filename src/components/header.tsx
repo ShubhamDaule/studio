@@ -76,10 +76,10 @@ const UserNav = () => {
 }
 
 const LandingNavLinks = ({ className }: { className?: string }) => (
-    <div className={cn("flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-8", className)}>
-        <Link href="/landing#features" className="text-foreground hover:text-primary transition-smooth font-semibold">Features</Link>
-        <Link href="/landing#benefits" className="text-foreground hover:text-primary transition-smooth font-semibold">Benefits</Link>
-        <Link href="/pricing" className="text-foreground hover:text-primary transition-smooth font-semibold">Pricing</Link>
+    <div className={cn("flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-1", className)}>
+        <Button variant="subtle" asChild><Link href="/landing#features">Features</Link></Button>
+        <Button variant="subtle" asChild><Link href="/landing#benefits">Benefits</Link></Button>
+        <Button variant="subtle" asChild><Link href="/pricing">Pricing</Link></Button>
     </div>
 );
 
@@ -90,14 +90,12 @@ const LandingNav = () => {
 
     return (
         <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-8">
-                <div className="hidden md:flex items-center gap-8">
-                    <LandingNavLinks />
-                </div>
+            <div className="hidden md:flex items-center gap-x-1">
+                <LandingNavLinks />
                 {user ? (
                     <UserNav />
                 ) : isLandingPage ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ml-4">
                         <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
                         <Button asChild><Link href="/signup">Get Started</Link></Button>
                     </div>
@@ -204,7 +202,9 @@ export function Header() {
             <Link href="/landing">
               <Logo />
             </Link>
-            <NavContent />
+            <div className="flex-1 flex justify-end">
+              <NavContent />
+            </div>
           </div>
         </header>
     );

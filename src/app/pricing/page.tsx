@@ -78,8 +78,8 @@ export default function Pricing() {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-smooth">← Back to Home</Link>
-          <Link href="/login"><Button variant="outline" size="sm">Sign in</Button></Link>
+          <Button variant="link" asChild><Link href="/" className="text-sm text-muted-foreground">← Back to Home</Link></Button>
+          <Button variant="outline" size="sm" asChild><Link href="/login">Sign in</Link></Button>
         </div>
       </header>
 
