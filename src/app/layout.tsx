@@ -1,6 +1,8 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
+import { Header } from '@/components/header';
+import { DashboardProvider } from '@/context/dashboard-context';
 
 export const metadata: Metadata = {
   title: 'SpendWise Analyzer',
@@ -20,7 +22,10 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        {children}
+        <DashboardProvider>
+            <Header />
+            {children}
+        </DashboardProvider>
         <Toaster />
       </body>
     </html>
