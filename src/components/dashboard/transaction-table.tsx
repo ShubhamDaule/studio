@@ -34,7 +34,7 @@ export function TransactionTable({ transactions, onCategoryChange, allCategories
     const totalPages = Math.ceil(transactions.length / transactionsPerPage);
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>All Transactions</CardTitle>
         <CardDescription>A detailed list of your recent transactions.</CardDescription>
@@ -82,8 +82,8 @@ export function TransactionTable({ transactions, onCategoryChange, allCategories
             </TableBody>
             </Table>
         </div>
-         <div className="flex items-center justify-between mt-4">
-          <p className="text-sm text-muted-foreground">
+         <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
+          <p className="text-sm text-muted-foreground text-center sm:text-left">
             Showing {Math.min(transactions.length, (currentPage - 1) * transactionsPerPage + 1)}-{Math.min(transactions.length, currentPage * transactionsPerPage)} of {transactions.length} transactions.
           </p>
           <div className="flex gap-2">

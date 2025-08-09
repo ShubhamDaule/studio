@@ -69,8 +69,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
         <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-            <Tabs defaultValue="overview" className="mt-4 sm:mt-8">
-              <div className="overflow-x-auto pb-2">
+            <Tabs defaultValue="overview" className="mt-4 sm:mt-8 w-full">
+              <div className="overflow-x-auto pb-2 -mx-4 px-4">
                 <TabsList className="whitespace-nowrap">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="transactions">Transactions</TabsTrigger>

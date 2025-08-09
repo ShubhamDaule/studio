@@ -70,16 +70,16 @@ export function OverviewTab({
                     />
                 )}
             </div>
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                 <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data.category)} budgets={activeBudgets} allCategories={allCategories} />
                 <SpendingByDayChart transactions={filteredTransactions} onBarClick={(data) => openDialog('day', data.date)} />
             </div>
             <>
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', data.name)} />
                     <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', data.merchant)} />
                 </div>
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <SpendingTrendChart transactions={allTransactions} />
                     <BudgetSpendingChart transactions={filteredTransactions} budgets={activeBudgets} allCategories={allCategories} />
                 </div>
