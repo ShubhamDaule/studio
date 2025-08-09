@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { DashboardProvider as InnerDashboardProvider } from './dashboard-context';
 import { usePathname } from 'next/navigation';
 import { mockTransactions } from '@/lib/mock-data';
