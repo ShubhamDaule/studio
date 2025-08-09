@@ -24,6 +24,7 @@ type Props = {
     setAllCategories: React.Dispatch<React.SetStateAction<Category[]>>;
     budgetOverrides: BudgetOverride[];
     onDeleteBudgetOverride: (month: string, category: Category['name']) => void;
+    onAddBudget: (budget: Budget) => void;
 };
 
 export function BudgetingTab({
@@ -35,7 +36,8 @@ export function BudgetingTab({
     allCategories,
     setAllCategories,
     budgetOverrides,
-    onDeleteBudgetOverride
+    onDeleteBudgetOverride,
+    onAddBudget
 }: Props) {
     const [selectedMonth, setSelectedMonth] = React.useState("default");
     const {value: isDialogOpen, setTrue: openDialog, setFalse: closeDialog} = useBoolean(false);
@@ -75,7 +77,7 @@ export function BudgetingTab({
         } else {
             // Adding new category
              setAllCategories(prev => [...prev, updatedCategory]);
-             onMultipleBudgetChange([{ category: updatedCategory.name, amount: 0 }]);
+             onAddBudget({ category: updatedCategory.name, amount: 0 });
         }
         closeDialog();
         setSelectedCategory(null);

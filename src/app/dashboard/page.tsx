@@ -121,7 +121,8 @@ export default function DashboardPage() {
         activeBudgets,
         handleMultipleBudgetChange,
         handleSetBudgetOverride,
-        handleDeleteBudgetOverride
+        handleDeleteBudgetOverride,
+        addBudget
     } = useBudgets({allCategories, dateRange, transactions: filteredTransactions});
 
     const {
@@ -208,6 +209,7 @@ export default function DashboardPage() {
                                 setAllCategories={setAllCategories}
                                 budgetOverrides={budgetOverrides}
                                 onDeleteBudgetOverride={handleDeleteBudgetOverride}
+                                onAddBudget={addBudget}
                             />
                         </TabsContent>
                     </Tabs>

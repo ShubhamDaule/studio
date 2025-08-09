@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -82,6 +83,16 @@ export function useBudgets({ allCategories, dateRange, transactions }: UseBudget
     setBudgetOverrides(prev => prev.filter(o => !(o.month === month && o.category === category)));
   };
 
+  const addBudget = (newBudget: Budget) => {
+    setBudgets(prev => {
+      const existing = prev.find(b => b.category === newBudget.category);
+      if (existing) {
+        return prev;
+      }
+      return [...prev, newBudget];
+    });
+  };
+
 
   return {
     budgets,
@@ -89,6 +100,7 @@ export function useBudgets({ allCategories, dateRange, transactions }: UseBudget
     activeBudgets,
     handleMultipleBudgetChange,
     handleSetBudgetOverride,
-    handleDeleteBudgetOverride
+    handleDeleteBudgetOverride,
+    addBudget,
   };
 }
