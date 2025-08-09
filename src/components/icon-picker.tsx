@@ -50,6 +50,9 @@ export function IconPicker({ selectedIcon, onIconChange, className }: IconPicker
           <div className="grid grid-cols-6 gap-1 p-2">
             {filteredIcons.map((iconName) => {
               const IconComponent = (icons as Record<string, LucideIcon>)[iconName];
+              if (!IconComponent) {
+                return null;
+              }
               return (
                 <Button
                   key={iconName}
