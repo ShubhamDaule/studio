@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from 'react';
-import { Pie, PieChart, Tooltip, Cell, Sector, ResponsiveContainer } from 'recharts';
+import { Pie, PieChart, Tooltip, Cell, Sector } from 'recharts';
 import {
   Card,
   CardContent,
@@ -14,7 +14,6 @@ import {
   ChartConfig,
   ChartContainer,
   ChartTooltipContent,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 import type { Transaction, Budget, Category } from '@/lib/types';
 import { PieChart as PieChartIcon } from 'lucide-react';
@@ -134,9 +133,8 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px] sm:h-[300px]"
+          className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
             <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
               <Tooltip
                 cursor={false}
@@ -161,7 +159,6 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
                 ))}
               </Pie>
             </PieChart>
-          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
     </Card>
