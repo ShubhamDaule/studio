@@ -8,14 +8,21 @@ import type { Transaction, Category, Budget, BudgetOverride } from "@/lib/types"
 
 // Default monthly budgets
 const defaultBudgets: Budget[] = [
-  { category: "Groceries", amount: 400 },
-  { category: "Dining", amount: 200 },
-  { category: "Shopping", amount: 150 },
-  { category: "Travel & Transport", amount: 150 },
-  { category: "Entertainment", amount: 100 },
-  { category: "Utilities", amount: 150 },
-  { category: "Rent", amount: 1800 },
-  { category: "Other", amount: 200 },
+    { category: 'Groceries', amount: 500 },
+    { category: 'Dining', amount: 250 },
+    { category: 'Shopping', amount: 300 },
+    { category: 'Travel & Transport', amount: 200 },
+    { category: 'Entertainment', amount: 100 },
+    { category: 'Subscriptions', amount: 50 },
+    { category: 'Health', amount: 150 },
+    { category: 'Utilities', amount: 200 },
+    { category: 'Housing & Rent', amount: 1800 },
+    { category: 'Education', amount: 50 },
+    { category: 'Insurance', amount: 150 },
+    { category: 'Charity & Donations', amount: 25 },
+    { category: 'Home Improvement & Hardware', amount: 100 },
+    { category: 'Office Supplies', amount: 20 },
+    { category: 'Miscellaneous', amount: 100 },
 ];
 
 type UseBudgetsProps = {
@@ -32,7 +39,7 @@ export function useBudgets({ allCategories, dateRange, transactions }: UseBudget
     const currentMonth = dateRange?.from ? format(dateRange.from, 'yyyy-MM') : format(new Date(), 'yyyy-MM');
     
     return allCategories
-        .filter(cat => cat !== 'Payment' && cat !== 'Investment' && cat !== 'Cash')
+        .filter(cat => !['Payment', 'Rewards', 'Investments & Savings', 'Fees & Charges', 'Government & Taxes'].includes(cat))
         .map(category => {
             const override = budgetOverrides.find(o => o.month === currentMonth && o.category === category);
             if (override) {

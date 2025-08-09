@@ -14,10 +14,14 @@ type Props = {
     activeBudgets: Budget[];
     onMultipleBudgetChange: (budgets: Budget[]) => void;
     transactions: Transaction[];
+    onTransactionsUpdate: (transactions: Transaction[]) => void;
+    onIncomeDetailsChange: (details: any) => void;
     availableMonths: string[];
     onSetBudgetOverride: (override: BudgetOverride) => void;
     allCategories: Category[];
     setAllCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+    budgetOverrides: BudgetOverride[];
+    onDeleteBudgetOverride: (month: string, category: Category) => void;
 };
 
 export function BudgetingTab({
@@ -29,7 +33,7 @@ export function BudgetingTab({
     allCategories,
     setAllCategories,
 }: Props) {
-    const [selectedMonth, setSelectedMonth] = React.useState(availableMonths[0] || "default");
+    const [selectedMonth, setSelectedMonth] = React.useState("default");
     const {value: isDialogOpen, setTrue: openDialog, setFalse: closeDialog} = useBoolean(false);
     const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
 
@@ -60,7 +64,9 @@ export function BudgetingTab({
         openDialog();
     };
     
-    const handleSaveCategory = (newCategory: Category) => {
+    const handleSaveCategory = (newCategory: Category, icon: string) => {
+        // This is a placeholder for a more robust implementation
+        // For now, we just update the local state.
         if(selectedCategory && newCategory !== selectedCategory){
             const updatedCategories = allCategories.map(c => c === selectedCategory ? newCategory : c);
             setAllCategories(updatedCategories);
@@ -75,8 +81,7 @@ export function BudgetingTab({
     const nonBudgetedCategories = allCategories.filter(
       (c) =>
         !activeBudgets.some((b) => b.category === c) &&
-        c !== "Payment" &&
-        c !== "Investment"
+        !['Payment', 'Rewards', 'Investments & Savings', 'Fees & Charges', 'Government & Taxes'].includes(c)
     );
 
     return (
@@ -113,7 +118,6 @@ export function BudgetingTab({
                     <CardContent>
                         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                             {activeBudgets
-                                .filter(b => b.category !== 'Payment' && b.category !== 'Investment')
                                 .map(budget => (
                                 <CategoryBudget
                                     key={budget.category}

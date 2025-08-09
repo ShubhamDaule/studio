@@ -2,7 +2,7 @@
 
 import type { icons } from "lucide-react";
 import type { defaultCategoryIcons } from "@/components/icons";
-export type Category = keyof typeof defaultCategoryIcons | "Other";
+export type Category = keyof typeof defaultCategoryIcons | "Miscellaneous";
 
 
 export type Transaction = {
