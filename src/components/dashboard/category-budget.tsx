@@ -58,9 +58,11 @@ export function CategoryBudget({ category, budget, spent, onBudgetChange, onEdit
             <CardTitle className="text-lg">{category.name}</CardTitle>
           </div>
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEditCategory(category)}>
-              <Edit className="h-4 w-4" />
-            </Button>
+            {!category.isDefault && (
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEditCategory(category)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+            )}
             {!category.isDefault && (
                <AlertDialog>
                 <AlertDialogTrigger asChild>
