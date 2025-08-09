@@ -18,6 +18,7 @@ import { InsightsTab } from "@/components/dashboard/tabs/insights-tab";
 import { useDashboardContext } from "@/context/dashboard-context";
 import { mockTransactions, mockCategories } from "@/lib/mock-data";
 import type { Transaction, Category } from "@/lib/types";
+import { LayoutGrid, List, Sparkles, Target } from "lucide-react";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
@@ -137,10 +138,22 @@ export default function DashboardPage() {
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
                 <Tabs defaultValue="overview" className="w-full">
                     <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                        <TabsTrigger value="insights">AI Insights</TabsTrigger>
-                        <TabsTrigger value="budgeting">Budgeting</TabsTrigger>
+                        <TabsTrigger value="overview">
+                            <LayoutGrid className="mr-2 h-4 w-4" />
+                            Overview
+                        </TabsTrigger>
+                        <TabsTrigger value="transactions">
+                            <List className="mr-2 h-4 w-4" />
+                            Transactions
+                        </TabsTrigger>
+                        <TabsTrigger value="insights">
+                             <Sparkles className="mr-2 h-4 w-4" />
+                            AI Insights
+                        </TabsTrigger>
+                        <TabsTrigger value="budgeting">
+                            <Target className="mr-2 h-4 w-4" />
+                            Budgeting
+                        </TabsTrigger>
                     </TabsList>
                     <TabsContent value="overview" className="mt-4">
                         <OverviewTab 
