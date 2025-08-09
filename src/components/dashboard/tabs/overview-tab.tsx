@@ -12,9 +12,9 @@ import { SpendingTrendChart } from "@/components/charts/spending-trend-chart";
 import type { Budget, Category, Transaction } from "@/lib/types";
 import StatsCard from "@/components/stats-card";
 import { format } from "date-fns";
-import { HighestTransactionCard } from "../highest-transaction-card";
-import { HighestDayCard } from "../highest-day-card";
-import { CurrentBalanceCard } from "../current-balance-card";
+import { HighestTransactionCard } from "@/components/highest-transaction-card";
+import { HighestDayCard } from "@/components/highest-day-card";
+import { CurrentBalanceCard } from "@/components/current-balance-card";
 
 type OverviewTabProps = {
     totalSpending: number;

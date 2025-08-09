@@ -1,54 +1,53 @@
+
 "use client";
 
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
-import type { Transaction } from "@/lib/types";
-import { format } from "date-fns";
-import { parseISO } from "date-fns";
+import { CalendarDays } from "lucide-react";
+import { format } from 'date-fns';
+import { parseISO } from 'date-fns';
 
-interface HighestTransactionCardProps {
-    transaction: Transaction | null;
+interface HighestDayCardProps {
+    day: { date: string; total: number } | null;
     onClick: () => void;
 }
 
-export function HighestTransactionCard({ transaction, onClick }: HighestTransactionCardProps) {
+export function HighestDayCard({ day, onClick }: HighestDayCardProps) {
     const [formattedDate, setFormattedDate] = React.useState<string | null>(null);
-
+    
     React.useEffect(() => {
-        if (transaction?.date) {
-             try {
-                const date = parseISO(transaction.date);
+        if (day?.date) {
+            try {
+                const date = parseISO(day.date);
                 if (!isNaN(date.getTime())) {
-                    setFormattedDate(format(date, "MMM d, yyyy"));
+                    setFormattedDate(format(date, "MMMM do, yyyy"));
                 } else {
                     setFormattedDate('Invalid Date');
                 }
             } catch (error) {
-                console.error("Invalid date provided to HighestTransactionCard:", transaction.date);
+                console.error("Invalid date provided to HighestDayCard:", day.date);
                 setFormattedDate('Invalid Date');
             }
         }
-    }, [transaction]);
-
+    }, [day]);
 
     return (
         <Card className="card-interactive" onClick={onClick}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Highest Single Transaction</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Highest Spending Day</CardTitle>
+                <CalendarDays className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                {transaction ? (
+                {day ? (
                     <>
                         <div className="text-2xl font-bold text-primary">
-                            {transaction.amount.toLocaleString("en-US", {
+                            {day.total.toLocaleString("en-US", {
                                 style: "currency",
                                 currency: "USD",
                             })}
                         </div>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                            to {transaction.merchant} on {formattedDate || '...'}
+                        <p className="text-xs text-muted-foreground">
+                            on {formattedDate || '...'}
                         </p>
                     </>
                 ) : (
