@@ -113,14 +113,6 @@ export function BudgetingTab({
                                         )
                                     })}
                             </SortableContext>
-                             <Card className="flex items-center justify-center border-dashed card-interactive" onClick={() => { setSelectedCategory(null); openEditDialog(); }}>
-                                <div className="text-center p-6">
-                                    <Plus className="mx-auto h-8 w-8 text-muted-foreground" />
-                                    <p className="mt-2 text-sm font-medium text-muted-foreground">
-                                        Add New Category
-                                    </p>
-                                </div>
-                            </Card>
                         </div>
                     </CardContent>
                 </Card>
@@ -139,7 +131,7 @@ export function BudgetingTab({
                 onAddBudget={onAddBudget}
                 onDeleteBudget={onDeleteBudget}
                 transactions={transactions}
-                onAddCustomCategory={() => { setSelectedCategory(null); openEditDialog(); }}
+                onAddCustomCategory={() => { closeManageDialog(); openEditDialog(); }}
             />
         </>
     );
