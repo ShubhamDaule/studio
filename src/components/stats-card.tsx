@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { ReactNode } from "react";
 
@@ -6,17 +7,18 @@ type StatsCardProps = {
   value: string;
   icon: ReactNode;
   description?: string;
+  onClick?: () => void;
 };
 
-export default function StatsCard({ title, value, icon, description }: StatsCardProps) {
+export default function StatsCard({ title, value, icon, description, onClick }: StatsCardProps) {
   return (
-    <Card>
+    <Card onClick={onClick} className={onClick ? "cursor-pointer hover:bg-muted/50" : ""}>
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         {icon}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold text-primary">{value}</div>
         {description && <p className="text-xs text-muted-foreground">{description}</p>}
       </CardContent>
     </Card>
