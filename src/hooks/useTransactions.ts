@@ -5,18 +5,10 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import type { DateRange } from "react-day-picker";
 import { subMonths, startOfMonth, endOfMonth } from "date-fns";
 import type { Transaction, Category } from "@/lib/types";
-import { mockTransactions, mockCategories } from "@/lib/data";
 
-export function useTransactions(isPro: boolean, useMockData: boolean) {
+export function useTransactions(isPro: boolean) {
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [allCategories, setAllCategories] = useState<Category[]>([]);
-
-  useEffect(() => {
-    if (useMockData) {
-      setAllTransactions(mockTransactions);
-      setAllCategories(mockCategories);
-    }
-  }, [useMockData]);
 
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
