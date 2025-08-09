@@ -15,10 +15,10 @@ type InsightsTabProps = {
 
 export function InsightsTab({ allTransactions, budgets }: InsightsTabProps) {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-start">
+            <AnomaliesCard transactions={allTransactions} />
             <TipsPanel transactions={allTransactions} />
             <AskAiCard transactions={allTransactions} budgets={budgets} />
-            <AnomaliesCard transactions={allTransactions} />
         </div>
     );
 }

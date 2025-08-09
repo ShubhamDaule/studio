@@ -99,7 +99,7 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
             <div>
                 <CardTitle className="text-xl">Anomaly Detective</CardTitle>
                 <CardDescription>
-                Use statistical analysis to find unusual spending.
+                Use AI-powered statistical analysis to find unusual spending.
                 </CardDescription>
             </div>
         </div>
