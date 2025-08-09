@@ -54,7 +54,7 @@ const Logo = () => (
                 strokeLinejoin="round"
             />
         </svg>
-        <span className="text-xl sm:text-2xl font-semibold text-primary">
+        <span className="hidden sm:inline-block text-xl font-semibold text-primary">
             SpendWise Analyzer
         </span>
     </div>
@@ -174,8 +174,8 @@ const DashboardNav = () => {
     } = useDashboardContext();
 
     return (
-        <div className="flex w-full items-center justify-end gap-2 sm:gap-4 ml-auto">
-            <div className="flex items-center gap-2">
+        <div className="flex w-full items-center justify-end gap-2 ml-auto">
+            <div className="hidden sm:flex items-center gap-2">
                 <DateRangePicker
                     date={dateRange}
                     setDate={setDateRange}
