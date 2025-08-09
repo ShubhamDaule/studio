@@ -8,7 +8,7 @@ import type { Transaction, Category } from "@/lib/types";
 import { mockTransactions, mockCategories } from "@/lib/data";
 
 export function useTransactions(isPro: boolean, useMockData: boolean) {
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>(useMockData ? mockTransactions : []);
   const [allCategories, setAllCategories] = useState<Category[]>(mockCategories);
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
@@ -22,12 +22,6 @@ export function useTransactions(isPro: boolean, useMockData: boolean) {
   }, [allTransactions]);
 
   const [selectedSourceFilter, setSelectedSourceFilter] = useState<string>("all");
-
-  useEffect(() => {
-    if (useMockData) {
-      setAllTransactions(mockTransactions);
-    }
-  }, [useMockData]);
 
   const filteredTransactions = useMemo(() => {
     return allTransactions.filter((t) => {
