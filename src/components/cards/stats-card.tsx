@@ -16,8 +16,7 @@ export default function StatsCard({ title, value, icon, description, onClick }: 
     <Card 
         onClick={onClick} 
         className={cn(
-            "transition-smooth", 
-            onClick && "card-interactive"
+            "card-interactive"
         )}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
