@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { format } from "date-fns"
+import { format, startOfMonth, endOfMonth, isSameDay, isSameMonth, isSameYear } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 
@@ -30,6 +30,39 @@ export function DateRangePicker({
   maxDate
 }: DateRangePickerProps) {
 
+  const getDisplayString = () => {
+    if (!date?.from) {
+      return <span>Pick a date range</span>
+    }
+
+    // All time
+    if (minDate && maxDate && isSameDay(date.from, minDate) && date.to && isSameDay(date.to, maxDate)) {
+        return "All time";
+    }
+
+    // Full month
+    if (date.to && isSameMonth(date.from, date.to) && isSameYear(date.from, date.to)) {
+        const firstDay = startOfMonth(date.from);
+        const lastDay = endOfMonth(date.to);
+        if (isSameDay(date.from, firstDay) && isSameDay(date.to, lastDay)) {
+            return format(date.from, "MMMM yyyy");
+        }
+    }
+
+    // Standard range
+    if (date.to) {
+      return (
+        <>
+          {format(date.from, "LLL dd, y")} -{" "}
+          {format(date.to, "LLL dd, y")}
+        </>
+      )
+    }
+
+    return format(date.from, "LLL dd, y");
+  };
+
+
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
@@ -39,23 +72,12 @@ export function DateRangePicker({
             variant={"outline"}
             size="sm"
             className={cn(
-              "w-full sm:w-[260px] justify-start text-left font-normal",
+              "w-full sm:w-[260px] justify-start text-left font-normal h-9",
               !date && "text-muted-foreground"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {date?.from ? (
-              date.to ? (
-                <>
-                  {format(date.from, "LLL dd, y")} -{" "}
-                  {format(date.to, "LLL dd, y")}
-                </>
-              ) : (
-                format(date.from, "LLL dd, y")
-              )
-            ) : (
-              <span>Pick a date range</span>
-            )}
+            {getDisplayString()}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
