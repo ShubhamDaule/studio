@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { Download, LogOut, FileText, FileJson, PanelLeft, BarChart3, FileSpreadsheet } from "lucide-react";
+import { LogOut, PanelLeft, BarChart3 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -20,7 +20,6 @@ import { DateRangePicker } from "./dashboard/date-range-picker";
 import { SourceFilter } from "./dashboard/source-filter";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { cn } from "@/lib/utils";
-import type { Transaction } from "@/lib/types";
 
 const Logo = () => (
     <div className="flex items-center gap-2 flex-shrink-0">
@@ -120,41 +119,6 @@ const LandingNav = () => {
     )
 };
 
-const triggerExport = async (format: 'csv' | 'pdf', transactions: Transaction[]) => {
-    const dataToExport = transactions.map(t => ({
-      ID: t.id,
-      Date: t.date,
-      Merchant: t.merchant,
-      Amount: t.amount,
-      Category: t.category,
-      Source: t.fileSource
-    }));
-
-    if (format === 'csv') {
-      const { saveAs } = await import('file-saver');
-      const header = Object.keys(dataToExport[0]);
-      const csv = [
-        header.join(','),
-        ...dataToExport.map(row => header.map(fieldName => JSON.stringify((row as any)[fieldName])).join(','))
-      ].join('\r\n');
-      
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      saveAs(blob, "transactions.csv");
-
-    } else if (format === 'pdf') {
-      const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
-        import('jspdf'),
-        import('jspdf-autotable')
-      ]);
-      const doc = new jsPDF();
-      autoTable(doc, {
-        head: [['ID', 'Date', 'Merchant', 'Amount', 'Category', 'Source']],
-        body: dataToExport.map(t => [t.ID, t.Date, t.Merchant, t.Amount, t.Category, t.Source]),
-      });
-      doc.save('transactions.pdf');
-    }
-  };
-
 
 const DashboardNav = () => {
     const { 
@@ -165,8 +129,6 @@ const DashboardNav = () => {
         transactionFiles,
         selectedSourceFilter,
         setSelectedSourceFilter,
-        hasTransactions,
-        filteredTransactions,
     } = useDashboardContext();
 
     return (
@@ -185,26 +147,6 @@ const DashboardNav = () => {
                 />
             </div>
             <div className="flex items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="sm" disabled={!hasTransactions} className="w-full sm:w-[120px]">
-                      <Download className="mr-2 h-4 w-4 hidden sm:inline-block" />
-                      Export
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuLabel>Export As</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => triggerExport('csv', filteredTransactions)}>
-                      <FileText className="mr-2 h-4 w-4" />
-                      <span>CSV</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => triggerExport('pdf', filteredTransactions)}>
-                      <FileJson className="mr-2 h-4 w-4" />
-                      <span>PDF</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
                 <UserNav />
             </div>
         </div>
