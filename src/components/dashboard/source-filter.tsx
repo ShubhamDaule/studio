@@ -2,6 +2,7 @@
 "use client";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 type SourceFilterProps = {
     files: string[];
@@ -14,7 +15,7 @@ export function SourceFilter({ files, selectedSource, onSelectSource }: SourceFi
 
     return (
         <Select value={selectedSource} onValueChange={onSelectSource}>
-            <SelectTrigger className="w-full sm:w-[280px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
                 <SelectValue placeholder="Filter by source..." />
             </SelectTrigger>
             <SelectContent>

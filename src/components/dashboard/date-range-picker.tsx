@@ -37,8 +37,9 @@ export function DateRangePicker({
           <Button
             id="date"
             variant={"outline"}
+            size="sm"
             className={cn(
-              "w-full sm:w-[300px] justify-start text-left font-normal",
+              "w-full sm:w-[260px] justify-start text-left font-normal",
               !date && "text-muted-foreground"
             )}
           >
