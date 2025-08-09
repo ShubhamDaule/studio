@@ -36,7 +36,6 @@ const wiselySpendTool = ai.defineTool({
   }),
   outputSchema: z.string(),
   run: async (input) => {
-    console.log("Running wiselySpendTool with input: ", input);
     return `Based on your spending data, here are some tips on how to wisely spend money: Reduce eating out by 20%, find cheaper gas prices, and negotiate lower cell phone bills`;
   },
 });
