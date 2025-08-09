@@ -43,16 +43,60 @@ const prompt = ai.definePrompt({
   name: 'categorizeTransactionPrompt',
   input: {schema: CategorizeTransactionInputSchema},
   output: {schema: CategorizeTransactionOutputSchema},
-  prompt: `You are a personal finance expert. Your goal is to categorize transactions based on their description and amount.
+  prompt: `You are an expert financial assistant. Your task is to assign each transaction to the most appropriate category based on its merchant name and context. Use the following rules to infer the category.
 
-  Transaction Description: {{{transactionDescription}}}
-  Transaction Amount: {{{transactionAmount}}}
+Transaction Description: {{{transactionDescription}}}
+Transaction Amount: {{{transactionAmount}}}
 
-  Determine the most appropriate category for the transaction. Return a confidence level between 0 and 1.
-  Consider these categories: Food, Shopping, Utilities, Entertainment, Travel, Bills, Income, Other.
-  If it is income, categorize as income.
-  If you are not sure, categorize as Other.
-  `,
+**Category Pattern Rules:**
+
+1.  **Payment**
+    *   If description contains: "PAYMENT", "AUTO PAY", "AUTOPAY", "TRANSFER", "ACH PAYMENT", "E-PAY"
+    *   If it's a refund or credit from the credit card company itself
+    *   If it involves "CREDIT" and is not from a merchant
+
+2.  **Rewards/Redemptions**
+    *   If description contains: "REDEMPTION", "REWARDS", "CASH BACK", "POINTS"
+
+3.  **Groceries**
+    *   Keywords: "Mart", "Market", "Grocery", "Supermarket", "Trader Joe’s", "Safeway", "Kroger", "Walmart Grocery", "Costco", "Aldi", "Whole Foods"
+
+4.  **Dining**
+    *   Keywords: "Cafe", "Coffee", "Starbucks", "Restaurant", "Diner", "Eatery", "Grill", "Bistro", "Bar", "Chipotle", "Dominos", "McDonald’s", "KFC", "Subway"
+
+5.  **Entertainment**
+    *   Keywords: "Netflix", "Spotify", "YouTube", "Hulu", "Hotstar", "Gaming", "Steam", "Xbox", "PlayStation", "Disney+", "AMC", "Cinema", "Theater"
+
+6.  **Shopping**
+    *   Keywords: "Amazon", "eBay", "Flipkart", "Shein", "Zara", "H&M", "Target", "Walmart", "Best Buy", "Fashion", "Store", "Mall"
+
+7.  **Travel & Transport**
+    *   Keywords: "Uber", "Lyft", "Transit", "Metro", "Subway", "Train", "Flight", "Airlines", "Gas", "Petrol", "Fuel", "Shell", "BP", "Toll", "Taxi", "Parking"
+
+8.  **Subscriptions**
+    *   Keywords: "Subscription", "Recurring", "Monthly", "SaaS", "Dropbox", "Adobe", "Canva", "Notion", "ChatGPT", "VPN", "iCloud", "OneDrive"
+
+9.  **Health**
+    *   Keywords: "Pharmacy", "Hospital", "Clinic", "CVS", "Walgreens", "Doctor", "Dental", "Therapy", "Lab", "Medicine"
+
+10. **Utilities**
+    *   Keywords: "Electric", "Gas", "Water", "Internet", "Mobile", "T-Mobile", "AT&T", "Verizon", "Spectrum", "Utility", "Bill"
+
+11. **Education**
+    *   Keywords: "School", "College", "University", "Tuition", "Course", "Udemy", "Coursera", "Learning", "Skill", "Edu"
+
+12. **Other**
+    *   If no category matches and it's not clearly identifiable, assign 'Other'
+
+---
+
+### ⚠️ Additional Rules:
+*   If the transaction amount is negative:
+    *   Use "Payment" or "Refund" logic. If it is a refund, categorize it based on the **original merchant category**.
+*   Use fuzzy matching or brand recognition if keywords are unclear.
+*   If you are not sure, categorize as Other.
+*   Return a confidence level between 0 and 1.
+`,
 });
 
 const categorizeTransactionFlow = ai.defineFlow(
