@@ -1,16 +1,6 @@
 
-export type Category = 
-  | 'Groceries'
-  | 'Dining'
-  | 'Travel & Transport'
-  | 'Shopping'
-  | 'Entertainment'
-  | 'Utilities'
-  | 'Rent'
-  | 'Cash'
-  | 'Investment'
-  | 'Payment'
-  | 'Other';
+import type { Category } from "@/components/icons";
+export type { Category };
 
 export type Transaction = {
   id: string;

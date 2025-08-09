@@ -16,22 +16,38 @@ import {
   HandCoins,
   AreaChart,
   type LucideIcon,
-  icons
+  icons,
+  Car,
+  Home,
+  Popcorn,
+  PiggyBank
 } from 'lucide-react';
-import type { Category } from '@/lib/types';
 import { getIcon } from '@/lib/icon-store';
+
+export type Category = 
+  | 'Groceries'
+  | 'Dining'
+  | 'Travel & Transport'
+  | 'Shopping'
+  | 'Entertainment'
+  | 'Utilities'
+  | 'Rent'
+  | 'Cash'
+  | 'Investment'
+  | 'Payment'
+  | 'Other';
 
 export const defaultCategoryIcons: Record<string, LucideIcon> = {
   Groceries: ShoppingCart,
   Dining: UtensilsCrossed,
-  'Travel & Transport': Plane,
-  Shopping: Shirt,
-  Entertainment: Ticket,
+  'Travel & Transport': Car,
+  Shopping: ShoppingBag,
+  Entertainment: Popcorn,
   Utilities: Lightbulb,
-  Rent: Landmark,
+  Rent: Home,
   Cash: HandCoins,
-  Investment: AreaChart,
-  'Payment': CreditCard,
+  Investment: PiggyBank,
+  Payment: CreditCard,
   Other: MoreHorizontal,
 };
 
