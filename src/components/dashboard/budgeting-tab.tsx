@@ -5,11 +5,12 @@ import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Budget, BudgetOverride, Category, Transaction } from "@/lib/types";
-import { PlusCircle } from "lucide-react";
+import { ListPlus, Settings2 } from "lucide-react";
 import { EditCategoryDialog } from "../dialogs/edit-category-dialog";
 import { useBoolean } from "@/hooks/use-boolean";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableCategoryBudget } from "./sortable-category-budget";
+import { ManageCategoriesDialog } from "../dialogs/manage-categories-dialog";
 
 type Props = {
     activeBudgets: Budget[];
@@ -36,7 +37,8 @@ export function BudgetingTab({
     allCategories,
     onDeleteCategory
 }: Props) {
-    const {value: isDialogOpen, setTrue: openDialog, setFalse: closeDialog} = useBoolean(false);
+    const {value: isEditDialogOpen, setTrue: openEditDialog, setFalse: closeEditDialog} = useBoolean(false);
+    const {value: isManageDialogOpen, setTrue: openManageDialog, setFalse: closeManageDialog} = useBoolean(false);
     const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
 
 
@@ -55,29 +57,12 @@ export function BudgetingTab({
     
     const handleEditCategory = (category: Category) => {
         setSelectedCategory(category);
-        openDialog();
+        openEditDialog();
     };
     
     const handleSaveCategory = (updatedCategory: Category) => {
-        const isEditing = !!selectedCategory;
-        if(isEditing){
-             setAllCategories(prev => prev.map(c => c.name === selectedCategory.name ? updatedCategory : c));
-        } else {
-            const isAlreadyBudgeted = activeBudgets.some(b => b.category === updatedCategory.name);
-            if (isAlreadyBudgeted) {
-                closeDialog();
-                setSelectedCategory(null);
-                return;
-            }
-
-            const isNewCustomCategory = !allCategories.some(c => c.name === updatedCategory.name);
-            if (isNewCustomCategory) {
-                setAllCategories(prev => [...prev, updatedCategory]);
-            }
-            
-            onAddBudget({ category: updatedCategory.name, amount: 0 });
-        }
-        closeDialog();
+        setAllCategories(prev => prev.map(c => c.name === selectedCategory?.name ? updatedCategory : c));
+        closeEditDialog();
         setSelectedCategory(null);
     }
     
@@ -100,6 +85,10 @@ export function BudgetingTab({
                                     Track and manage your spending for each category. Drag to reorder.
                                 </CardDescription>
                             </div>
+                             <Button variant="outline" onClick={openManageDialog}>
+                                <Settings2 className="mr-2 h-4 w-4"/>
+                                Manage Categories
+                            </Button>
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -123,22 +112,23 @@ export function BudgetingTab({
                                         )
                                     })}
                             </SortableContext>
-                             <div className="flex items-center justify-center min-h-[160px] border-2 border-dashed rounded-lg">
-                                <Button variant="ghost" onClick={() => { setSelectedCategory(null); openDialog(); }}>
-                                    <PlusCircle className="mr-2 h-4 w-4"/>
-                                    Add Category
-                                </Button>
-                            </div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
             <EditCategoryDialog
-                isOpen={isDialogOpen}
-                onClose={() => { closeDialog(); setSelectedCategory(null); }}
+                isOpen={isEditDialogOpen}
+                onClose={() => { closeEditDialog(); setSelectedCategory(null); }}
                 onSave={handleSaveCategory}
                 category={selectedCategory}
-                availableCategories={availableToAdd}
+            />
+            <ManageCategoriesDialog 
+                isOpen={isManageDialogOpen}
+                onClose={closeManageDialog}
+                allCategories={allCategories}
+                activeBudgets={activeBudgets}
+                onAddBudget={onAddBudget}
+                onDeleteCategory={onDeleteCategory}
             />
         </>
     );
