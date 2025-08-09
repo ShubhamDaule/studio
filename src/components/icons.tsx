@@ -39,7 +39,7 @@ export type Category =
 export const defaultCategoryIcons: Record<string, LucideIcon> = {
   Groceries: ShoppingCart,
   Dining: UtensilsCrossed,
-  'Travel & Transport': Car,
+  'Travel & Transport': Plane,
   Shopping: ShoppingBag,
   Entertainment: Popcorn,
   Utilities: Lightbulb,
