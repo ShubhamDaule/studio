@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -14,9 +15,10 @@ interface IconPickerProps {
   selectedIcon: string;
   onIconChange: (iconName: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export function IconPicker({ selectedIcon, onIconChange, className }: IconPickerProps) {
+export function IconPicker({ selectedIcon, onIconChange, className, disabled }: IconPickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
 
@@ -32,6 +34,7 @@ export function IconPicker({ selectedIcon, onIconChange, className }: IconPicker
         <Button
           variant="outline"
           className={cn("w-full justify-start gap-2 text-left font-normal", className)}
+          disabled={disabled}
         >
           <SelectedIconComponent className="h-5 w-5" />
           <span>{selectedIcon}</span>

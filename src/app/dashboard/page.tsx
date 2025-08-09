@@ -20,6 +20,8 @@ import { useDashboardContext } from "@/context/dashboard-context";
 import { mockTransactions, mockCategories } from "@/lib/mock-data";
 import type { Transaction, Category } from "@/lib/types";
 import { LayoutGrid, List, Sparkles, Target } from "lucide-react";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
@@ -134,97 +136,110 @@ export default function DashboardPage() {
         handleCategoryChange
     });
 
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            setAllCategories((items) => {
+                const oldIndex = items.findIndex((item) => item.name === active.id);
+                const newIndex = items.findIndex((item) => item.name === over.id);
+                return arrayMove(items, oldIndex, newIndex);
+            });
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
-            <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-                <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="overview">
-                            <LayoutGrid className="mr-2 h-4 w-4" />
-                            Overview
-                        </TabsTrigger>
-                        <TabsTrigger value="transactions">
-                            <List className="mr-2 h-4 w-4" />
-                            Transactions
-                        </TabsTrigger>
-                        <TabsTrigger value="insights">
-                             <Sparkles className="mr-2 h-4 w-4" />
-                            AI Insights
-                        </TabsTrigger>
-                        <TabsTrigger value="budgeting">
-                            <Target className="mr-2 h-4 w-4" />
-                            Budgeting
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="overview" className="mt-4">
-                        <OverviewTab 
-                        totalSpending={totalSpending}
-                        filterDescription={filterDescription}
-                        transactionCount={transactionCount}
-                        highestTransaction={highestTransaction}
-                        openDialog={openDialog}
-                        currentBalance={currentBalance}
-                        highestDay={highestDay}
-                        filteredTransactions={filteredTransactions}
-                        allTransactions={allTransactions}
-                        activeBudgets={activeBudgets}
-                        allCategories={allCategories}
-                        />
-                    </TabsContent>
-                    <TabsContent value="transactions" className="mt-4">
-                        <TransactionsTab 
-                        filteredTransactions={filteredTransactions}
-                        handleCategoryChange={handleCategoryChange}
-                        allCategories={allCategories}
-                        />
-                    </TabsContent>
-                    <TabsContent value="insights" className="mt-4">
-                        <InsightsTab allTransactions={allTransactions} budgets={activeBudgets}/>
-                    </TabsContent>
-                    <TabsContent value="budgeting" className="mt-4">
-                        <BudgetingTab
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
+                <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+                    <Tabs defaultValue="overview" className="w-full">
+                        <TabsList className="grid w-full grid-cols-4">
+                            <TabsTrigger value="overview">
+                                <LayoutGrid className="mr-2 h-4 w-4" />
+                                Overview
+                            </TabsTrigger>
+                            <TabsTrigger value="transactions">
+                                <List className="mr-2 h-4 w-4" />
+                                Transactions
+                            </TabsTrigger>
+                            <TabsTrigger value="insights">
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                AI Insights
+                            </TabsTrigger>
+                            <TabsTrigger value="budgeting">
+                                <Target className="mr-2 h-4 w-4" />
+                                Budgeting
+                            </TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="overview" className="mt-4">
+                            <OverviewTab 
+                            totalSpending={totalSpending}
+                            filterDescription={filterDescription}
+                            transactionCount={transactionCount}
+                            highestTransaction={highestTransaction}
+                            openDialog={openDialog}
+                            currentBalance={currentBalance}
+                            highestDay={highestDay}
+                            filteredTransactions={filteredTransactions}
+                            allTransactions={allTransactions}
                             activeBudgets={activeBudgets}
-                            onMultipleBudgetChange={handleMultipleBudgetChange}
-                            transactions={filteredTransactions}
-                            onTransactionsUpdate={setAllTransactions}
-                            onIncomeDetailsChange={() => {}} // This state is now local to the tab
-                            availableMonths={availableMonths}
-                            onSetBudgetOverride={handleSetBudgetOverride}
                             allCategories={allCategories}
-                            setAllCategories={setAllCategories}
-                            budgetOverrides={budgetOverrides}
-                            onDeleteBudgetOverride={handleDeleteBudgetOverride}
-                        />
-                    </TabsContent>
-                </Tabs>
-            </main>
-            
-            <CategoryTransactionsDialog
-                isOpen={dialogState.category}
-                onClose={() => closeDialog('category')}
-                {...dialogData}
-            />
-            <DayTransactionsDialog
-                isOpen={dialogState.day}
-                onClose={() => closeDialog('day')}
-                {...dialogData}
-            />
-            <SourceTransactionsDialog
-                isOpen={dialogState.source}
-                onClose={() => closeDialog('source')}
-                {...dialogData}
-            />
-            <MerchantTransactionsDialog
-                isOpen={dialogState.merchant}
-                onClose={() => closeDialog('merchant')}
-                {...dialogData}
-            />
-            <TransactionDetailDialog
-                isOpen={dialogState.transactionDetail}
-                onClose={() => closeDialog('transactionDetail')}
-                transaction={dialogData.transaction}
-                allCategories={allCategories}
-            />
-        </div>
+                            />
+                        </TabsContent>
+                        <TabsContent value="transactions" className="mt-4">
+                            <TransactionsTab 
+                            filteredTransactions={filteredTransactions}
+                            handleCategoryChange={handleCategoryChange}
+                            allCategories={allCategories}
+                            />
+                        </TabsContent>
+                        <TabsContent value="insights" className="mt-4">
+                            <InsightsTab allTransactions={allTransactions} budgets={activeBudgets}/>
+                        </TabsContent>
+                        <TabsContent value="budgeting" className="mt-4">
+                            <BudgetingTab
+                                activeBudgets={activeBudgets}
+                                onMultipleBudgetChange={handleMultipleBudgetChange}
+                                transactions={filteredTransactions}
+                                onTransactionsUpdate={setAllTransactions}
+                                onIncomeDetailsChange={() => {}} // This state is now local to the tab
+                                availableMonths={availableMonths}
+                                onSetBudgetOverride={handleSetBudgetOverride}
+                                allCategories={allCategories}
+                                setAllCategories={setAllCategories}
+                                budgetOverrides={budgetOverrides}
+                                onDeleteBudgetOverride={handleDeleteBudgetOverride}
+                            />
+                        </TabsContent>
+                    </Tabs>
+                </main>
+                
+                <CategoryTransactionsDialog
+                    isOpen={dialogState.category}
+                    onClose={() => closeDialog('category')}
+                    {...dialogData}
+                />
+                <DayTransactionsDialog
+                    isOpen={dialogState.day}
+                    onClose={() => closeDialog('day')}
+                    {...dialogData}
+                />
+                <SourceTransactionsDialog
+                    isOpen={dialogState.source}
+                    onClose={() => closeDialog('source')}
+                    {...dialogData}
+                />
+                <MerchantTransactionsDialog
+                    isOpen={dialogState.merchant}
+                    onClose={() => closeDialog('merchant')}
+                    {...dialogData}
+                />
+                <TransactionDetailDialog
+                    isOpen={dialogState.transactionDetail}
+                    onClose={() => closeDialog('transactionDetail')}
+                    transaction={dialogData.transaction}
+                    allCategories={allCategories}
+                />
+            </div>
+        </DndContext>
     );
 }

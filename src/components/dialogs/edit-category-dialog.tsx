@@ -35,7 +35,7 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
     if (isOpen) {
       if (category) {
         setSelectedCategoryName(category.name);
-        setCustomName('');
+        setCustomName(category.isDefault ? '' : category.name);
         setSelectedIcon(category.icon);
       } else {
         setSelectedCategoryName('');
@@ -46,13 +46,13 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
   }, [isOpen, category]);
   
   const handleSave = () => {
-    const finalName = selectedCategoryName === CREATE_NEW_VALUE ? customName.trim() : selectedCategoryName;
+    const finalName = isEditing ? category.name : (selectedCategoryName === CREATE_NEW_VALUE ? customName.trim() : selectedCategoryName);
     if (finalName) {
       const existingCategory = allCategories.find(c => c.name === finalName);
       onSave({
         name: finalName,
-        icon: existingCategory ? existingCategory.icon : selectedIcon,
-        isDefault: existingCategory?.isDefault || false,
+        icon: isEditing ? selectedIcon : (existingCategory ? existingCategory.icon : selectedIcon),
+        isDefault: isEditing ? category.isDefault : (existingCategory?.isDefault || false),
       });
       onClose();
     }
@@ -71,7 +71,7 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
 
   const renderNameInput = () => {
     if (isEditing) {
-        return <Input id="name" value={category?.name} className="col-span-3" disabled={isPredefined} onChange={(e) => setCustomName(e.target.value)} />;
+        return <Input id="name" value={customName || category?.name} className="col-span-3" disabled={isPredefined} onChange={(e) => setCustomName(e.target.value)} />;
     }
 
     return (
@@ -115,12 +115,12 @@ export function EditCategoryDialog({ isOpen, onClose, onSave, category, availabl
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="icon" className="text-right">Icon</Label>
-            <IconPicker selectedIcon={selectedIcon} onIconChange={setSelectedIcon} className="col-span-3" />
+            <IconPicker selectedIcon={selectedIcon} onIconChange={setSelectedIcon} className="col-span-3" disabled={isPredefined} />
           </div>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!selectedCategoryName || (selectedCategoryName === CREATE_NEW_VALUE && !customName.trim())}>Save Category</Button>
+          <Button onClick={handleSave} disabled={isEditing ? false : (!selectedCategoryName || (selectedCategoryName === CREATE_NEW_VALUE && !customName.trim()))}>Save Category</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Budget, BudgetOverride, Category, Transaction } from "@/lib/types";
 import { PlusCircle } from "lucide-react";
-import { CategoryBudget } from "./category-budget";
 import { EditCategoryDialog } from "../dialogs/edit-category-dialog";
 import { useBoolean } from "@/hooks/use-boolean";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { SortableCategoryBudget } from "./sortable-category-budget";
 
 type Props = {
     activeBudgets: Budget[];
@@ -96,7 +97,7 @@ export function BudgetingTab({
                             <div>
                                 <CardTitle>Monthly Budgets</CardTitle>
                                 <CardDescription>
-                                    Track and manage your spending for each category.
+                                    Track and manage your spending for each category. Drag to reorder.
                                 </CardDescription>
                             </div>
                              <div className="flex gap-2">
@@ -119,25 +120,26 @@ export function BudgetingTab({
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {budgetedCategories
-                                .sort((a,b) => a.name.localeCompare(b.name))
-                                .map(cat => {
-                                    const budget = activeBudgets.find(b => b.category === cat.name);
-                                    if(!budget) return null;
+                        <SortableContext items={budgetedCategories.map(c => c.name)} strategy={verticalListSortingStrategy}>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                                {budgetedCategories.map(cat => {
+                                        const budget = activeBudgets.find(b => b.category === cat.name);
+                                        if(!budget) return null;
 
-                                    return (
-                                        <CategoryBudget
-                                            key={cat.name}
-                                            category={cat}
-                                            budget={budget.amount}
-                                            spent={spendingByCategory[budget.category] || 0}
-                                            onBudgetChange={handleBudgetChange}
-                                            onEditCategory={handleEditCategory}
-                                        />
-                                    )
-                                })}
-                        </div>
+                                        return (
+                                            <SortableCategoryBudget
+                                                key={cat.name}
+                                                id={cat.name}
+                                                category={cat}
+                                                budget={budget.amount}
+                                                spent={spendingByCategory[budget.category] || 0}
+                                                onBudgetChange={handleBudgetChange}
+                                                onEditCategory={handleEditCategory}
+                                            />
+                                        )
+                                    })}
+                            </div>
+                        </SortableContext>
                     </CardContent>
                 </Card>
             </div>
