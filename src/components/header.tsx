@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { Upload, Download, Loader2, LogOut } from "lucide-react";
+import { Download, Loader2, LogOut } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -124,8 +124,6 @@ const LandingNav = () => {
 };
 
 const DashboardNav = () => {
-    const pathname = usePathname();
-    const isDemoPage = pathname === '/dashboard/demo';
     const dashboardContext = useDashboardContext();
 
     if (!dashboardContext) return null;
@@ -133,29 +131,12 @@ const DashboardNav = () => {
     return (
         <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-            {!isDemoPage && (
-                <>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={dashboardContext.triggerFileUpload}
-                    disabled={dashboardContext.isUploading}
-                >
-                    {dashboardContext.isUploading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                    <Upload className="mr-2 h-4 w-4" />
-                    )}
-                    {dashboardContext.isUploading ? "Processing..." : "Upload"}
-                </Button>
                 {dashboardContext.isPro && (
                     <Button size="sm" onClick={dashboardContext.triggerExport} disabled={!dashboardContext.hasTransactions}>
                     <Download className="mr-2 h-4 w-4" />
                     Export
                     </Button>
                 )}
-                </>
-            )}
             <UserNav />
             </div>
         </div>
