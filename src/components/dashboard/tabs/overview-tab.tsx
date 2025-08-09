@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import * as React from "react";
-import { Wallet, ReceiptText, ArrowUpCircle, Calendar, Landmark } from "lucide-react";
+import { Wallet, ReceiptText } from "lucide-react";
 import { SpendingChart } from "@/components/charts/spending-chart";
 import { SpendingByDayChart } from "@/components/charts/spending-by-day-chart";
 import { SpendingBySourceChart } from "@/components/charts/spending-by-source-chart";
@@ -10,11 +11,10 @@ import { TopMerchantsChart } from "@/components/charts/top-merchants-chart";
 import { BudgetSpendingChart } from "@/components/charts/budget-spending-chart";
 import { SpendingTrendChart } from "@/components/charts/spending-trend-chart";
 import type { Budget, Category, Transaction } from "@/lib/types";
-import StatsCard from "@/components/cards/stats-card";
-import { format } from "date-fns";
-import { HighestTransactionCard } from "@/components/cards/highest-transaction-card";
-import { HighestDayCard } from "@/components/cards/highest-day-card";
-import { CurrentBalanceCard } from "@/components/cards/current-balance-card";
+import StatsCard from "@/components/dashboard/cards/stats-card";
+import { HighestTransactionCard } from "@/components/dashboard/cards/highest-transaction-card";
+import { HighestDayCard } from "@/components/dashboard/cards/highest-day-card";
+import { CurrentBalanceCard } from "@/components/dashboard/cards/current-balance-card";
 
 type OverviewTabProps = {
     totalSpending: number;
@@ -71,16 +71,16 @@ export function OverviewTab({
                     />
                 )}
             </div>
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                 <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data.category)} budgets={activeBudgets} allCategories={allCategories} />
                 <SpendingByDayChart transactions={filteredTransactions} onBarClick={(data) => openDialog('day', data.date)} />
             </div>
             <>
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', data.name)} />
                     <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', data.merchant)} />
                 </div>
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <SpendingTrendChart transactions={allTransactions} />
                     <BudgetSpendingChart transactions={filteredTransactions} budgets={activeBudgets} allCategories={allCategories} />
                 </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { FC } from 'react';
@@ -56,5 +57,5 @@ export const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" {...props}><path d="M12 2C9.28 2 7.15 4.05 7.15 6.69c0 1.49.69 2.81 1.76 3.66-1.52.88-2.58 2.59-2.58 4.51 0 2.94 2.45 5.31 5.46 5.31s5.25-2.28 5.43-5.21h-3.32c-.11.83-.8 1.41-1.9 1.41-1.08 0-1.85-.6-1.9-1.51h6.68c.11-3.23-2.34-5.96-5.59-5.96zm-1.85 5.45c0-1.42 1.29-2.58 2.82-2.58s2.82 1.15 2.82 2.58-.93 2.58-2.82 2.58-2.82-1.16-2.82-2.58z" fillRule="evenodd" clipRule="evenodd" /></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" {...props}><path d="M12 2C9.28 2 7.15 4.05 7.15 6.69c0 1.49.69 2.81 1.76 3.66-1.52.88-2.58 2.59-2.58 4.51 0 2.94 2.45 5.31 5.46 5.31s5.25-2.28 5.43-5.21h-3.32c-.11.83-.8 1.41-1.9 1.41-1.08 0-1.85-.6-1.9-1.51h6.68c.11-3.23-2.34-5.96-5.59-5.96zm-1.85 5.45c0-1.42 1.29-2.58 2.82-2.58s2.82 1.15 2.82 2.58-.93 2.58-2.82-2.58-2.82-1.16-2.82-2.58z" fillRule="evenodd" clipRule="evenodd" /></svg>
 );
