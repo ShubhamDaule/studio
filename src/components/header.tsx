@@ -117,7 +117,14 @@ const LandingNav = () => {
             <LandingNavLinks />
         </div>
         <div className="flex items-center gap-2">
-            <UserNav />
+            {user ? (
+                <UserNav />
+            ) : (
+                <>
+                    <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
+                    <Button asChild><Link href="/signup">Get Started</Link></Button>
+                </>
+            )}
         </div>
         <Sheet>
             <SheetTrigger asChild>
@@ -128,6 +135,12 @@ const LandingNav = () => {
             <SheetContent side="left">
                 <div className="flex flex-col gap-8 pt-8">
                     <LandingNavLinks />
+                    {!user && (
+                         <div className="flex flex-col gap-4">
+                            <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
+                            <Button asChild><Link href="/signup">Get Started</Link></Button>
+                        </div>
+                    )}
                 </div>
             </SheetContent>
         </Sheet>
