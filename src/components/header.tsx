@@ -49,12 +49,14 @@ const Logo = () => (
 
 const LandingNav = () => (
     <div className="hidden md:flex items-center space-x-8">
-        <Link href="/#features" className="text-foreground hover:text-primary transition-smooth font-semibold">Features</Link>
-        <Link href="/#benefits" className="text-foreground hover:text-primary transition-smooth font-semibold">Benefits</Link>
-        <Link href="/#pricing" className="text-foreground hover:text-primary transition-smooth font-semibold">Pricing</Link>
-        <Button variant="outline" size="sm">
-            Login
-        </Button>
+        <Link href="/landing#features" className="text-foreground hover:text-primary transition-smooth font-semibold">Features</Link>
+        <Link href="/landing#benefits" className="text-foreground hover:text-primary transition-smooth font-semibold">Benefits</Link>
+        <Link href="/pricing" className="text-foreground hover:text-primary transition-smooth font-semibold">Pricing</Link>
+        <Link href="/login">
+            <Button variant="outline" size="sm">
+                Login
+            </Button>
+        </Link>
         <Button asChild size="sm" className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90">
             <Link href="/dashboard">Get Started</Link>
         </Button>
@@ -118,7 +120,7 @@ export function Header() {
     return (
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
           <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-            <Link href="/">
+            <Link href="/landing">
               <Logo />
             </Link>
             <NavContent />

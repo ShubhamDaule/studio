@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import type { Transaction } from "@/lib/types";
 import { Sparkles, Bot } from 'lucide-react';
-import { getAIInsights } from "@/app/actions";
+import { getAIInsights } from "@/lib/actions";
 
 type AIInsightsProps = {
   data: Transaction[];
