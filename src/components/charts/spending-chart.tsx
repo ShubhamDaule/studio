@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from 'react';
-import { Pie, PieChart, Tooltip, Cell, Sector, Legend, ResponsiveContainer } from 'recharts';
+import { Pie, PieChart, Tooltip, Cell, Sector, ResponsiveContainer } from 'recharts';
 import {
   Card,
   CardContent,
@@ -134,7 +134,7 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px]"
+          className="mx-auto aspect-square max-h-[250px] sm:h-[300px]"
         >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
@@ -160,10 +160,6 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
                   <Cell key={`cell-${entry.key}`} fill={entry.fill} />
                 ))}
               </Pie>
-               <ChartLegend
-                content={<ChartLegendContent />}
-                className="-translate-y-2 flex-wrap"
-                />
             </PieChart>
           </ResponsiveContainer>
         </ChartContainer>
