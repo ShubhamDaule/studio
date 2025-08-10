@@ -3,8 +3,21 @@
 import { generateInsights } from "@/ai/flows/generate-insights";
 import type { Transaction, QueryResult, Budget } from "@/lib/types";
 
-// The AI-related functions have been removed as per the user's request.
-// You can re-implement them here if you wish to add AI features back.
+function getFriendlyErrorMessage(error: any): string {
+    const defaultMessage = 'An unexpected error occurred. Please try again.';
+    if (!error || !error.message) {
+        return defaultMessage;
+    }
+    const errorMessage = error.message as string;
+    if (errorMessage.includes('429') || errorMessage.toLowerCase().includes('too many requests') || errorMessage.toLowerCase().includes('exceeded your current quota')) {
+        return 'The AI service has reached its request limit. Please try again in a few moments.';
+    }
+    if (errorMessage.includes('503') || errorMessage.toLowerCase().includes('overloaded')) {
+        return 'The AI service is currently busy. Please wait a moment and try again.';
+    }
+    return errorMessage || defaultMessage;
+}
+
 
 export async function getAIInsights(transactions: Transaction[]) {
   if (!transactions || transactions.length === 0) {
@@ -16,7 +29,7 @@ export async function getAIInsights(transactions: Transaction[]) {
     return { success: true, insights };
   } catch (e: any) {
     console.error("Error getting AI insights:", e);
-    return { success: false, error: e.message || "An unknown error occurred." };
+    return { success: false, error: getFriendlyErrorMessage(e) };
   }
 }
 
