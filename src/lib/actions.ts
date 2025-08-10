@@ -2,7 +2,7 @@
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
 import { categorizeTransactions } from "@/ai/flows/categorize-transactions";
-import { extractTransactions, type RawTransaction } from "@/ai/flows/extract-transactions";
+import { extractTransactions } from "@/ai/flows/extract-transactions";
 import type { Transaction, QueryResult, Budget, ExtractedTransaction } from "@/lib/types";
 
 
@@ -42,8 +42,8 @@ export async function extractAndCategorizeTransactions(pdfText: string): Promise
     }
 
     try {
-        // Step 1: Extract raw transactions using the AI flow
-        const rawTransactions: RawTransaction[] = await extractTransactions({ pdfText });
+        // Step 1: Extract raw transactions and bank name using the AI flow
+        const { bankName, transactions: rawTransactions } = await extractTransactions({ pdfText });
         if (!rawTransactions || rawTransactions.length === 0) {
             return { data: [] };
         }
@@ -51,7 +51,10 @@ export async function extractAndCategorizeTransactions(pdfText: string): Promise
         // Step 2: Categorize the extracted transactions using deterministic keyword logic
         const categorizedData = categorizeTransactions(rawTransactions);
 
-        return { data: categorizedData };
+        // Step 3: Add bankName to each transaction object
+        const dataWithBankName = categorizedData.map(txn => ({ ...txn, bankName }));
+
+        return { data: dataWithBankName };
     } catch (e: any) {
         console.error("Error extracting and categorizing transactions from PDF:", e);
         return { error: getFriendlyErrorMessage(e) };

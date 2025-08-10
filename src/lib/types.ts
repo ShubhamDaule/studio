@@ -1,5 +1,6 @@
 
 import type { icons } from "lucide-react";
+import type { BankName } from "@/ai/flows/extract-transactions";
 
 export type Category = {
   name: string;
@@ -15,6 +16,7 @@ export type Transaction = {
   amount: number;
   category: Category['name'];
   fileSource: string;
+  bankName: BankName;
 };
 
 export type Budget = {
@@ -63,9 +65,10 @@ export type ExtractedTransaction = {
     merchant: string;
     amount: number;
     category: Category['name'];
+    bankName: BankName;
 };
 
-export type RawTransaction = Omit<ExtractedTransaction, 'category'>;
+export type RawTransaction = Omit<ExtractedTransaction, 'category' | 'bankName'>;
 
 export type ExtractedData = {
     accountType: "Bank Account" | "Credit Card" | "Unknown";

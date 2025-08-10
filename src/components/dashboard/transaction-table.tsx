@@ -93,7 +93,7 @@ export function TransactionTable({
   }
 
   const handleExportCSV = () => {
-    const headers = ["Date", "Merchant", "Amount", "Category", "File Source"];
+    const headers = ["Date", "Merchant", "Amount", "Category", "Bank Name", "File Source"];
     const csvRows = [
       headers.join(','),
       ...sortedTransactions.map(t => [
@@ -101,6 +101,7 @@ export function TransactionTable({
         `"${t.merchant.replace(/"/g, '""')}"`,
         t.amount,
         `"${t.category}"`,
+        `"${t.bankName}"`,
         `"${t.fileSource}"`
       ].join(','))
     ];
@@ -218,7 +219,9 @@ export function TransactionTable({
                         </TooltipContent>
                       </Tooltip>
                     </TableCell>
-                    <TableCell className="text-muted-foreground truncate max-w-xs">{transaction.fileSource}</TableCell>
+                    <TableCell className="text-muted-foreground truncate max-w-xs">
+                        {transaction.bankName !== 'Unknown' ? transaction.bankName : transaction.fileSource}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (

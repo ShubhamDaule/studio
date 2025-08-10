@@ -22,7 +22,7 @@ const ExtractTransactionsInputSchema = z.object({
 
 export type ExtractTransactionsInput = z.infer<typeof ExtractTransactionsInputSchema>;
 
-type BankName = 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Unknown';
+export type BankName = 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Unknown';
 type StatementType = 'Credit Card' | 'Bank Account' | 'Unknown';
 
 type StatementInfo = {
@@ -98,7 +98,7 @@ Return only a JSON array of transactions. Do not add categories.
 // ************************************************************************************
 // STEP 3: Main AI Flow
 // ************************************************************************************
-export async function extractTransactions(input: ExtractTransactionsInput): Promise<RawTransaction[]> {
+export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, transactions: RawTransaction[] }> {
     const { pdfText } = input;
 
     // Step 1: Detect bank and type
@@ -134,6 +134,6 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     console.log('====================================\n');
 
 
-    return extractedData;
+    return { bankName: bankInfo.bankName, transactions: extractedData };
 }
 
