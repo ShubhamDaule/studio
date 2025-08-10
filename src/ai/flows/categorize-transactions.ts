@@ -35,10 +35,10 @@ const getPrompt = (bankName?: string) => {
         context = `You are a financial expert AI specializing in statements from ${bankName}.`;
     }
 
-    return `${context} Based on the merchant name, categorize each transaction into one of these master categories:
+    return `${context} Based on the merchant name from the provided JSON, categorize each transaction into one of these master categories:
 Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous.
 
-Return only a JSON array with date, merchant, amount, and category fields. The output should be a valid JSON array of objects.
+Return only a valid JSON array of objects, with the 'category' field added to each transaction.
 `;
 }
 
@@ -52,7 +52,7 @@ export async function categorizeTransactions(input: CategorizeTransactionsInput)
 
     const llmResponse = await ai.generate({
         prompt: `${prompt}
-Transactions:
+Transactions JSON:
 ${JSON.stringify(input.rawTransactions, null, 2)}
 `,
         output: {

@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 import { categorizeTransactions as categorizeTransactionsAction } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
-import type { ExtractedTransaction } from "@/lib/types";
 import type { RawTransaction } from "@/ai/flows/categorize-transactions";
 import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
@@ -31,56 +30,51 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 // This function attempts to extract transactions from raw text using regex.
 // It's a best-effort approach and may need refinement based on statement formats.
-function extractRawTransactions(text: string): Omit<ExtractedTransaction, 'category'>[] {
-  const lines = text.split("\n");
-  const txnRegex = /^(?:(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\s+)?(\d{1,2}[\/-]\d{1,2}(?:\s\d{2,4})?)\s+(.+?)\s+([-\$]?\d{1,3}(?:,?\d{3})*\.\d{2}(\s?cr)?)\s*$/gmi;
-  
-  function normalizeDate(d: string): string | null {
-    if (!d) return null;
-    const cleanDate = d.replace(/\s+/g, '/').replace(/-/g, '/');
-    const parts = cleanDate.split("/");
-    if (parts.length < 2) return null;
-    let [m, day, y] = parts;
-    
-    if (!y) {
-        y = new Date().getFullYear().toString();
-    }
-    if (y.length === 2) y = "20" + y;
+function extractRawTransactions(text: string): RawTransaction[] {
+  const lines = text.split('\n');
+  const transactions: RawTransaction[] = [];
+  const transactionRegexes = [
+      // Regex for "MM/DD/YY MM/DD/YY MERCHANT NAME $100.00 Category"
+      /(?<trans_date>\d{1,2}\/\d{1,2}\/\d{2,4})\s+(?<post_date>\d{1,2}\/\d{1,2}\/\d{2,4})\s+(?<merchant>.+?)\s+\$?\s?(?<amount>-?[\d,]+\.\d{2})/,
+      // Regex for "MM/DD MERCHANT NAME $100.00"
+      /(?<date>\d{1,2}\/\d{1,2})\s+(?<merchant>.+?)\s+\$?\s?(?<amount>-?[\d,]+\.\d{2})/,
+      // Regex for "MM-DD-YY MERCHANT NAME 100.00"
+      /(?<date>\d{1,2}-\d{1,2}-\d{2,4})\s+(?<merchant>.+?)\s+(?<amount>-?[\d,]+\.\d{2})/
+  ];
 
-    if (parseInt(m) > 12 || parseInt(day) > 31) return null;
-
-    return `${y.padStart(4, "20")}-${m.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  function normalizeDate(dateStr: string, yearFrom?: string): string {
+      let [month, day, year] = dateStr.replace(/-/g, '/').split('/');
+      if (!year) {
+          year = yearFrom || new Date().getFullYear().toString();
+      }
+      if (year.length === 2) {
+          year = '20' + year;
+      }
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
-  
-  const transactions: Omit<ExtractedTransaction, 'category'>[] = [];
+
+  const statementYearMatch = text.match(/Statement Period:.*?(\d{4})/);
+  const statementYear = statementYearMatch ? statementYearMatch[1] : undefined;
+
   for (const line of lines) {
-    const match = txnRegex.exec(line.trim());
-    if (match) {
-        // Use the second date group if the first is missing
-        const dateStr = match[1] || match[2];
-        const date = normalizeDate(dateStr);
+      for (const regex of transactionRegexes) {
+          const match = regex.exec(line);
+          if (match?.groups) {
+              const { groups } = match;
+              const date = normalizeDate(groups.date || groups.trans_date, statementYear);
+              let merchant = groups.merchant.trim();
+              
+              // Basic cleanup
+              merchant = merchant.replace(/\s\s+/g, ' ').replace(/ID\s\d+/,'').trim();
 
-        if (!date) continue;
+              const amount = parseFloat(groups.amount.replace(/,/g, ''));
 
-        let merchant = match[3].trim();
-        // Remove common prefixes/suffixes
-        merchant = merchant.replace(/^(CHECKCARD|PURCHASE|DEBIT)\s+/i, '')
-                           .replace(/\s+\d+$/,'') // remove trailing numbers
-                           .replace(/\s{2,}/g, ' '); // remove extra spaces
-
-        let amountStr = match[4].replace(/[\$,]/g, '').trim();
-        const isCredit = /cr/i.test(amountStr) || amountStr.startsWith('-');
-        amountStr = amountStr.replace(/cr/i, '').trim();
-        
-        let amount = parseFloat(amountStr);
-        if (isNaN(amount)) continue;
-        
-        if (isCredit) {
-            amount = -amount;
-        }
-
-        transactions.push({ date, merchant, amount });
-    }
+              if (date && merchant && !isNaN(amount)) {
+                  transactions.push({ date, merchant, amount });
+                  break; 
+              }
+          }
+      }
   }
   return transactions;
 }
