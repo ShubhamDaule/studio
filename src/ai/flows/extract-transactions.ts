@@ -13,13 +13,18 @@ const ExtractedTransactionSchema = z.object({
   category: z.string().describe("One of the master categories provided."),
 });
 
+const AnomalySchema = z.object({
+  transactionId: z.string().describe("The ID of the transaction."),
+  reason: z.string().describe("The reason for the anomaly."),
+});
+
 const ExtractedDataSchema = z.object({
   accountType: z.enum(["Bank Account", "Credit Card", "Unknown"]).describe("The type of financial account."),
   bankName: z.string().describe("The name of the bank or financial institution."),
   statementStartDate: z.string().describe("The start date of the statement period in 'YYYY-MM-DD' format."),
   statementEndDate: z.string().describe("The end date of the statement period in 'YYYY-MM-DD' format."),
   transactions: z.array(ExtractedTransactionSchema).describe("An array of extracted transactions."),
-  anomalies: z.array(z.object({})).describe("Always an empty array."),
+  anomalies: z.array(AnomalySchema).describe("Always an empty array."),
 });
 
 const ExtractTransactionsInputSchema = z.object({
