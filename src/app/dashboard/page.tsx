@@ -232,7 +232,7 @@ export default function DashboardPage() {
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
                 <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-                    {financialSources.length > 0 && (
+                    {!isUsingMockData && financialSources.length > 0 && (
                         <div className="mb-8">
                             <h2 className="text-xl font-semibold mb-4">Financial Sources</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
