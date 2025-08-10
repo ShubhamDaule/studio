@@ -2,7 +2,7 @@
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
 import { askAi } from "@/ai/flows/ask-ai-flow";
-import { categorizeTransactions as categorizeTransactionsFlow } from "@/ai/flows/categorize-transactions";
+import { categorizeTransactions as categorizeTransactionsFlow, type RawTransaction } from "@/ai/flows/categorize-transactions";
 import type { Transaction, QueryResult, Budget, ExtractedTransaction } from "@/lib/types";
 
 
@@ -57,13 +57,13 @@ export async function getAiQueryResponse(query: string, transactions: Transactio
     }
 }
 
-export async function categorizeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; error?: string }> {
-    if (!pdfText) {
-        return { error: "No PDF text received." };
+export async function categorizeTransactions(rawTransactions: RawTransaction[]): Promise<{ data?: ExtractedTransaction[]; error?: string }> {
+    if (!rawTransactions || rawTransactions.length === 0) {
+        return { error: "No transactions to categorize." };
     }
 
     try {
-        const data = await categorizeTransactionsFlow({ pdfText });
+        const data = await categorizeTransactionsFlow({ rawTransactions });
         return { data };
     } catch (e: any) {
         console.error("Error extracting transactions from PDF:", e);

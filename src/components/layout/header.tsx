@@ -20,12 +20,53 @@ import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { SourceFilter } from "@/components/dashboard/source-filter";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { categorizeTransactions } from "@/lib/actions";
+import { categorizeTransactions as categorizeTransactionsAction } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
-import type { ExtractedTransaction } from "@/lib/types";
+import type { ExtractedTransaction, Transaction } from "@/lib/types";
+import type { RawTransaction } from "@/ai/flows/categorize-transactions";
+import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
+
+// This function attempts to extract transactions from raw text using regex.
+// It's a best-effort approach and may need refinement based on statement formats.
+function extractRawTransactions(text: string): RawTransaction[] {
+    const lines = text.split('\n');
+    const transactions: RawTransaction[] = [];
+    
+    // Regex to capture common transaction formats. This is complex and might need adjustment.
+    // Groups: 1:Date, 2:Description/Merchant, 3:Amount
+    const transactionRegex = /(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\s+(.+?)\s+((?:-\s)?\$?\s?\d{1,3}(?:,?\d{3})*\.\d{2})/;
+
+    function normalizeDate(dateStr: string): string {
+        const d = new Date(dateStr);
+        if (d.getFullYear() < 2000) {
+            d.setFullYear(d.getFullYear() + 2000);
+        }
+        return d.toISOString().split('T')[0];
+    }
+
+    for (const line of lines) {
+        const match = transactionRegex.exec(line.trim());
+        if (match) {
+            const date = normalizeDate(match[1]);
+            const merchant = match[2].trim()
+                .replace(/\s\s+/g, ' ') // Clean up spaces
+                .replace(/#\d+/g, '') // remove # followed by numbers
+                .replace(/\b[A-Z0-9]{8,}\b/g, '') // remove long alphanumeric codes
+                .trim();
+            const amountStr = match[3].replace(/[\$,\s]/g, '');
+            const amount = parseFloat(amountStr);
+
+            if (!isNaN(amount) && merchant) {
+                transactions.push({ date, merchant, amount });
+            }
+        }
+    }
+    return transactions;
+}
+
 
 const Logo = () => (
     <div className="flex items-center gap-2 flex-shrink-0">
@@ -139,17 +180,19 @@ const DashboardNav = () => {
     } = useDashboardContext();
     const { toast } = useToast();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const [isUploading, setIsUploading] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [rawJsonData, setRawJsonData] = React.useState<RawTransaction[] | null>(null);
+    const [fileName, setFileName] = React.useState<string | null>(null);
 
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        setIsUploading(true);
+        setIsLoading(true);
         toast({
             title: "Processing Statement...",
-            description: "Reading your file and extracting transactions with AI.",
+            description: "Reading your file and extracting transactions.",
         });
 
         try {
@@ -163,31 +206,73 @@ const DashboardNav = () => {
                 fullText += pageText + "\n";
             }
             
-            const result = await categorizeTransactions(fullText);
-
-            if (result.error || !result.data) {
-                throw new Error(result.error || "Failed to extract transactions.");
-            }
+            const rawTransactions = extractRawTransactions(fullText);
             
-            if (onNewTransactions) {
-                onNewTransactions(result.data, file.name);
+            if (rawTransactions.length === 0) {
+                 toast({
+                    variant: "destructive",
+                    title: "Extraction Failed",
+                    description: "We couldn't find any transactions in this PDF. The format might be unsupported.",
+                });
+                setIsLoading(false);
+                return;
             }
+
+            setFileName(file.name);
+            setRawJsonData(rawTransactions);
 
         } catch (error: any) {
             console.error("Upload error:", error);
             toast({
                 variant: "destructive",
                 title: "Upload Failed",
+                description: error.message || "Could not read the PDF file.",
+            });
+            setIsLoading(false);
+        }
+    };
+    
+    const handleConfirmCategorization = async () => {
+        if (!rawJsonData || !fileName) return;
+
+        setRawJsonData(null);
+        toast({
+            title: "Categorizing with AI...",
+            description: "Please wait while we categorize your transactions.",
+        });
+        
+        try {
+            const result = await categorizeTransactionsAction(rawJsonData);
+            if (result.error || !result.data) {
+                throw new Error(result.error || "Failed to categorize transactions.");
+            }
+
+            if (onNewTransactions) {
+                onNewTransactions(result.data, fileName);
+            }
+        } catch (error: any) {
+             console.error("Categorization error:", error);
+            toast({
+                variant: "destructive",
+                title: "Categorization Failed",
                 description: error.message || "An unknown error occurred.",
             });
         } finally {
-            setIsUploading(false);
-            // Reset file input
+            setIsLoading(false);
+            setFileName(null);
             if(fileInputRef.current) fileInputRef.current.value = "";
         }
-    };
+    }
+    
+    const handleCancel = () => {
+        setRawJsonData(null);
+        setIsLoading(false);
+        setFileName(null);
+        if(fileInputRef.current) fileInputRef.current.value = "";
+    }
 
     return (
+       <>
         <div className="flex w-full items-center justify-end gap-2">
             <div className="hidden sm:flex items-center gap-2">
                 <DateRangePicker
@@ -212,9 +297,9 @@ const DashboardNav = () => {
                     variant="outline" 
                     size="sm" 
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
+                    disabled={isLoading}
                 >
-                    {isUploading ? (
+                    {isLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                         <Upload className="mr-2 h-4 w-4" />
@@ -226,6 +311,13 @@ const DashboardNav = () => {
                 <UserNav />
             </div>
         </div>
+        <RawJsonDialog
+            isOpen={!!rawJsonData}
+            onClose={handleCancel}
+            onConfirm={handleConfirmCategorization}
+            jsonData={rawJsonData}
+        />
+       </>
     )
 }
 

@@ -16,67 +16,22 @@ const ExtractedTransactionSchema = z.object({
 const CategorizedDataSchema = z.array(ExtractedTransactionSchema);
 
 export type ExtractedTransaction = z.infer<typeof ExtractedTransactionSchema>;
+export type RawTransaction = Omit<ExtractedTransaction, 'category'>;
 
 const CategorizeTransactionsInputSchema = z.object({
-  pdfText: z.string(),
+  rawTransactions: z.array(z.object({
+    date: z.string(),
+    merchant: z.string(),
+    amount: z.number(),
+  })),
 });
 
 export type CategorizeTransactionsInput = z.infer<typeof CategorizeTransactionsInputSchema>;
 
-// This function attempts to extract transactions from raw text using regex.
-// It's a best-effort approach and may need refinement based on statement formats.
-function extractRawTransactions(text: string): Omit<ExtractedTransaction, 'category'>[] {
-    const lines = text.split('\n');
-    const transactions: Omit<ExtractedTransaction, 'category'>[] = [];
-    
-    // Regex to capture common transaction formats. This is complex and might need adjustment.
-    // Groups: 1:Date, 2:Description/Merchant, 3:Amount
-    const transactionRegex = /(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\s+(.+?)\s+([-\$]?\d{1,3}(?:,?\d{3})*\.\d{2})/;
-
-    function normalizeDate(dateStr: string): string {
-        const d = new Date(dateStr);
-        if (d.getFullYear() < 2000) {
-            d.setFullYear(d.getFullYear() + 2000);
-        }
-        return d.toISOString().split('T')[0];
-    }
-
-    for (const line of lines) {
-        const match = transactionRegex.exec(line.trim());
-        if (match) {
-            const date = normalizeDate(match[1]);
-            const merchant = match[2].trim().replace(/\s\s+/g, ' '); // Clean up spaces
-            const amountStr = match[3].replace(/[\$,]/g, '');
-            const amount = parseFloat(amountStr);
-
-            if (!isNaN(amount)) {
-                transactions.push({ date, merchant, amount });
-            }
-        }
-    }
-    return transactions;
-}
-
 
 export async function categorizeTransactions(input: CategorizeTransactionsInput): Promise<ExtractedTransaction[]> {
-    const rawTransactions = extractRawTransactions(input.pdfText);
-
-    if (rawTransactions.length === 0) {
-        // If regex fails, we send the whole text to the AI as a fallback.
-         const fallbackResult = await ai.generate({
-            prompt: `You are an expert financial analyst. Your job is to read the provided financial statement text and return a structured JSON object with the extracted transactions. Ignore summaries, marketing text, and anything that is not an actual transaction line.
-            Your output JSON must be an array of transaction objects with these fields: date, merchant, amount, category.
-            Use the master category list provided.
-            
-            **Categorization Master List**: Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous
-
-            Analyze and return the JSON for the following text:
-            ${input.pdfText}`,
-            output: {
-                schema: CategorizedDataSchema,
-            },
-        });
-        return fallbackResult.output!;
+    if (input.rawTransactions.length === 0) {
+        return [];
     }
 
     const llmResponse = await ai.generate({
@@ -86,7 +41,7 @@ Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport
 Return only a JSON array with date, merchant, amount, and category fields. The output should be a valid JSON array of objects.
 
 Transactions:
-${JSON.stringify(rawTransactions, null, 2)}
+${JSON.stringify(input.rawTransactions, null, 2)}
 `,
         output: {
         schema: CategorizedDataSchema,
