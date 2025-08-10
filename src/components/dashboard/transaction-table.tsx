@@ -152,15 +152,15 @@ export function TransactionTable({
                           onCategoryChange(transaction.id, value)
                         }
                       >
-                        <SelectTrigger className="border-0 bg-transparent shadow-none hover:bg-muted focus:ring-0">
+                        <SelectTrigger className="w-full h-9">
                           <SelectValue>
-                            <Badge variant="outline" className="py-1 border-border font-normal text-foreground">
-                              <CategoryIcon
-                                category={allCategories.find(c => c.name === transaction.category)}
-                                className="mr-2 h-4 w-4"
-                              />
-                              {transaction.category}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                                <CategoryIcon
+                                    category={allCategories.find(c => c.name === transaction.category)}
+                                    className="h-4 w-4"
+                                />
+                                <span className="text-sm font-medium">{transaction.category}</span>
+                            </div>
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
