@@ -6,13 +6,13 @@ import { cn } from "@/lib/utils";
 import { Banknote } from "lucide-react";
 
 type SourceFilterProps = {
-    files: string[];
+    sources: string[];
     selectedSource: string;
     onSelectSource: (source: string) => void;
 };
 
-export function SourceFilter({ files, selectedSource, onSelectSource }: SourceFilterProps) {
-    if (files.length <= 1) return null;
+export function SourceFilter({ sources, selectedSource, onSelectSource }: SourceFilterProps) {
+    if (sources.length <= 1) return null;
     
     return (
         <Select value={selectedSource} onValueChange={onSelectSource}>
@@ -24,9 +24,9 @@ export function SourceFilter({ files, selectedSource, onSelectSource }: SourceFi
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value="all">All Sources</SelectItem>
-                {files.map((file) => (
-                    <SelectItem key={file} value={file}>
-                        {file}
+                {sources.map((source) => (
+                    <SelectItem key={source} value={source}>
+                        {source}
                     </SelectItem>
                 ))}
             </SelectContent>

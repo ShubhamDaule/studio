@@ -4,7 +4,7 @@ import { generateInsights } from "@/ai/flows/generate-insights";
 import { categorizeTransactions } from "@/ai/flows/categorize-transactions";
 import { extractTransactions } from "@/ai/flows/extract-transactions";
 import { askAi } from "@/ai/flows/ask-ai-flow";
-import type { Transaction, QueryResult, Budget, ExtractedTransaction } from "@/lib/types";
+import type { Transaction, QueryResult, Budget, ExtractedTransaction, BankName, StatementType } from "@/lib/types";
 
 
 function getFriendlyErrorMessage(error: any): string {
@@ -37,16 +37,16 @@ export async function getAIInsights(transactions: Transaction[]) {
   }
 }
 
-export async function extractAndCategorizeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; error?: string }> {
+export async function extractAndCategorizeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; error?: string }> {
     if (!pdfText) {
         return { error: "No text from PDF to process." };
     }
 
     try {
         // Step 1: Extract raw transactions and bank name using the AI flow
-        const { bankName, transactions: rawTransactions } = await extractTransactions({ pdfText });
+        const { bankName, statementType, transactions: rawTransactions } = await extractTransactions({ pdfText });
         if (!rawTransactions || rawTransactions.length === 0) {
-            return { data: [] };
+            return { data: [], bankName, statementType };
         }
         
         // Step 2: Categorize the extracted transactions using deterministic keyword logic
@@ -55,7 +55,7 @@ export async function extractAndCategorizeTransactions(pdfText: string): Promise
         // Step 3: Add bankName to each transaction object
         const dataWithBankName = categorizedData.map(txn => ({ ...txn, bankName }));
 
-        return { data: dataWithBankName };
+        return { data: dataWithBankName, bankName, statementType };
     } catch (e: any) {
         console.error("Error extracting and categorizing transactions from PDF:", e);
         return { error: getFriendlyErrorMessage(e) };

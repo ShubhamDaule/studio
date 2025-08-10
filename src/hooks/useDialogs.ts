@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useMemo, useCallback } from 'react';
@@ -29,9 +28,10 @@ type UseDialogsProps = {
     allTransactions: Transaction[];
     allCategories: Category[];
     handleCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
+    selectedSource: string;
 };
 
-export const useDialogs = ({ transactions, allTransactions, allCategories, handleCategoryChange }: UseDialogsProps) => {
+export const useDialogs = ({ transactions, allTransactions, allCategories, handleCategoryChange, selectedSource }: UseDialogsProps) => {
   const { isPro } = useTiers();
 
   const [dialogState, setDialogState] = useState<DialogState>({
@@ -44,7 +44,7 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
   
   const [activeDialogKey, setActiveDialogKey] = useState<string | Transaction | null>(null);
 
-  const openDialog = useCallback((type: DialogType, key: string | Transaction | null) => {
+  const openDialog = useCallback((type: DialogType, key: any | null) => {
     if(!key) return;
     setActiveDialogKey(key);
     setDialogState(prev => ({ ...prev, [type]: true }));
@@ -66,41 +66,29 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
     if (!activeDialogKey) return baseData;
     
     if (typeof activeDialogKey === 'string') {
-        if (dialogState.category) {
-            return {
-                ...baseData,
-                category: activeDialogKey,
-                transactions: transactions.filter(t => t.category === activeDialogKey),
-            };
-        }
         if (dialogState.day) {
-            return {
-                ...baseData,
-                date: activeDialogKey,
-                transactions: transactions.filter(t => t.date === activeDialogKey),
-            };
-        }
-        if (dialogState.source) {
-            return {
-                ...baseData,
-                source: activeDialogKey,
-                transactions: allTransactions.filter(t => t.fileSource === activeDialogKey),
-            };
-        }
-        if (dialogState.merchant) {
-            return {
-                ...baseData,
-                merchant: activeDialogKey,
-                transactions: transactions.filter(t => t.merchant === activeDialogKey),
-            };
+            return { ...baseData, date: activeDialogKey, transactions: transactions.filter(t => t.date === activeDialogKey) };
         }
     }
-    
+
     if (typeof activeDialogKey === 'object' && activeDialogKey !== null && 'id' in activeDialogKey && dialogState.transactionDetail) {
-        return {
-            ...baseData,
-            transaction: activeDialogKey,
-        };
+        return { ...baseData, transaction: activeDialogKey };
+    }
+    
+    if (typeof activeDialogKey === 'object' && activeDialogKey !== null) {
+        const { category, merchant, name: sourceName } = activeDialogKey as any;
+        if(dialogState.category) {
+            const txns = category 
+                ? transactions.filter(t => t.category === category) 
+                : transactions;
+            return { ...baseData, category, transactions: txns };
+        }
+        if(dialogState.merchant) {
+            return { ...baseData, merchant, transactions: transactions.filter(t => t.merchant === merchant) };
+        }
+        if(dialogState.source) {
+            return { ...baseData, source: sourceName, transactions: allTransactions.filter(t => t.bankName === sourceName) };
+        }
     }
 
     return baseData;

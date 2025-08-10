@@ -15,8 +15,6 @@ type Props = {
     activeBudgets: Budget[];
     onMultipleBudgetChange: (budgets: Budget[]) => void;
     transactions: Transaction[];
-    onTransactionsUpdate: (transactions: Transaction[]) => void;
-    onIncomeDetailsChange: (details: any) => void;
     onSetBudgetOverride: (override: BudgetOverride) => void;
     allCategories: Category[];
     setAllCategories: React.Dispatch<React.SetStateAction<Category[]>>;

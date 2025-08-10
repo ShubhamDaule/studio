@@ -23,7 +23,7 @@ const ExtractTransactionsInputSchema = z.object({
 export type ExtractTransactionsInput = z.infer<typeof ExtractTransactionsInputSchema>;
 
 export type BankName = 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Unknown';
-type StatementType = 'Credit Card' | 'Bank Account' | 'Unknown';
+export type StatementType = 'Credit Card' | 'Bank Account' | 'Unknown';
 
 type StatementInfo = {
   bankName: BankName;
@@ -45,7 +45,7 @@ function detectBankAndStatementType(text: string): StatementInfo {
   else if (lowerText.includes('citi')) bankName = 'Citi';
 
   let statementType: StatementType = 'Unknown';
-  if (['available credit', 'minimum payment', 'credit line'].some(k => lowerText.includes(k))) {
+  if (['available credit', 'minimum payment', 'credit line', 'card account'].some(k => lowerText.includes(k))) {
     statementType = 'Credit Card';
   } else if (['checking', 'savings', 'deposits'].some(k => lowerText.includes(k))) {
     statementType = 'Bank Account';
@@ -70,27 +70,43 @@ Return a clean JSON array of transactions with the following fields:
 - amount: Purchases are positive numbers. Payments and credits are negative numbers.
 Do NOT add categories.
 `;
+    let preProcessingFailed = false;
 
-    if (bankInfo.bankName === 'Amex' && bankInfo.statementType === 'Credit Card') {
-        let startIndex = text.indexOf("Payments and Credits");
-        if(startIndex !== -1) text = text.substring(startIndex);
-        
-        let endIndex = text.indexOf("Total Interest Charged for this Period");
-        if(endIndex !== -1) text = text.substring(0, endIndex);
-        
-        prompt = `Source: American Express Credit Card Statement. ${basePrompt}`;
-    } else if (bankInfo.bankName === 'Discover' && bankInfo.statementType === 'Credit Card') {
-        let startIndex = text.indexOf("Transactions");
-        if(startIndex !== -1) text = text.substring(startIndex);
-        
-        let endIndex = text.indexOf("Statement Balance is the total");
-        if(endIndex !== -1) text = text.substring(0, endIndex);
+    try {
+        if (bankInfo.bankName === 'Amex' && bankInfo.statementType === 'Credit Card') {
+            let startIndex = text.indexOf("Payments and Credits");
+            if(startIndex !== -1) text = text.substring(startIndex);
+            else preProcessingFailed = true;
 
-        prompt = `Source: Discover Credit Card Statement. ${basePrompt}`;
-    } else {
-        // Default prompt for unknown banks
-        prompt = `Source: Bank Statement. ${basePrompt}`;
+            let endIndex = text.indexOf("Total Interest Charged for this Period");
+            if(endIndex !== -1) text = text.substring(0, endIndex);
+            else preProcessingFailed = true;
+
+            prompt = `Source: American Express Credit Card Statement. ${basePrompt}`;
+        } else if (bankInfo.bankName === 'Discover' && bankInfo.statementType === 'Credit Card') {
+            let startIndex = text.indexOf("Transactions");
+            if(startIndex !== -1) text = text.substring(startIndex);
+             else preProcessingFailed = true;
+
+            let endIndex = text.indexOf("Statement Balance is the total");
+            if(endIndex !== -1) text = text.substring(0, endIndex);
+             else preProcessingFailed = true;
+
+            prompt = `Source: Discover Credit Card Statement. ${basePrompt}`;
+        } else {
+            // Default prompt for unknown banks
+            prompt = `Source: Bank Statement. ${basePrompt}`;
+        }
+    } catch(e) {
+        console.error("Error during pre-processing:", e);
+        preProcessingFailed = true;
     }
+    
+    if (preProcessingFailed) {
+        console.warn('Bank-specific pre-processing failed. Falling back to default extraction.');
+        return { processedText: rawText, prompt: `Source: Bank Statement. ${basePrompt}` };
+    }
+
 
     return { processedText: text, prompt };
 }
@@ -98,7 +114,7 @@ Do NOT add categories.
 // ************************************************************************************
 // STEP 3: Main AI Flow
 // ************************************************************************************
-export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, transactions: RawTransaction[] }> {
+export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, transactions: RawTransaction[] }> {
     const { pdfText } = input;
 
     // Step 1: Detect bank and type
@@ -111,7 +127,7 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     // Step 2: Pre-process text and get tailored prompt
     const { processedText, prompt } = getBankPreProcessing(bankInfo, pdfText);
     console.log('======== PRE-PROCESSED TEXT FOR AI ========');
-    console.log(processedText);
+    console.log(processedText.substring(0, 500) + '...'); // Log first 500 chars
     console.log('=========================================\n');
     
     // Step 3: Call AI with the processed text and tailored prompt
@@ -134,5 +150,5 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     console.log('====================================\n');
 
 
-    return { bankName: bankInfo.bankName, transactions: extractedData };
+    return { bankName: bankInfo.bankName, statementType: bankInfo.statementType, transactions: extractedData };
 }

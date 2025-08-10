@@ -131,7 +131,7 @@ const DashboardNav = () => {
         setDateRange,
         minDate,
         maxDate,
-        transactionFiles,
+        financialSources,
         selectedSourceFilter,
         setSelectedSourceFilter,
         onNewTransactions
@@ -165,12 +165,12 @@ const DashboardNav = () => {
                 
                 const result = await extractAndCategorizeTransactions(fullText);
 
-                if (result.error || !result.data) {
+                if (result.error || !result.data || !result.bankName || !result.statementType) {
                     throw new Error(result.error || `Failed to extract transactions from ${file.name}.`);
                 }
 
                 if (onNewTransactions) {
-                    onNewTransactions(result.data, file.name);
+                    onNewTransactions(result.data, file.name, result.bankName, result.statementType);
                 }
 
             } catch (error: any) {
@@ -198,7 +198,7 @@ const DashboardNav = () => {
                     maxDate={maxDate}
                 />
                 <SourceFilter
-                    files={transactionFiles}
+                    sources={financialSources.map(s => s.name)}
                     selectedSource={selectedSourceFilter}
                     onSelectSource={setSelectedSourceFilter}
                 />

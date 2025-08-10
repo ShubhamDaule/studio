@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TransactionTable } from "../dashboard/transaction-table";
 import type { Transaction, Category } from "@/lib/types";
-import { FileText } from "lucide-react";
+import { Banknote } from "lucide-react";
 
 type Props = {
   isOpen: boolean;
@@ -11,7 +11,7 @@ type Props = {
   source?: string;
   transactions: Transaction[];
   allCategories: Category[];
-  onCategoryChange: (transactionId: string, newCategory: Category) => void;
+  onCategoryChange: (transactionId: string, newCategory: string) => void;
   isPro: boolean;
 };
 
@@ -23,11 +23,11 @@ export function SourceTransactionsDialog({ isOpen, onClose, source, transactions
       <DialogContent className="max-w-md sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-6 h-6" />
+            <Banknote className="w-6 h-6" />
             Transactions from {source}
           </DialogTitle>
           <DialogDescription>
-            Showing all transactions from the file "{source}".
+            Showing all transactions from the bank "{source}".
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[60vh] overflow-auto">
