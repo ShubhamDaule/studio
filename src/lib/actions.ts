@@ -2,9 +2,8 @@
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
 import { askAi } from "@/ai/flows/ask-ai-flow";
-import { extractTransactions } from "@/ai/flows/extract-transactions";
-import type { Transaction, QueryResult, Budget, ExtractedData } from "@/lib/types";
-import pdf from "pdf-parse/lib/pdf-parse";
+import { categorizeTransactions as categorizeTransactionsFlow } from "@/ai/flows/categorize-transactions";
+import type { Transaction, QueryResult, Budget, ExtractedTransaction } from "@/lib/types";
 
 
 function getFriendlyErrorMessage(error: any): string {
@@ -58,16 +57,13 @@ export async function getAiQueryResponse(query: string, transactions: Transactio
     }
 }
 
-export async function extractTransactionsFromPdf(pdfDataUri: string): Promise<{ data?: ExtractedData; error?: string }> {
-    if (!pdfDataUri) {
-        return { error: "No PDF data received." };
+export async function categorizeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; error?: string }> {
+    if (!pdfText) {
+        return { error: "No PDF text received." };
     }
 
     try {
-        // Convert data URI to buffer
-        const buffer = Buffer.from(pdfDataUri.split(',')[1], 'base64');
-        const pdfData = await pdf(buffer);
-        const data = await extractTransactions({ pdfText: pdfData.text });
+        const data = await categorizeTransactionsFlow({ pdfText });
         return { data };
     } catch (e: any) {
         console.error("Error extracting transactions from PDF:", e);

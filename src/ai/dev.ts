@@ -4,4 +4,4 @@ config();
 
 import './flows/generate-insights';
 import './flows/ask-ai-flow';
-import './flows/extract-transactions';
+import './flows/categorize-transactions';

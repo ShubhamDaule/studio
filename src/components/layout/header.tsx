@@ -20,8 +20,12 @@ import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { SourceFilter } from "@/components/dashboard/source-filter";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { extractTransactionsFromPdf } from "@/lib/actions";
+import { categorizeTransactions } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
+import type { ExtractedTransaction } from "@/lib/types";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 const Logo = () => (
     <div className="flex items-center gap-2 flex-shrink-0">
@@ -148,36 +152,39 @@ const DashboardNav = () => {
             description: "Reading your file and extracting transactions with AI.",
         });
 
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const dataUri = e.target?.result as string;
-                if (!dataUri) throw new Error("Could not read file.");
-
-                const result = await extractTransactionsFromPdf(dataUri);
-
-                if (result.error || !result.data) {
-                    throw new Error(result.error || "Failed to extract transactions.");
-                }
-
-                if (onNewTransactions) {
-                    onNewTransactions(result.data.transactions, file.name);
-                }
-
-            } catch (error: any) {
-                console.error("Upload error:", error);
-                toast({
-                    variant: "destructive",
-                    title: "Upload Failed",
-                    description: error.message || "An unknown error occurred.",
-                });
-            } finally {
-                setIsUploading(false);
-                // Reset file input
-                if(fileInputRef.current) fileInputRef.current.value = "";
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = "";
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                const pageText = content.items.map(item => (item as any).str).join(" ");
+                fullText += pageText + "\n";
             }
-        };
-        reader.readAsDataURL(file);
+            
+            const result = await categorizeTransactions(fullText);
+
+            if (result.error || !result.data) {
+                throw new Error(result.error || "Failed to extract transactions.");
+            }
+            
+            if (onNewTransactions) {
+                onNewTransactions(result.data, file.name);
+            }
+
+        } catch (error: any) {
+            console.error("Upload error:", error);
+            toast({
+                variant: "destructive",
+                title: "Upload Failed",
+                description: error.message || "An unknown error occurred.",
+            });
+        } finally {
+            setIsUploading(false);
+            // Reset file input
+            if(fileInputRef.current) fileInputRef.current.value = "";
+        }
     };
 
     return (

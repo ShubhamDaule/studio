@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview An AI flow for extracting transaction data from PDF text.
+ * @fileOverview An AI flow for categorizing transaction data from text.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
@@ -13,125 +13,91 @@ const ExtractedTransactionSchema = z.object({
   category: z.string().describe("One of the master categories provided."),
 });
 
-const AnomalySchema = z.object({
-  transactionId: z.string().describe("The ID of the transaction."),
-  reason: z.string().describe("The reason for the anomaly."),
-});
+const CategorizedDataSchema = z.array(ExtractedTransactionSchema);
 
-const ExtractedDataSchema = z.object({
-  accountType: z.enum(["Bank Account", "Credit Card", "Unknown"]).describe("The type of financial account."),
-  bankName: z.string().describe("The name of the bank or financial institution."),
-  statementStartDate: z.string().describe("The start date of the statement period in 'YYYY-MM-DD' format."),
-  statementEndDate: z.string().describe("The end date of the statement period in 'YYYY-MM-DD' format."),
-  transactions: z.array(ExtractedTransactionSchema).describe("An array of extracted transactions."),
-  anomalies: z.array(AnomalySchema).describe("Always an empty array."),
-});
+export type ExtractedTransaction = z.infer<typeof ExtractedTransactionSchema>;
 
-const ExtractTransactionsInputSchema = z.object({
+const CategorizeTransactionsInputSchema = z.object({
   pdfText: z.string(),
 });
 
-export type ExtractedData = z.infer<typeof ExtractedDataSchema>;
-export type ExtractTransactionsInput = z.infer<typeof ExtractTransactionsInputSchema>;
+export type CategorizeTransactionsInput = z.infer<typeof CategorizeTransactionsInputSchema>;
 
-export async function extractTransactions(input: ExtractTransactionsInput): Promise<ExtractedData> {
-  const llmResponse = await ai.generate({
-    prompt: `You are an expert financial analyst. Your job is to read the provided financial statement text and return a structured JSON object with the extracted account details and transactions. Ignore summaries, marketing text, and anything that is not an actual transaction line.
+function extractRawTransactions(text: string): Omit<ExtractedTransaction, 'category'>[] {
+  const lines = text.split("\n");
+  const txnRegex = /^(?:(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\s+)?(\d{1,2}[\/-]\d{1,2}(?:\s\d{2,4})?)\s+(.+?)\s+([-\$]?\d{1,3}(?:,?\d{3})*\.\d{2}(\s?cr)?)\s*$/gmi;
+  
+  function normalizeDate(d: string): string | null {
+    if (!d) return null;
+    const cleanDate = d.replace(/\s+/g, '/').replace(/-/g, '/');
+    const parts = cleanDate.split("/");
+    if (parts.length < 2) return null;
+    let [m, day, y] = parts;
+    
+    if (!y) {
+        y = new Date().getFullYear().toString();
+    }
+    if (y.length === 2) y = "20" + y;
 
-Your output JSON must include:
-- accountType: "Bank Account" | "Credit Card" | "Unknown"
-- bankName: string
-- statementStartDate: "YYYY-MM-DD"
-- statementEndDate: "YYYY-MM-DD"
-- transactions: array of objects:
-    - date: "YYYY-MM-DD"
-    - merchant: cleaned merchant name (remove prefixes, suffixes, IDs, and keep only readable brand name)
-    - amount: number (positive for purchases, negative for payments/refunds)
-    - category: one of the categories below
-- anomalies: always an empty array []
+    if (parseInt(m) > 12 || parseInt(day) > 31) return null;
 
----
+    return `${y.padStart(4, "20")}-${m.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+  
+  const transactions: Omit<ExtractedTransaction, 'category'>[] = [];
+  for (const line of lines) {
+    const match = txnRegex.exec(line.trim());
+    if (match) {
+        // Use the second date group if the first is missing
+        const dateStr = match[1] || match[2];
+        const date = normalizeDate(dateStr);
 
-**1. Determine Account Type (early exit logic)**
-As soon as you find a keyword match, immediately finalize 'accountType' and skip further checks:
-- “Credit Card”, “Available Credit”, “Minimum Payment” → 'Credit Card'
-- “Checking”, “Savings”, “Deposits”, “Withdrawals” → 'Bank Account'
-- Else → 'Unknown'
+        if (!date) continue;
 
----
+        let merchant = match[3].trim();
+        // Remove common prefixes/suffixes
+        merchant = merchant.replace(/^(CHECKCARD|PURCHASE|DEBIT)\s+/i, '')
+                           .replace(/\s+\d+$/,'') // remove trailing numbers
+                           .replace(/\s{2,}/g, ' '); // remove extra spaces
 
-**2. Extract Bank Name and Statement Period**
-- Bank name: Look for the institution name (e.g., "Chase", "American Express").
-- Statement period:
-  - Prefer explicit start and end dates from “Statement Period”, “Activity Period”, or “Billing Cycle”.
-  - If only a closing or statement date is present, set 'statementEndDate' to that date and infer 'statementStartDate' as 1 month and 1 day prior.
-- Dates must be in "YYYY-MM-DD" format.
+        let amountStr = match[4].replace(/[\$,]/g, '').trim();
+        const isCredit = /cr/i.test(amountStr) || amountStr.startsWith('-');
+        amountStr = amountStr.replace(/cr/i, '').trim();
+        
+        let amount = parseFloat(amountStr);
+        if (isNaN(amount)) continue;
+        
+        if (isCredit) {
+            amount = -amount;
+        }
 
----
+        transactions.push({ date, merchant, amount });
+    }
+  }
+  return transactions;
+}
 
-**3. Extract Transactions with dates**
-For each transaction:
-- \`date\`: transaction date in "YYYY-MM-DD"
-- \`merchant\`: clean name (remove extra codes like "SQ *", ".COM/BILLWA", IDs)
-- \`amount\`:
-  - Negative for payments, refunds, credits
-  - Positive for purchases/debits
-- \`category\`: select from the master category list using keyword matches or obvious brand inference.
 
-**Categorization Master List**
+export async function categorizeTransactions(input: CategorizeTransactionsInput): Promise<ExtractedTransaction[]> {
+    const rawTransactions = extractRawTransactions(input.pdfText);
 
-Return exactly one of the following categories per transaction:
-Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous
+    if (rawTransactions.length === 0) {
+        return [];
+    }
 
-**Keyword Triggers**:
-**Category Pattern Rules:**
+    const llmResponse = await ai.generate({
+        prompt: `You are a financial expert AI. Based on the merchant name, categorize each transaction into one of these master categories:
+Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous.
 
-1. **Payment**
-   - If description contains: "PAYMENT", "AUTO PAY", "AUTOPAY", "TRANSFER", "ACH PAYMENT", "E-PAY"
-   - If it's a refund or credit from the credit card company itself
-   - If it involves "CREDIT" and is not from a merchant
+Return only a JSON array with date, merchant, amount, and category fields.
 
-2. **Rewards/Redemptions**
-   - If description contains: "REDEMPTION", "REWARDS", "CASH BACK", "POINTS"
-
-3. **Groceries**
-   - Keywords: "Mart", "Market", "Grocery", "Supermarket", "Trader Joe’s", "Safeway", "Kroger", "Walmart Grocery", "Costco", "Aldi", "Whole Foods"
-
-4. **Dining**
-   - Keywords: "Cafe", "Coffee", "Starbucks", "Restaurant", "Diner", "Eatery", "Grill", "Bistro", "Bar", "Chipotle", "Dominos", "McDonald’s", "KFC", "Subway"
-
-5. **Entertainment**
-   - Keywords: "Netflix", "Spotify", "YouTube", "Hulu", "Hotstar", "Gaming", "Steam", "Xbox", "PlayStation", "Disney+", "AMC", "Cinema", "Theater"
-
-6. **Shopping**
-   - Keywords: "Amazon", "eBay", "Flipkart", "Shein", "Zara", "H&M", "Target", "Walmart", "Best Buy", "Fashion", "Store", "Mall"
-
-7. **Travel & Transport**
-   - Keywords: "Uber", "Lyft", "Transit", "Metro", "Subway", "Train", "Flight", "Airlines", "Gas", "Petrol", "Fuel", "Shell", "BP", "Toll", "Taxi", "Parking"
-
-8. **Subscriptions**
-   - Keywords: "Subscription", "Recurring", "Monthly", "SaaS", "Dropbox", "Adobe", "Canva", "Notion", "ChatGPT", "VPN", "iCloud", "OneDrive"
-
-9. **Health**
-   - Keywords: "Pharmacy", "Hospital", "Clinic", "CVS", "Walgreens", "Doctor", "Dental", "Therapy", "Lab", "Medicine"
-
-10. **Utilities**
-    - Keywords: "Electric", "Gas", "Water", "Internet", "Mobile", "T-Mobile", "AT&T", "Verizon", "Spectrum", "Utility", "Bill"
-
-11. **Education**
-    - Keywords: "School", "College", "University", "Tuition", "Course", "Udemy", "Coursera", "Learning", "Skill", "Edu"
-
-12. **Miscellaneous**
-    - If no category matches and it's not clearly identifiable, assign 'Miscellaneous'
-
----
-Now analyze and return the JSON for the following text:
-${input.pdfText}
+Transactions:
+${JSON.stringify(rawTransactions, null, 2)}
 `,
-    output: {
-      schema: ExtractedDataSchema,
-    },
-  });
+        output: {
+        schema: CategorizedDataSchema,
+        },
+    });
 
-  return llmResponse.output!;
+    return llmResponse.output!;
 }
