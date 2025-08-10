@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview A deterministic function for categorizing transactions based on keyword matching.
  */
