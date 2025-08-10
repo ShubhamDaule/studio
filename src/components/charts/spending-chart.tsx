@@ -68,7 +68,7 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
     
     const aggregated = sortedCategories.map(([category, amount], index) => {
         const key = category.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        const color = `hsl(${index * (360 / sortedCategories.length)}, 70%, 50%)`;
+        const color = `hsl(${(index * 40 + 20) % 360}, 70%, 50%)`;
         
         dynamicChartConfig[key] = {
             label: category,
