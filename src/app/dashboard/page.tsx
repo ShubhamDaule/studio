@@ -82,32 +82,38 @@ export default function DashboardPage() {
     }, [filteredTransactions, setContextFilteredTransactions]);
 
     React.useEffect(() => {
-        addUploadedTransactions((newTransactions, fileName, bankName, statementType) => {
-            const transactionsWithSource = newTransactions.map(t => ({
-                ...t,
-                id: crypto.randomUUID(),
-                fileSource: fileName
+        addUploadedTransactions((uploads) => {
+             const allNewTransactions = uploads.flatMap(upload => 
+                upload.data.map(t => ({
+                    ...t,
+                    id: crypto.randomUUID(),
+                    fileSource: upload.fileName,
+                }))
+            );
+
+            const newFiles: TransactionFile[] = uploads.map(upload => ({
+                fileName: upload.fileName,
+                bankName: upload.bankName,
+                statementType: upload.statementType,
             }));
 
-            const newFile: TransactionFile = { fileName, bankName, statementType };
-
             if (isUsingMockData) {
-                // First upload, replace mock data
-                setAllTransactions(transactionsWithSource);
-                setTransactionFiles([newFile]);
+                setAllTransactions(allNewTransactions);
+                setTransactionFiles(newFiles);
                 setIsUsingMockData(false);
             } else {
-                // Subsequent uploads, append data
-                setAllTransactions(prev => [...prev, ...transactionsWithSource]);
-                setTransactionFiles(prev => [...prev, newFile]);
+                setAllTransactions(prev => [...prev, ...allNewTransactions]);
+                setTransactionFiles(prev => [...prev, ...newFiles]);
             }
 
-            toast({
-                title: "Upload Successful!",
-                description: `${transactionsWithSource.length} transactions have been added from ${fileName}.`,
-            });
+            if (uploads.length > 0) {
+                 toast({
+                    title: "Uploads Successful!",
+                    description: `${allNewTransactions.length} transactions from ${uploads.length} file(s) have been added.`,
+                });
+            }
         });
-    }, [addUploadedTransactions, toast, isUsingMockData, setTransactionFiles, setIsUsingMockData, setAllTransactions]);
+    }, [addUploadedTransactions, toast, isUsingMockData, setAllTransactions, setTransactionFiles, setIsUsingMockData]);
 
     const totalSpending = React.useMemo(() => {
         return filteredTransactions
