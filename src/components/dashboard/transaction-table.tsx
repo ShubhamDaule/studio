@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Transaction, Category } from "@/lib/types";
 import { CategoryIcon } from "@/components/icons";
-import { ArrowUp, ArrowDown, Sparkles } from "lucide-react";
+import { ArrowUp, ArrowDown, Sparkles, FileDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTiers } from "@/hooks/use-tiers";
 import { format, parseISO } from "date-fns";
@@ -91,6 +91,32 @@ export function TransactionTable({
     }
   }
 
+  const handleExportCSV = () => {
+    const headers = ["Date", "Merchant", "Amount", "Category", "File Source"];
+    const csvRows = [
+      headers.join(','),
+      ...sortedTransactions.map(t => [
+        `"${formatDate(t.date)}"`,
+        `"${t.merchant.replace(/"/g, '""')}"`,
+        t.amount,
+        `"${t.category}"`,
+        `"${t.fileSource}"`
+      ].join(','))
+    ];
+    
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.href) {
+      URL.revokeObjectURL(link.href);
+    }
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', 'transactions.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   const SortableHeader = ({ column, label, className }: { column: SortableColumn, label: string, className?: string }) => (
     <TableHead className={cn('font-semibold', className)}>
         <Button 
@@ -112,11 +138,17 @@ export function TransactionTable({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>All Transactions</CardTitle>
-        <CardDescription>
-          Review and re-categorize your transactions as needed. Click headers to sort.
-        </CardDescription>
+      <CardHeader className="flex flex-row justify-between items-center">
+        <div>
+            <CardTitle>All Transactions</CardTitle>
+            <CardDescription>
+              Review and re-categorize your transactions as needed. Click headers to sort.
+            </CardDescription>
+        </div>
+        <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={transactions.length === 0}>
+            <FileDown className="mr-2 h-4 w-4" />
+            Export as CSV
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto relative">
