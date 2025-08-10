@@ -1,7 +1,11 @@
 
 'use server';
 /**
- * @fileOverview An AI flow for categorizing transaction data from text.
+ * @fileOverview An AI flow for extracting and categorizing transaction data from PDF text.
+ * This flow uses a multi-step process:
+ * 1. Detects bank and statement type.
+ * 2. Pre-processes the text based on the bank.
+ * 3. Uses a tailored prompt to extract and categorize transactions.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
@@ -13,91 +17,125 @@ const ExtractedTransactionSchema = z.object({
   category: z.string().describe("One of the master categories provided."),
 });
 
-const CategorizedDataSchema = z.array(ExtractedTransactionSchema);
+const CategorizedDataSchema = z.object({
+    transactions: z.array(ExtractedTransactionSchema),
+});
+
 
 export type ExtractedTransaction = z.infer<typeof ExtractedTransactionSchema>;
 
-const CategorizeTransactionsInputSchema = z.object({
+const ExtractTransactionsInputSchema = z.object({
   pdfText: z.string(),
 });
 
-export type CategorizeTransactionsInput = z.infer<typeof CategorizeTransactionsInputSchema>;
+export type ExtractTransactionsInput = z.infer<typeof ExtractTransactionsInputSchema>;
 
-function extractRawTransactions(text: string): Omit<ExtractedTransaction, 'category'>[] {
-  const lines = text.split("\n");
-  const txnRegex = /^(?:(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\s+)?(\d{1,2}[\/-]\d{1,2}(?:\s\d{2,4})?)\s+(.+?)\s+([-\$]?\d{1,3}(?:,?\d{3})*\.\d{2}(\s?cr)?)\s*$/gmi;
+// ************************************************************************************
+// STEP 1: Bank & Statement Type Detection
+// ************************************************************************************
+type StatementInfo = {
+  bankName: 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Unknown';
+  statementType: 'Credit Card' | 'Bank Account' | 'Unknown';
+};
+
+function detectBankAndStatementType(text: string): StatementInfo {
+  const lowerText = text.toLowerCase();
   
-  function normalizeDate(d: string): string | null {
-    if (!d) return null;
-    const cleanDate = d.replace(/\s+/g, '/').replace(/-/g, '/');
-    const parts = cleanDate.split("/");
-    if (parts.length < 2) return null;
-    let [m, day, y] = parts;
-    
-    if (!y) {
-        y = new Date().getFullYear().toString();
-    }
-    if (y.length === 2) y = "20" + y;
+  let bankName: StatementInfo['bankName'] = 'Unknown';
+  if (lowerText.includes('discover')) bankName = 'Discover';
+  else if (lowerText.includes('american express') || lowerText.includes('amex')) bankName = 'Amex';
+  else if (lowerText.includes('chase')) bankName = 'Chase';
+  else if (lowerText.includes('bank of america')) bankName = 'Bank of America';
+  else if (lowerText.includes('wells fargo')) bankName = 'Wells Fargo';
+  else if (lowerText.includes('citi')) bankName = 'Citi';
 
-    if (parseInt(m) > 12 || parseInt(day) > 31) return null;
-
-    return `${y.padStart(4, "20")}-${m.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  let statementType: StatementInfo['statementType'] = 'Unknown';
+  if (['available credit', 'minimum payment', 'credit line'].some(k => lowerText.includes(k))) {
+    statementType = 'Credit Card';
+  } else if (['checking', 'savings', 'deposits'].some(k => lowerText.includes(k))) {
+    statementType = 'Bank Account';
   }
-  
-  const transactions: Omit<ExtractedTransaction, 'category'>[] = [];
-  for (const line of lines) {
-    const match = txnRegex.exec(line.trim());
-    if (match) {
-        // Use the second date group if the first is missing
-        const dateStr = match[1] || match[2];
-        const date = normalizeDate(dateStr);
 
-        if (!date) continue;
+  return { bankName, statementType };
+}
 
-        let merchant = match[3].trim();
-        // Remove common prefixes/suffixes
-        merchant = merchant.replace(/^(CHECKCARD|PURCHASE|DEBIT)\s+/i, '')
-                           .replace(/\s+\d+$/,'') // remove trailing numbers
-                           .replace(/\s{2,}/g, ' '); // remove extra spaces
+// ************************************************************************************
+// STEP 2: Pre-processing & Prompt Generation
+// ************************************************************************************
+function getBankPreProcessing(bankInfo: StatementInfo, rawText: string) {
+    let text = rawText;
+    let prompt;
 
-        let amountStr = match[4].replace(/[\$,]/g, '').trim();
-        const isCredit = /cr/i.test(amountStr) || amountStr.startsWith('-');
-        amountStr = amountStr.replace(/cr/i, '').trim();
+    const masterCategories = "Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous";
+
+    const basePrompt = `
+You are an expert financial AI. Your task is to extract transactions from the provided text from a bank statement.
+For each transaction, extract the following:
+- date: Format as 'YYYY-MM-DD'.
+- merchant: Clean the merchant name. **CRITICAL**: Ignore surrounding text that is not part of the merchant name.
+- amount: Payments, refunds, or credits MUST be negative numbers. Purchases or debits MUST be positive numbers.
+- category: Choose from: ${masterCategories}.
+  - **Payment Rule**: If the description contains "PAYMENT", "AUTOPAY", "AUTO PAY", or "TRANSFER", categorize it as 'Payment'.
+  - **Refund Rule**: If the amount is negative and it's NOT a payment, categorize it based on the merchant's usual category (e.g., a refund from a grocery store is 'Groceries').
+  - **Standard Categorization**: For all other transactions, categorize by pattern:
+    - **Amazon Prime subscriptions are 'Entertainment'. Other Amazon purchases are 'Shopping'.**
+    - Names with “Mart”, “Market”, “Grocery” → 'Groceries'
+    - Streaming services (Netflix, Spotify) → 'Entertainment'
+    - Coffee shops, restaurants → 'Dining'
+    - Ride-sharing, public transport, gas → 'Travel & Transport'
+Return a valid JSON object with a "transactions" array.
+`;
+
+    if (bankInfo.bankName === 'Amex' && bankInfo.statementType === 'Credit Card') {
+        let startIndex = text.indexOf("Payments and Credits");
+        if(startIndex !== -1) text = text.substring(startIndex);
         
-        let amount = parseFloat(amountStr);
-        if (isNaN(amount)) continue;
+        let endIndex = text.indexOf("Total Interest Charged for this Period");
+        if(endIndex !== -1) text = text.substring(0, endIndex);
         
-        if (isCredit) {
-            amount = -amount;
-        }
+        prompt = `You are a financial assistant extracting structured transactions from an American Express credit card statement. ${basePrompt}`;
+    } else if (bankInfo.bankName === 'Discover' && bankInfo.statementType === 'Credit Card') {
+        let startIndex = text.indexOf("Transactions");
+        if(startIndex !== -1) text = text.substring(startIndex);
+        
+        let endIndex = text.indexOf("Statement Balance is the total");
+        if(endIndex !== -1) text = text.substring(0, endIndex);
 
-        transactions.push({ date, merchant, amount });
+        prompt = `You are a financial assistant extracting structured transactions from a Discover credit card statement. ${basePrompt}`;
+    } else {
+        // Default prompt for unknown banks
+        prompt = `You are a financial assistant extracting structured transactions from a bank statement. ${basePrompt}`;
     }
-  }
-  return transactions;
+
+    return { processedText: text, prompt };
 }
 
 
-export async function categorizeTransactions(input: CategorizeTransactionsInput): Promise<ExtractedTransaction[]> {
-    const rawTransactions = extractRawTransactions(input.pdfText);
+// ************************************************************************************
+// STEP 3: Main AI Flow
+// ************************************************************************************
+export async function extractTransactions(input: ExtractTransactionsInput): Promise<ExtractedTransaction[]> {
+    const { pdfText } = input;
 
-    if (rawTransactions.length === 0) {
-        return [];
-    }
+    // Step 1: Detect bank and type
+    const bankInfo = detectBankAndStatementType(pdfText);
 
+    // Step 2: Pre-process text and get tailored prompt
+    const { processedText, prompt } = getBankPreProcessing(bankInfo, pdfText);
+    
+    // Step 3: Call AI with the processed text and tailored prompt
     const llmResponse = await ai.generate({
-        prompt: `You are a financial expert AI. Based on the merchant name, categorize each transaction into one of these master categories:
-Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous.
-
-Return only a JSON array with date, merchant, amount, and category fields.
-
-Transactions:
-${JSON.stringify(rawTransactions, null, 2)}
-`,
+        prompt: `${prompt}
+        
+        Here is the statement text to analyze:
+        ---
+        ${processedText}
+        ---
+        `,
         output: {
-        schema: CategorizedDataSchema,
+            schema: CategorizedDataSchema,
         },
     });
 
-    return llmResponse.output!;
+    return llmResponse.output?.transactions || [];
 }

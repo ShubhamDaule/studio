@@ -20,79 +20,11 @@ import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { SourceFilter } from "@/components/dashboard/source-filter";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { categorizeTransactions as categorizeTransactionsAction } from "@/lib/actions";
+import { extractAndCategorizeTransactions } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
-import type { RawTransaction } from "@/ai/flows/categorize-transactions";
-import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
-
-// This function attempts to extract transactions from raw text using regex.
-// It's a best-effort approach and may need refinement based on statement formats.
-function extractRawTransactions(text: string): RawTransaction[] {
-  const lines = text.split('\n');
-  const transactions: RawTransaction[] = [];
-  const transactionRegexes = [
-      // Regex for "MM/DD/YY MM/DD/YY MERCHANT NAME $100.00 Category"
-      /(?<trans_date>\d{1,2}\/\d{1,2}\/\d{2,4})\s+(?<post_date>\d{1,2}\/\d{1,2}\/\d{2,4})\s+(?<merchant>.+?)\s+\$?\s?(?<amount>-?[\d,]+\.\d{2})/,
-      // Regex for "MM/DD MERCHANT NAME $100.00"
-      /(?<date>\d{1,2}\/\d{1,2})\s+(?<merchant>.+?)\s+\$?\s?(?<amount>-?[\d,]+\.\d{2})/,
-      // Regex for "MM-DD-YY MERCHANT NAME 100.00"
-      /(?<date>\d{1,2}-\d{1,2}-\d{2,4})\s+(?<merchant>.+?)\s+(?<amount>-?[\d,]+\.\d{2})/
-  ];
-
-  function normalizeDate(dateStr: string, yearFrom?: string): string {
-      let [month, day, year] = dateStr.replace(/-/g, '/').split('/');
-      if (!year) {
-          year = yearFrom || new Date().getFullYear().toString();
-      }
-      if (year.length === 2) {
-          year = '20' + year;
-      }
-      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  }
-
-  const statementYearMatch = text.match(/Statement Period:.*?(\d{4})/);
-  const statementYear = statementYearMatch ? statementYearMatch[1] : undefined;
-
-  for (const line of lines) {
-      for (const regex of transactionRegexes) {
-          const match = regex.exec(line);
-          if (match?.groups) {
-              const { groups } = match;
-              const date = normalizeDate(groups.date || groups.trans_date, statementYear);
-              let merchant = groups.merchant.trim();
-              
-              // Basic cleanup
-              merchant = merchant.replace(/\s\s+/g, ' ').replace(/ID\s\d+/,'').trim();
-
-              const amount = parseFloat(groups.amount.replace(/,/g, ''));
-
-              if (date && merchant && !isNaN(amount)) {
-                  transactions.push({ date, merchant, amount });
-                  break; 
-              }
-          }
-      }
-  }
-  return transactions;
-}
-
-function detectBankAndStatementType(text: string, fileName?: string) {
-  const bankKeywords = ["chase", "discover", "american express", "wells fargo", "bank of america", "citi", "amex"];
-  const lowerText = text.toLowerCase();
-
-  let bankFound = bankKeywords.find(bank => lowerText.includes(bank));
-  if (!bankFound && fileName) {
-    bankFound = fileName.toLowerCase().match(new RegExp(bankKeywords.join("|")))?.[0];
-  }
-  
-  if (!bankFound) bankFound = "Unknown";
-
-  return { bankName: bankFound.charAt(0).toUpperCase() + bankFound.slice(1) };
-}
-
 
 const Logo = () => (
     <div className="flex items-center gap-2 flex-shrink-0">
@@ -207,12 +139,7 @@ const DashboardNav = () => {
     const { toast } = useToast();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isLoading, setIsLoading] = React.useState(false);
-    const [rawJsonData, setRawJsonData] = React.useState<RawTransaction[] | null>(null);
-    const [rawText, setRawText] = React.useState<string | null>(null);
-    const [fileName, setFileName] = React.useState<string | null>(null);
-    const [bankName, setBankName] = React.useState<string | null>(null);
-
-
+    
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -231,73 +158,36 @@ const DashboardNav = () => {
                 const page = await pdf.getPage(i);
                 const content = await page.getTextContent();
                 const pageText = content.items.map(item => (item as any).str).join(" ");
-                fullText += pageText + "\n";
+                fullText += pageText + "\\n";
             }
             
-            const rawTransactions = extractRawTransactions(fullText);
-            const { bankName: detectedBank } = detectBankAndStatementType(fullText, file.name);
-            
-            setRawText(fullText);
-            setFileName(file.name);
-            setRawJsonData(rawTransactions);
-            setBankName(detectedBank);
+            toast({
+                title: "Text Extracted, Calling AI...",
+                description: "AI is now analyzing the text to find and categorize your transactions. This may take a moment.",
+            });
+
+            const result = await extractAndCategorizeTransactions(fullText);
+
+            if (result.error || !result.data) {
+                throw new Error(result.error || "Failed to extract transactions.");
+            }
+
+            if (onNewTransactions) {
+                onNewTransactions(result.data, file.name);
+            }
 
         } catch (error: any) {
             console.error("Upload error:", error);
             toast({
                 variant: "destructive",
                 title: "Upload Failed",
-                description: error.message || "Could not read the PDF file.",
-            });
-            setIsLoading(false);
-        }
-    };
-    
-    const handleConfirmCategorization = async () => {
-        if (!rawJsonData || !fileName) return;
-
-        const currentBank = bankName;
-
-        setRawJsonData(null);
-        setRawText(null);
-        setBankName(null);
-
-        toast({
-            title: "Categorizing with AI...",
-            description: `Please wait while we categorize your transactions. Detected bank: ${currentBank}`,
-        });
-        
-        try {
-            const result = await categorizeTransactionsAction(rawJsonData, currentBank || undefined);
-            if (result.error || !result.data) {
-                throw new Error(result.error || "Failed to categorize transactions.");
-            }
-
-            if (onNewTransactions) {
-                onNewTransactions(result.data, fileName);
-            }
-        } catch (error: any) {
-             console.error("Categorization error:", error);
-            toast({
-                variant: "destructive",
-                title: "Categorization Failed",
-                description: error.message || "An unknown error occurred.",
+                description: error.message || "Could not process the PDF file.",
             });
         } finally {
             setIsLoading(false);
-            setFileName(null);
             if(fileInputRef.current) fileInputRef.current.value = "";
         }
-    }
-    
-    const handleCancel = () => {
-        setRawJsonData(null);
-        setRawText(null);
-        setIsLoading(false);
-        setFileName(null);
-        setBankName(null);
-        if(fileInputRef.current) fileInputRef.current.value = "";
-    }
+    };
 
     return (
        <>
@@ -339,13 +229,6 @@ const DashboardNav = () => {
                 <UserNav />
             </div>
         </div>
-        <RawJsonDialog
-            isOpen={!!rawJsonData}
-            onClose={handleCancel}
-            onConfirm={handleConfirmCategorization}
-            jsonData={rawJsonData}
-            rawText={rawText}
-        />
        </>
     )
 }
