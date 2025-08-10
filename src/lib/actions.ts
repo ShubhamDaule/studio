@@ -3,6 +3,7 @@
 import { generateInsights } from "@/ai/flows/generate-insights";
 import { categorizeTransactions } from "@/ai/flows/categorize-transactions";
 import { extractTransactions } from "@/ai/flows/extract-transactions";
+import { askAi } from "@/ai/flows/ask-ai-flow";
 import type { Transaction, QueryResult, Budget, ExtractedTransaction } from "@/lib/types";
 
 
@@ -57,6 +58,27 @@ export async function extractAndCategorizeTransactions(pdfText: string): Promise
         return { data: dataWithBankName };
     } catch (e: any) {
         console.error("Error extracting and categorizing transactions from PDF:", e);
+        return { error: getFriendlyErrorMessage(e) };
+    }
+}
+
+export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string }> {
+    if (!query) {
+        return { error: "Please enter a question." };
+    }
+    if (!transactions || transactions.length === 0) {
+        return { error: "No transactions available to analyze." };
+    }
+
+    try {
+        const result = await askAi({
+            query,
+            transactionData: JSON.stringify(transactions),
+            budgetData: JSON.stringify(budgets),
+        });
+        return { result };
+    } catch (e: any) {
+        console.error("Error getting AI query response:", e);
         return { error: getFriendlyErrorMessage(e) };
     }
 }
