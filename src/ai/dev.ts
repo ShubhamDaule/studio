@@ -4,4 +4,3 @@ config();
 
 import './flows/generate-insights';
 import './flows/extract-transactions';
-import './flows/categorize-transactions';

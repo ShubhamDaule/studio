@@ -2,7 +2,7 @@
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
 import { categorizeTransactions } from "@/ai/flows/categorize-transactions";
-import { extractTransactions } from "@/ai/flows/extract-transactions";
+import { extractTransactions, type RawTransaction } from "@/ai/flows/extract-transactions";
 import type { Transaction, QueryResult, Budget, ExtractedTransaction } from "@/lib/types";
 
 
@@ -42,14 +42,14 @@ export async function extractAndCategorizeTransactions(pdfText: string): Promise
     }
 
     try {
-        // Step 1: Extract raw transactions using the advanced flow
-        const rawTransactions = await extractTransactions({ pdfText });
+        // Step 1: Extract raw transactions using the AI flow
+        const rawTransactions: RawTransaction[] = await extractTransactions({ pdfText });
         if (!rawTransactions || rawTransactions.length === 0) {
             return { data: [] };
         }
         
-        // Step 2: Categorize the extracted transactions
-        const categorizedData = await categorizeTransactions({ rawTransactions });
+        // Step 2: Categorize the extracted transactions using deterministic keyword logic
+        const categorizedData = categorizeTransactions(rawTransactions);
 
         return { data: categorizedData };
     } catch (e: any) {
@@ -57,4 +57,3 @@ export async function extractAndCategorizeTransactions(pdfText: string): Promise
         return { error: getFriendlyErrorMessage(e) };
     }
 }
-
