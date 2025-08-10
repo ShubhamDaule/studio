@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 import { extractAndCategorizeTransactions } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
+import type { ExtractedTransaction, BankName, StatementType } from "@/lib/types";
+
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
@@ -134,7 +136,8 @@ const DashboardNav = () => {
         financialSources,
         selectedSourceFilter,
         setSelectedSourceFilter,
-        onNewTransactions
+        onNewTransactions,
+        onMultipleNewTransactions
     } = useDashboardContext();
     const { toast } = useToast();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -145,8 +148,9 @@ const DashboardNav = () => {
         if (!files || files.length === 0) return;
 
         setIsLoading(true);
+        const allNewTransactions: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType }[] = [];
 
-        for (const file of Array.from(files)) {
+        await Promise.all(Array.from(files).map(async (file) => {
             toast({
                 title: `Processing ${file.name}...`,
                 description: "Reading your file and processing with AI. This may take a moment.",
@@ -168,10 +172,13 @@ const DashboardNav = () => {
                 if (result.error || !result.data || !result.bankName || !result.statementType) {
                     throw new Error(result.error || `Failed to extract transactions from ${file.name}.`);
                 }
-
-                if (onNewTransactions) {
-                    onNewTransactions(result.data, file.name, result.bankName, result.statementType);
-                }
+                
+                allNewTransactions.push({
+                    data: result.data,
+                    fileName: file.name,
+                    bankName: result.bankName,
+                    statementType: result.statementType,
+                });
 
             } catch (error: any) {
                 console.error(`Upload error for ${file.name}:`, error);
@@ -181,6 +188,10 @@ const DashboardNav = () => {
                     description: error.message || "Could not process this PDF file.",
                 });
             }
+        }));
+
+        if (allNewTransactions.length > 0 && onMultipleNewTransactions) {
+            onMultipleNewTransactions(allNewTransactions);
         }
 
         setIsLoading(false);

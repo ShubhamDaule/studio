@@ -6,6 +6,7 @@ import type { Transaction, ExtractedTransaction, BankName, StatementType, Financ
 import { usePathname } from "next/navigation";
 
 type NewTransactionsCallback = (newTransactions: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType) => void;
+type MultipleNewTransactionsCallback = (uploads: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType }[]) => void;
 
 type DashboardContextType = {
   allTransactions: Transaction[];
@@ -22,6 +23,8 @@ type DashboardContextType = {
   setFilteredTransactions: (transactions: Transaction[]) => void;
   onNewTransactions: NewTransactionsCallback | null;
   addUploadedTransactions: (callback: NewTransactionsCallback) => void;
+  onMultipleNewTransactions: MultipleNewTransactionsCallback | null;
+  addMultipleUploadedTransactions: (callback: MultipleNewTransactionsCallback) => void;
   financialSources: FinancialSource[];
 };
 
@@ -43,6 +46,8 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     const pathname = usePathname();
     const isDashboard = pathname.startsWith('/dashboard');
     const [onNewTransactions, setOnNewTransactions] = React.useState<NewTransactionsCallback | null>(null);
+    const [onMultipleNewTransactions, setOnMultipleNewTransactions] = React.useState<MultipleNewTransactionsCallback | null>(null);
+
     const [allTransactions, setAllTransactions] = React.useState<Transaction[]>([]);
     const [transactionFiles, setTransactionFiles] = React.useState<TransactionFile[]>([]);
 
@@ -84,6 +89,10 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     setOnNewTransactions(() => callback);
   }, []);
 
+  const addMultipleUploadedTransactions = React.useCallback((callback: MultipleNewTransactionsCallback) => {
+    setOnMultipleNewTransactions(() => callback);
+  }, []);
+
 
   const value = {
     allTransactions,
@@ -100,6 +109,8 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     setFilteredTransactions,
     onNewTransactions,
     addUploadedTransactions,
+    onMultipleNewTransactions,
+    addMultipleUploadedTransactions,
     financialSources
   };
 
