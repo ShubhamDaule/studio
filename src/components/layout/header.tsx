@@ -31,40 +31,58 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 // This function attempts to extract transactions from raw text using regex.
 // It's a best-effort approach and may need refinement based on statement formats.
-function extractRawTransactions(text: string): RawTransaction[] {
-    const lines = text.split('\n');
-    const transactions: RawTransaction[] = [];
+function extractRawTransactions(text: string): Omit<ExtractedTransaction, 'category'>[] {
+  const lines = text.split("\n");
+  const txnRegex = /^(?:(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\s+)?(\d{1,2}[\/-]\d{1,2}(?:\s\d{2,4})?)\s+(.+?)\s+([-\$]?\d{1,3}(?:,?\d{3})*\.\d{2}(\s?cr)?)\s*$/gmi;
+  
+  function normalizeDate(d: string): string | null {
+    if (!d) return null;
+    const cleanDate = d.replace(/\s+/g, '/').replace(/-/g, '/');
+    const parts = cleanDate.split("/");
+    if (parts.length < 2) return null;
+    let [m, day, y] = parts;
     
-    // Regex to capture common transaction formats. This is complex and might need adjustment.
-    // Groups: 1:Date, 2:Description/Merchant, 3:Amount
-    const transactionRegex = /(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\s+(.+?)\s+((?:-\s)?\$?\s?\d{1,3}(?:,?\d{3})*\.\d{2})/;
-
-    function normalizeDate(dateStr: string): string {
-        const d = new Date(dateStr);
-        if (d.getFullYear() < 2000) {
-            d.setFullYear(d.getFullYear() + 2000);
-        }
-        return d.toISOString().split('T')[0];
+    if (!y) {
+        y = new Date().getFullYear().toString();
     }
+    if (y.length === 2) y = "20" + y;
 
-    for (const line of lines) {
-        const match = transactionRegex.exec(line.trim());
-        if (match) {
-            const date = normalizeDate(match[1]);
-            const merchant = match[2].trim()
-                .replace(/\s\s+/g, ' ') // Clean up spaces
-                .replace(/#\d+/g, '') // remove # followed by numbers
-                .replace(/\b[A-Z0-9]{8,}\b/g, '') // remove long alphanumeric codes
-                .trim();
-            const amountStr = match[3].replace(/[\$,\s]/g, '');
-            const amount = parseFloat(amountStr);
+    if (parseInt(m) > 12 || parseInt(day) > 31) return null;
 
-            if (!isNaN(amount) && merchant) {
-                transactions.push({ date, merchant, amount });
-            }
+    return `${y.padStart(4, "20")}-${m.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+  
+  const transactions: Omit<ExtractedTransaction, 'category'>[] = [];
+  for (const line of lines) {
+    const match = txnRegex.exec(line.trim());
+    if (match) {
+        // Use the second date group if the first is missing
+        const dateStr = match[1] || match[2];
+        const date = normalizeDate(dateStr);
+
+        if (!date) continue;
+
+        let merchant = match[3].trim();
+        // Remove common prefixes/suffixes
+        merchant = merchant.replace(/^(CHECKCARD|PURCHASE|DEBIT)\s+/i, '')
+                           .replace(/\s+\d+$/,'') // remove trailing numbers
+                           .replace(/\s{2,}/g, ' '); // remove extra spaces
+
+        let amountStr = match[4].replace(/[\$,]/g, '').trim();
+        const isCredit = /cr/i.test(amountStr) || amountStr.startsWith('-');
+        amountStr = amountStr.replace(/cr/i, '').trim();
+        
+        let amount = parseFloat(amountStr);
+        if (isNaN(amount)) continue;
+        
+        if (isCredit) {
+            amount = -amount;
         }
+
+        transactions.push({ date, merchant, amount });
     }
-    return transactions;
+  }
+  return transactions;
 }
 
 
@@ -182,6 +200,7 @@ const DashboardNav = () => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isLoading, setIsLoading] = React.useState(false);
     const [rawJsonData, setRawJsonData] = React.useState<RawTransaction[] | null>(null);
+    const [rawText, setRawText] = React.useState<string | null>(null);
     const [fileName, setFileName] = React.useState<string | null>(null);
 
 
@@ -208,16 +227,7 @@ const DashboardNav = () => {
             
             const rawTransactions = extractRawTransactions(fullText);
             
-            if (rawTransactions.length === 0) {
-                 toast({
-                    variant: "destructive",
-                    title: "Extraction Failed",
-                    description: "We couldn't find any transactions in this PDF. The format might be unsupported.",
-                });
-                setIsLoading(false);
-                return;
-            }
-
+            setRawText(fullText);
             setFileName(file.name);
             setRawJsonData(rawTransactions);
 
@@ -236,6 +246,8 @@ const DashboardNav = () => {
         if (!rawJsonData || !fileName) return;
 
         setRawJsonData(null);
+        setRawText(null);
+
         toast({
             title: "Categorizing with AI...",
             description: "Please wait while we categorize your transactions.",
@@ -266,6 +278,7 @@ const DashboardNav = () => {
     
     const handleCancel = () => {
         setRawJsonData(null);
+        setRawText(null);
         setIsLoading(false);
         setFileName(null);
         if(fileInputRef.current) fileInputRef.current.value = "";
@@ -316,6 +329,7 @@ const DashboardNav = () => {
             onClose={handleCancel}
             onConfirm={handleConfirmCategorization}
             jsonData={rawJsonData}
+            rawText={rawText}
         />
        </>
     )
