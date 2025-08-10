@@ -82,3 +82,26 @@ ${input.anomalyData ? `Anomaly Data:\n${input.anomalyData}` : ''}
 
   return llmResponse.output!;
 }
+
+
+// Personal Finance Advisor & Spending Analyst
+// Nature:
+// Complex multi-step reasoning—analyzing transactions, detecting patterns, recommending personalized tips, budgeting rules, and habit changes. Output is structured JSON with multiple insights.
+
+// Needs:
+// Good reasoning, ability to parse structured JSON input, create nuanced and actionable advice.
+
+// Recommended Model:
+// Gemini 2.0 Flash or Gemini 2.0 Flash-Lite
+
+// Why? Balances reasoning quality and cost.
+
+// 2.0 Flash-Lite is cheaper but might be slightly less nuanced. If you want to save cost and don’t need ultra-detailed analysis, go Lite.
+
+// 2.0 Flash is better for richer insights but costs a bit more.
+
+// Avoid:
+
+// Pro models here may be overkill and expensive.
+
+// Gemini 1.5 Flash can be used if cost is critical, but expect some drop in insight quality.

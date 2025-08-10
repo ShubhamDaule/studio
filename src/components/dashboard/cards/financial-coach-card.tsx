@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Transaction } from "@/lib/types";
-import { Sparkles, Bot, Loader2, icons, type LucideIcon } from "lucide-react";
+import { Sparkles, Bot, Loader2, icons, type LucideIcon, RefreshCcw } from "lucide-react";
 import { FinancialCoach } from "../../characters/financial-coach";
 import { getAIInsights } from "@/lib/actions";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -93,7 +93,7 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
                 <CarouselContent className="-ml-2">
                     {insights.map((insight, index) => (
                         <CarouselItem key={index} className="pl-2 md:basis-1/2 lg:basis-full">
-                            <div className="p-1">
+                            <div className="p-1 h-full">
                                 <InsightItem insight={insight} />
                             </div>
                         </CarouselItem>
@@ -122,10 +122,12 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
         >
           {isLoading ? (
              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : insights ? (
+            <RefreshCcw className="mr-2 h-4 w-4" />
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Generating Advice..." : "Ask Your Coach"}
+          {isLoading ? "Generating Advice..." : insights ? "Try Again" : "Ask Your Coach"}
         </Button>
       </CardFooter>
     </Card>
