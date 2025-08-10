@@ -103,7 +103,7 @@ Transaction Amount: {{{transactionAmount}}}
 17. **Fees & Charges**
     *   Keywords: "Fee", "Charge", "Late Fee", "Overdraft", "Penalty"
 
-18. **Home Improvement & Hardware**
+18. **Hardware**
     *   Keywords: "Depot", "Home Depot", "Lowe's", "Ace Hardware", "Menards", "B&Q", "True Value", "Builders", "Tool", "Hardware", "DIY"
 
 19. **Office Supplies**

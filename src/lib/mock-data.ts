@@ -58,5 +58,5 @@ export const mockTransactions: Transaction[] = [
   { id: '32', date: '2023-11-22', merchant: 'Starbucks', amount: 7.25, category: 'Dining', fileSource: mockFile3 }, // Multiple charges
   { id: '33', date: '2023-11-22', merchant: 'Starbucks', amount: 12.50, category: 'Dining', fileSource: mockFile3 }, // Multiple charges
   { id: '34', date: '2023-11-22', merchant: 'Starbucks', amount: 5.00, category: 'Dining', fileSource: mockFile3 }, // Multiple charges
-  { id: '35', date: '2023-11-17', merchant: 'Home Depot', amount: 185.40, category: 'Home Improvement & Hardware', fileSource: mockFile3 }, // Back-to-back big transaction
+  { id: '35', date: '2023-11-17', merchant: 'Home Depot', amount: 185.40, category: 'Hardware', fileSource: mockFile3 }, // Back-to-back big transaction
 ];

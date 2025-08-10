@@ -21,7 +21,7 @@ const defaultBudgets: Budget[] = [
     { category: 'Education', amount: 50 },
     { category: 'Insurance', amount: 150 },
     { category: 'Charity & Donations', amount: 25 },
-    { category: 'Home Improvement & Hardware', amount: 100 },
+    { category: 'Hardware', amount: 100 },
     { category: 'Office Supplies', amount: 20 },
     { category: 'Miscellaneous', amount: 100 },
 ];

@@ -50,7 +50,7 @@ export const defaultCategoryIcons: Record<string, LucideIcon> = {
   'Charity & Donations': HandCoins,
   'Government & Taxes': Landmark,
   'Fees & Charges': Scale,
-  'Home Improvement & Hardware': Wrench,
+  'Hardware': Wrench,
   'Office Supplies': Briefcase,
   Miscellaneous: MoreHorizontal,
 };
