@@ -1,35 +1,18 @@
 
 "use server";
-import { generateInsights } from "@/ai/flows/generate-insights";
-import { askAi } from "@/ai/flows/ask-ai-flow";
 import type { Transaction, QueryResult, Budget } from "@/lib/types";
 
+// The AI-related functions have been removed as per the user's request.
+// You can re-implement them here if you wish to add AI features back.
+
 export async function getAIInsights(transactions: Transaction[]) {
-  try {
-    const spendingData = JSON.stringify(transactions.map(t => ({...t, amount: t.amount.toFixed(2)})));
-    const result = await generateInsights({ spendingData });
-    return { success: true, insights: result.insights };
-  } catch (error) {
-    console.error("Error generating AI insights:", error);
-    return { success: false, error: "Failed to generate insights. Please try again." };
-  }
+  console.log("getAIInsights called, but is disabled.");
+  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+  return { success: false, error: "AI insights are currently disabled." };
 }
 
 export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string }> {
-    try {
-        const transactionsJson = JSON.stringify(transactions.map(t => ({...t, amount: t.amount.toFixed(2)})));
-        const budgetsJson = JSON.stringify(budgets);
-
-        const result = await askAi({
-            query,
-            transactions: transactionsJson,
-            budgets: budgetsJson,
-        });
-        
-        return { result };
-
-    } catch (e: any) {
-        console.error("Error getting AI query response: ", e);
-        return { error: e.message || "An unknown error occurred" };
-    }
+    console.log("getAiQueryResponse called, but is disabled.");
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+    return { error: "Ask AI feature is currently disabled." };
 }
