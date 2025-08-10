@@ -1,5 +1,4 @@
 
-
 import type { icons } from "lucide-react";
 
 export type Category = {
@@ -39,7 +38,7 @@ export type Anomaly = {
 export type Tip = {
   icon: keyof typeof icons;
   title: string;
-  description: string;
+  description:string;
 }
 
 export type ChartType = 'pie' | 'bar' | 'line';
@@ -47,6 +46,9 @@ export type ChartType = 'pie' | 'bar' | 'line';
 export type ChartData = {
   data: { name: string; value: number }[];
   type: ChartType;
+  title: string;
+  dataKey: string;
+  nameKey: string;
 };
 
 export type QueryResult = {
@@ -55,3 +57,18 @@ export type QueryResult = {
 };
 
 export type Budgets = Budget[];
+
+export type ExtractedTransaction = {
+    date: string;
+    merchant: string;
+    amount: number;
+    category: Category['name'];
+};
+
+export type ExtractedData = {
+    accountType: "Bank Account" | "Credit Card" | "Unknown";
+    bankName: string;
+    statementStartDate: string;
+    statementEndDate: string;
+    transactions: ExtractedTransaction[];
+};

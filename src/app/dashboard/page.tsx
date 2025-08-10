@@ -18,14 +18,16 @@ import { TransactionsTab } from "@/components/dashboard/tabs/transactions-tab";
 import { InsightsTab } from "@/components/dashboard/tabs/insights-tab";
 import { useDashboardContext } from "@/context/dashboard-context";
 import { mockTransactions, mockCategories } from "@/lib/mock-data";
-import type { Transaction, Category } from "@/lib/types";
+import type { Transaction, Category, ExtractedData } from "@/lib/types";
 import { LayoutGrid, List, Sparkles, Target } from "lucide-react";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
+import { useToast } from "@/hooks/use-toast";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
-    const { setHasTransactions, dateRange, selectedSourceFilter, setFilteredTransactions: setContextFilteredTransactions } = useDashboardContext();
+    const { setHasTransactions, dateRange, selectedSourceFilter, setFilteredTransactions: setContextFilteredTransactions, addUploadedTransactions } = useDashboardContext();
+    const { toast } = useToast();
 
     const [allTransactions, setAllTransactions] = React.useState<Transaction[]>(mockTransactions);
     const [allCategories, setAllCategories] = React.useState<Category[]>(mockCategories);
@@ -54,6 +56,24 @@ export default function DashboardPage() {
     React.useEffect(() => {
         setHasTransactions(allTransactions.length > 0);
     }, [allTransactions, setHasTransactions]);
+    
+    React.useEffect(() => {
+        addUploadedTransactions((newTransactions, fileName) => {
+            const transactionsWithSource = newTransactions.map(t => ({
+                ...t,
+                id: crypto.randomUUID(),
+                fileSource: fileName
+            }));
+            
+            setAllTransactions(prev => [...prev, ...transactionsWithSource]);
+
+            toast({
+                title: "Upload Successful!",
+                description: `${transactionsWithSource.length} transactions have been added from ${fileName}.`,
+            });
+        });
+    }, [addUploadedTransactions, toast]);
+
 
     const totalSpending = React.useMemo(() => {
         return filteredTransactions

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { LogOut, PanelLeft, BarChart3, Upload } from "lucide-react";
+import { LogOut, PanelLeft, BarChart3, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -20,6 +20,9 @@ import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { SourceFilter } from "@/components/dashboard/source-filter";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { extractTransactionsFromPdf } from "@/lib/actions";
+import { useToast } from "@/hooks/use-toast";
+import pdf from "pdf-parse/lib/pdf-parse";
 
 const Logo = () => (
     <div className="flex items-center gap-2 flex-shrink-0">
@@ -129,7 +132,55 @@ const DashboardNav = () => {
         transactionFiles,
         selectedSourceFilter,
         setSelectedSourceFilter,
+        onNewTransactions
     } = useDashboardContext();
+    const { toast } = useToast();
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [isUploading, setIsUploading] = React.useState(false);
+
+
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        toast({
+            title: "Processing Statement...",
+            description: "Reading your file and extracting transactions with AI.",
+        });
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const arrayBuffer = e.target?.result;
+                if (!arrayBuffer) throw new Error("Could not read file.");
+
+                const pdfData = await pdf(Buffer.from(arrayBuffer as ArrayBuffer));
+                const result = await extractTransactionsFromPdf(pdfData.text);
+
+                if (result.error || !result.data) {
+                    throw new Error(result.error || "Failed to extract transactions.");
+                }
+
+                if (onNewTransactions) {
+                    onNewTransactions(result.data.transactions, file.name);
+                }
+
+            } catch (error: any) {
+                console.error("Upload error:", error);
+                toast({
+                    variant: "destructive",
+                    title: "Upload Failed",
+                    description: error.message || "An unknown error occurred.",
+                });
+            } finally {
+                setIsUploading(false);
+                // Reset file input
+                if(fileInputRef.current) fileInputRef.current.value = "";
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    };
 
     return (
         <div className="flex w-full items-center justify-end gap-2">
@@ -145,6 +196,26 @@ const DashboardNav = () => {
                     selectedSource={selectedSourceFilter}
                     onSelectSource={setSelectedSourceFilter}
                 />
+                 <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept=".pdf"
+                />
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                >
+                    {isUploading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <Upload className="mr-2 h-4 w-4" />
+                    )}
+                    Upload
+                </Button>
             </div>
             <div className="flex items-center gap-2">
                 <UserNav />

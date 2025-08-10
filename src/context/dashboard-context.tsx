@@ -2,9 +2,11 @@
 "use client";
 import type { DateRange } from "react-day-picker";
 import * as React from 'react';
-import type { Transaction } from "@/lib/types";
+import type { Transaction, ExtractedTransaction } from "@/lib/types";
 import { mockTransactions } from "@/lib/mock-data";
 import { usePathname } from "next/navigation";
+
+type NewTransactionsCallback = (newTransactions: ExtractedTransaction[], fileName: string) => void;
 
 type DashboardContextType = {
   dateRange: DateRange | undefined;
@@ -18,6 +20,8 @@ type DashboardContextType = {
   setHasTransactions: (has: boolean) => void;
   filteredTransactions: Transaction[];
   setFilteredTransactions: (transactions: Transaction[]) => void;
+  onNewTransactions: NewTransactionsCallback | null;
+  addUploadedTransactions: (callback: NewTransactionsCallback) => void;
 };
 
 const DashboardContext = React.createContext<DashboardContextType | undefined>(undefined);
@@ -37,6 +41,7 @@ type DashboardProviderProps = {
 export function DashboardProvider({ children }: DashboardProviderProps) {
     const pathname = usePathname();
     const isDashboard = pathname.startsWith('/dashboard');
+    const [onNewTransactions, setOnNewTransactions] = React.useState<NewTransactionsCallback | null>(null);
 
     const transactionFiles = React.useMemo(() => {
         if (!isDashboard) return [];
@@ -63,6 +68,11 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     setDateRange({ from: minDate, to: maxDate });
   }, [minDate, maxDate]);
   
+  const addUploadedTransactions = React.useCallback((callback: NewTransactionsCallback) => {
+    setOnNewTransactions(() => callback);
+  }, []);
+
+
   const value = {
     dateRange,
     setDateRange,
@@ -75,6 +85,8 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     setHasTransactions,
     filteredTransactions,
     setFilteredTransactions,
+    onNewTransactions,
+    addUploadedTransactions,
   };
 
   return (

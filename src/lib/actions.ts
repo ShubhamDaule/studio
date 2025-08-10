@@ -2,7 +2,8 @@
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
 import { askAi } from "@/ai/flows/ask-ai-flow";
-import type { Transaction, QueryResult, Budget } from "@/lib/types";
+import { extractTransactions } from "@/ai/flows/extract-transactions";
+import type { Transaction, QueryResult, Budget, ExtractedData } from "@/lib/types";
 
 function getFriendlyErrorMessage(error: any): string {
     const defaultMessage = 'An unexpected error occurred. Please try again.';
@@ -51,6 +52,20 @@ export async function getAiQueryResponse(query: string, transactions: Transactio
         return { result };
     } catch (e: any) {
         console.error("Error getting AI query response:", e);
+        return { error: getFriendlyErrorMessage(e) };
+    }
+}
+
+export async function extractTransactionsFromPdf(pdfText: string): Promise<{ data?: ExtractedData; error?: string }> {
+    if (!pdfText) {
+        return { error: "No text content found in the PDF." };
+    }
+
+    try {
+        const data = await extractTransactions({ pdfText });
+        return { data };
+    } catch (e: any) {
+        console.error("Error extracting transactions from PDF:", e);
         return { error: getFriendlyErrorMessage(e) };
     }
 }
