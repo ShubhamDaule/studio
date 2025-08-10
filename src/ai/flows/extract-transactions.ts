@@ -63,13 +63,12 @@ function getBankPreProcessing(bankInfo: StatementInfo, rawText: string) {
     let prompt;
 
     const basePrompt = `
-You are an expert financial AI. Your task is to extract transactions from the provided text from a bank statement.
-For each transaction, extract the following:
-- date: Format as 'YYYY-MM-DD'.
-- merchant: The raw transaction description.
-- amount: Payments, refunds, or credits MUST be negative numbers. Purchases or debits MUST be positive numbers.
-
-Return only a valid JSON array of transaction objects. Do not include categories.
+Extract transactions from statement text.
+Required fields:
+- date: 'YYYY-MM-DD'
+- merchant: Raw merchant name.
+- amount: Purchases are positive, payments/credits are negative.
+Return only a JSON array of transactions. Do not add categories.
 `;
 
     if (bankInfo.bankName === 'Amex' && bankInfo.statementType === 'Credit Card') {
@@ -79,7 +78,7 @@ Return only a valid JSON array of transaction objects. Do not include categories
         let endIndex = text.indexOf("Total Interest Charged for this Period");
         if(endIndex !== -1) text = text.substring(0, endIndex);
         
-        prompt = `You are a financial assistant extracting structured transactions from an American Express credit card statement. ${basePrompt}`;
+        prompt = `Source: American Express Credit Card Statement. ${basePrompt}`;
     } else if (bankInfo.bankName === 'Discover' && bankInfo.statementType === 'Credit Card') {
         let startIndex = text.indexOf("Transactions");
         if(startIndex !== -1) text = text.substring(startIndex);
@@ -87,10 +86,10 @@ Return only a valid JSON array of transaction objects. Do not include categories
         let endIndex = text.indexOf("Statement Balance is the total");
         if(endIndex !== -1) text = text.substring(0, endIndex);
 
-        prompt = `You are a financial assistant extracting structured transactions from a Discover credit card statement. ${basePrompt}`;
+        prompt = `Source: Discover Credit Card Statement. ${basePrompt}`;
     } else {
         // Default prompt for unknown banks
-        prompt = `You are a financial assistant extracting structured transactions from a bank statement. ${basePrompt}`;
+        prompt = `Source: Bank Statement. ${basePrompt}`;
     }
 
     return { processedText: text, prompt };
@@ -112,7 +111,7 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     const llmResponse = await ai.generate({
         prompt: `${prompt}
         
-        Here is the statement text to analyze:
+        Statement Text:
         ---
         ${processedText}
         ---
