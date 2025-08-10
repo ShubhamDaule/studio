@@ -36,7 +36,7 @@ export function DateRangePicker({
     }
 
     // All time
-    if (minDate && maxDate && isSameDay(date.from, minDate) && date.to && isSameDay(date.to, maxDate)) {
+    if (minDate && maxDate && date.to && isSameDay(date.from, minDate) && isSameDay(date.to, maxDate)) {
         return "All time";
     }
 
@@ -61,8 +61,6 @@ export function DateRangePicker({
 
     return format(date.from, "LLL dd, y");
   };
-
-  const isAllTime = minDate && maxDate && date?.from && date?.to && isSameDay(date.from, minDate) && isSameDay(date.to, maxDate);
   
   const handleReset = () => {
     setDate({ from: minDate, to: maxDate });
@@ -78,7 +76,7 @@ export function DateRangePicker({
             variant={"outline"}
             size="sm"
             className={cn(
-              "w-full justify-start text-left font-normal sm:w-44",
+              "w-full justify-start text-left font-normal sm:w-64",
               !date && "text-muted-foreground"
             )}
           >
