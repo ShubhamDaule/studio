@@ -24,22 +24,34 @@ const CategorizeTransactionsInputSchema = z.object({
     merchant: z.string(),
     amount: z.number(),
   })),
+  bankName: z.string().optional(),
 });
 
 export type CategorizeTransactionsInput = z.infer<typeof CategorizeTransactionsInputSchema>;
+
+const getPrompt = (bankName?: string) => {
+    let context = "You are a financial expert AI.";
+    if (bankName && bankName !== 'Unknown') {
+        context = `You are a financial expert AI specializing in statements from ${bankName}.`;
+    }
+
+    return `${context} Based on the merchant name, categorize each transaction into one of these master categories:
+Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous.
+
+Return only a JSON array with date, merchant, amount, and category fields. The output should be a valid JSON array of objects.
+`;
+}
 
 
 export async function categorizeTransactions(input: CategorizeTransactionsInput): Promise<ExtractedTransaction[]> {
     if (input.rawTransactions.length === 0) {
         return [];
     }
+    
+    const prompt = getPrompt(input.bankName);
 
     const llmResponse = await ai.generate({
-        prompt: `You are a financial expert AI. Based on the merchant name, categorize each transaction into one of these master categories:
-Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous.
-
-Return only a JSON array with date, merchant, amount, and category fields. The output should be a valid JSON array of objects.
-
+        prompt: `${prompt}
 Transactions:
 ${JSON.stringify(input.rawTransactions, null, 2)}
 `,

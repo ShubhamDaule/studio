@@ -57,13 +57,13 @@ export async function getAiQueryResponse(query: string, transactions: Transactio
     }
 }
 
-export async function categorizeTransactions(rawTransactions: RawTransaction[]): Promise<{ data?: ExtractedTransaction[]; error?: string }> {
+export async function categorizeTransactions(rawTransactions: RawTransaction[], bankName?: string): Promise<{ data?: ExtractedTransaction[]; error?: string }> {
     if (!rawTransactions || rawTransactions.length === 0) {
         return { error: "No transactions to categorize." };
     }
 
     try {
-        const data = await categorizeTransactionsFlow({ rawTransactions });
+        const data = await categorizeTransactionsFlow({ rawTransactions, bankName });
         return { data };
     } catch (e: any) {
         console.error("Error extracting transactions from PDF:", e);

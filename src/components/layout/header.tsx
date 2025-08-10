@@ -85,6 +85,20 @@ function extractRawTransactions(text: string): Omit<ExtractedTransaction, 'categ
   return transactions;
 }
 
+function detectBankAndStatementType(text: string, fileName?: string) {
+  const bankKeywords = ["chase", "discover", "american express", "wells fargo", "bank of america", "citi", "amex"];
+  const lowerText = text.toLowerCase();
+
+  let bankFound = bankKeywords.find(bank => lowerText.includes(bank));
+  if (!bankFound && fileName) {
+    bankFound = fileName.toLowerCase().match(new RegExp(bankKeywords.join("|")))?.[0];
+  }
+  
+  if (!bankFound) bankFound = "Unknown";
+
+  return { bankName: bankFound.charAt(0).toUpperCase() + bankFound.slice(1) };
+}
+
 
 const Logo = () => (
     <div className="flex items-center gap-2 flex-shrink-0">
@@ -202,6 +216,7 @@ const DashboardNav = () => {
     const [rawJsonData, setRawJsonData] = React.useState<RawTransaction[] | null>(null);
     const [rawText, setRawText] = React.useState<string | null>(null);
     const [fileName, setFileName] = React.useState<string | null>(null);
+    const [bankName, setBankName] = React.useState<string | null>(null);
 
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,10 +241,12 @@ const DashboardNav = () => {
             }
             
             const rawTransactions = extractRawTransactions(fullText);
+            const { bankName: detectedBank } = detectBankAndStatementType(fullText, file.name);
             
             setRawText(fullText);
             setFileName(file.name);
             setRawJsonData(rawTransactions);
+            setBankName(detectedBank);
 
         } catch (error: any) {
             console.error("Upload error:", error);
@@ -245,16 +262,19 @@ const DashboardNav = () => {
     const handleConfirmCategorization = async () => {
         if (!rawJsonData || !fileName) return;
 
+        const currentBank = bankName;
+
         setRawJsonData(null);
         setRawText(null);
+        setBankName(null);
 
         toast({
             title: "Categorizing with AI...",
-            description: "Please wait while we categorize your transactions.",
+            description: `Please wait while we categorize your transactions. Detected bank: ${currentBank}`,
         });
         
         try {
-            const result = await categorizeTransactionsAction(rawJsonData);
+            const result = await categorizeTransactionsAction(rawJsonData, currentBank || undefined);
             if (result.error || !result.data) {
                 throw new Error(result.error || "Failed to categorize transactions.");
             }
@@ -281,6 +301,7 @@ const DashboardNav = () => {
         setRawText(null);
         setIsLoading(false);
         setFileName(null);
+        setBankName(null);
         if(fileInputRef.current) fileInputRef.current.value = "";
     }
 
