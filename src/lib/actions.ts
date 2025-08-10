@@ -1,8 +1,7 @@
 
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
-import { generateSpendingTips } from "@/ai/flows/generate-tips";
-import type { Transaction, Tip, QueryResult, Budgets } from "@/lib/types";
+import type { Transaction, Tip, QueryResult, Budget } from "@/lib/types";
 
 export async function getAIInsights(transactions: Transaction[]) {
   try {
@@ -15,18 +14,7 @@ export async function getAIInsights(transactions: Transaction[]) {
   }
 }
 
-export async function getSpendingTips(transactions: Transaction[]): Promise<{ tips?: Tip[]; error?: string }> {
-    try {
-        const spendingData = JSON.stringify(transactions.map(t => ({ category: t.category, amount: t.amount.toFixed(2), date: t.date })));
-        const result = await generateSpendingTips({ spendingData });
-        return { tips: result.tips };
-    } catch (error) {
-        console.error("Error generating spending tips:", error);
-        return { error: "Failed to generate tips. Please try again." };
-    }
-}
-
-export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budgets): Promise<{ result?: QueryResult; error?: string }> {
+export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string }> {
     // This would in reality call a Genkit flow. For now, it returns mock data.
     if (query.toLowerCase().includes("groceries")) {
         return { 

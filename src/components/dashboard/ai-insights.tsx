@@ -35,10 +35,10 @@ export default function AIInsights({ data }: AIInsightsProps) {
   };
   
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col h-full card-interactive group overflow-hidden">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-primary" />
+        <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
+          <Sparkles className="w-5 h-5" />
           AI Smart Insights
         </CardTitle>
         <CardDescription>
@@ -54,19 +54,20 @@ export default function AIInsights({ data }: AIInsightsProps) {
           </div>
         )}
         {!isLoading && insights && (
-            <div className="p-4 text-sm rounded-lg bg-accent/50 border border-accent">
+            <div className="p-4 text-sm rounded-lg bg-accent/10 border border-accent/20">
                 <p className="whitespace-pre-wrap">{insights}</p>
             </div>
         )}
         {!isLoading && !insights && (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
-            <Bot className="w-12 h-12 mb-4" />
-            <p>Click the button to generate your personalized financial insights.</p>
+            <Bot className="w-12 h-12 mb-4 text-primary/50" />
+            <p>Click the button to generate your personalized financial advice.</p>
           </div>
         )}
       </CardContent>
       <CardFooter>
         <Button onClick={handleGenerateInsights} disabled={isLoading || data.length === 0} className="w-full">
+          <Sparkles className="mr-2 h-4 w-4" />
           {isLoading ? 'Generating...' : 'Generate Insights'}
         </Button>
       </CardFooter>
