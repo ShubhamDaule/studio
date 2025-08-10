@@ -31,7 +31,7 @@ interface Insight {
 const InsightItem = ({ insight }: { insight: Insight }) => {
     const IconComponent = icons[insight.icon] || Bot;
     return (
-        <Card className="bg-background/70 backdrop-blur-sm flex flex-col">
+        <Card className="bg-background/70 backdrop-blur-sm flex flex-col h-full">
             <CardHeader className="flex-row items-center gap-4 space-y-0">
                 <IconComponent className="w-8 h-8 text-primary" />
                 <CardTitle className="leading-tight">{insight.title}</CardTitle>
