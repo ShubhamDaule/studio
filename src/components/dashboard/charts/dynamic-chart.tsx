@@ -2,9 +2,8 @@
 "use client";
 
 import * as React from 'react';
-import { Pie, PieChart, Bar, BarChart, XAxis, YAxis, Tooltip, Cell, Legend, ResponsiveContainer, Rectangle } from 'recharts';
+import { Pie, PieChart, Bar, BarChart, XAxis, YAxis, Tooltip, Cell, Legend, ResponsiveContainer } from 'recharts';
 import type { ChartData } from '@/lib/types';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 
 interface DynamicChartProps {
     chartData: ChartData;
@@ -23,10 +22,7 @@ export function DynamicChart({ chartData }: DynamicChartProps) {
             <div className="w-full h-64 mt-4">
                 <ResponsiveContainer>
                     <PieChart>
-                        <Tooltip
-                            cursor={false}
-                            content={<ChartTooltipContent hideLabel formatter={(value) => formatCurrency(value as number)} />}
-                        />
+                        <Tooltip formatter={(value) => formatCurrency(value as number)} />
                         <Pie data={chartData.data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8">
                             {chartData.data.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
@@ -43,20 +39,11 @@ export function DynamicChart({ chartData }: DynamicChartProps) {
         return (
             <div className="w-full h-64 mt-4">
                 <ResponsiveContainer>
-                    <BarChart data={chartData.data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                        <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
-                        <YAxis
-                            tickLine={false}
-                            axisLine={false}
-                            tickMargin={8}
-                            tickFormatter={(value) => `$${value}`}
-                            fontSize={12}
-                        />
-                        <Tooltip
-                          cursor={false}
-                          content={<ChartTooltipContent indicator="dot" formatter={(value) => formatCurrency(value as number)} />}
-                        />
-                        <Bar dataKey="value" fill="var(--color-amount)" radius={4}>
+                    <BarChart data={chartData.data}>
+                        <XAxis dataKey="name" />
+                        <YAxis tickFormatter={(value) => `$${value}`} />
+                        <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                        <Bar dataKey="value" fill="#8884d8">
                             {chartData.data.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
                             ))}

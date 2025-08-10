@@ -1,6 +1,7 @@
 
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
+import { askAi } from "@/ai/flows/ask-ai-flow";
 import type { Transaction, QueryResult, Budget } from "@/lib/types";
 
 function getFriendlyErrorMessage(error: any): string {
@@ -34,7 +35,22 @@ export async function getAIInsights(transactions: Transaction[]) {
 }
 
 export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string }> {
-    console.log("getAiQueryResponse called, but is disabled.");
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-    return { error: "Ask AI feature is currently disabled." };
+    if (!query) {
+        return { error: "Please enter a question." };
+    }
+    if (!transactions || transactions.length === 0) {
+        return { error: "No transactions to analyze." };
+    }
+    
+    try {
+        const result = await askAi({
+            query,
+            transactionData: JSON.stringify(transactions),
+            budgetData: JSON.stringify(budgets),
+        });
+        return { result };
+    } catch (e: any) {
+        console.error("Error getting AI query response:", e);
+        return { error: getFriendlyErrorMessage(e) };
+    }
 }

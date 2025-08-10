@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -13,8 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import type { Transaction, QueryResult, Budget } from "@/lib/types";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2, Bot } from "lucide-react";
 import { AskAiCharacter } from "../../characters/ask-ai-character";
+import { getAiQueryResponse } from "@/lib/actions";
+import { DynamicChart } from "../charts/dynamic-chart";
 
 interface AskAiCardProps {
   transactions: Transaction[];
@@ -24,14 +27,34 @@ interface AskAiCardProps {
 export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
   const { toast } = useToast();
   const [query, setQuery] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [result, setResult] = React.useState<QueryResult | null>(null);
   
-  const handleDisabledClick = () => {
-    toast({
+  const handleQuery = async () => {
+    setIsLoading(true);
+    setResult(null);
+
+    const response = await getAiQueryResponse(query, transactions, budgets);
+    
+    if (response.error) {
+      toast({
         variant: "destructive",
-        title: "Feature Disabled",
-        description: "The AI features have been disabled.",
-    });
-  }
+        title: "Error",
+        description: response.error,
+      });
+    } else if (response.result) {
+      setResult(response.result);
+    }
+    
+    setIsLoading(false);
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleQuery();
+    }
+  };
 
   return (
     <Card className="h-full flex flex-col overflow-hidden bg-muted/20 col-span-1 lg:col-span-2 card-interactive group">
@@ -53,20 +76,44 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
             <Textarea
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="e.g., How much did I spend on groceries in October?"
+                onKeyDown={handleKeyDown}
+                placeholder="e.g., How much did I spend on groceries in October? or Show a pie chart of my spending."
                 className="bg-background"
-                disabled={true}
+                disabled={isLoading}
             />
+             <div className="w-full min-h-[10rem] p-4 text-sm rounded-lg bg-background/50 border border-border text-left overflow-y-auto">
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : result ? (
+                    <div>
+                        <p className="whitespace-pre-wrap">{result.answer}</p>
+                        {result.chartData && (
+                            <DynamicChart chartData={result.chartData} />
+                        )}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                        <Bot className="h-8 w-8 mb-2" />
+                        <p>Your answer will appear here.</p>
+                    </div>
+                )}
+            </div>
         </div>
       </CardContent>
        <CardFooter className="z-10">
         <Button
-          onClick={handleDisabledClick}
-          disabled={true}
+          onClick={handleQuery}
+          disabled={isLoading || !query || transactions.length === 0}
           className="w-full"
         >
-          <Sparkles className="mr-2 h-4 w-4" />
-          Ask AI
+          {isLoading ? (
+             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ): (
+             <Sparkles className="mr-2 h-4 w-4" />
+          )}
+         {isLoading ? "Thinking..." : "Ask AI"}
         </Button>
       </CardFooter>
     </Card>
