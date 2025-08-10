@@ -21,7 +21,7 @@ export function HighestTransactionCard({ transaction, onClick }: HighestTransact
              try {
                 const date = parseISO(transaction.date);
                 if (!isNaN(date.getTime())) {
-                    setFormattedDate(format(date, "MMM d, yyyy"));
+                    setFormattedDate(format(date, "MMM dd, yyyy"));
                 } else {
                     setFormattedDate('Invalid Date');
                 }

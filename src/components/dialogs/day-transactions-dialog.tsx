@@ -18,7 +18,7 @@ type Props = {
 
 export function DayTransactionsDialog({ isOpen, onClose, date, transactions, allCategories, onCategoryChange, isPro }: Props) {
   if (!date) return null;
-  const formattedDate = format(parseISO(date), "PPP");
+  const formattedDate = format(parseISO(date), "MMM dd, yyyy");
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md sm:max-w-3xl">

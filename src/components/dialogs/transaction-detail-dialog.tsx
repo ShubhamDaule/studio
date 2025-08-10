@@ -29,7 +29,7 @@ export function TransactionDetailDialog({ isOpen, onClose, transaction, allCateg
   const formatDate = (dateString: string) => {
     try {
         const date = parseISO(dateString);
-        return format(date, "MMMM do, yyyy");
+        return format(date, "MMM dd, yyyy");
     } catch {
         return dateString;
     }

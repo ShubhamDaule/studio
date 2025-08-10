@@ -85,7 +85,7 @@ export function TransactionTable({
   
   const formatDate = (dateString: string) => {
     try {
-        return format(parseISO(dateString), "PPP");
+        return format(parseISO(dateString), "MMM dd, yyyy");
     } catch {
         return dateString;
     }
@@ -126,8 +126,12 @@ export function TransactionTable({
                 <SortableHeader column="merchant" label="Merchant" />
                 <SortableHeader column="date" label="Date" />
                 <SortableHeader column="amount" label="Amount" className="text-right" />
-                <TableHead className="text-center text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Category</TableHead>
-                <TableHead className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Source</TableHead>
+                <TableHead>
+                    <div className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default text-center">Category</div>
+                </TableHead>
+                <TableHead>
+                    <div className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Source</div>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
