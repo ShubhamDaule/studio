@@ -13,18 +13,39 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Transaction } from "@/lib/types";
-import { Sparkles, Bot, Loader2 } from "lucide-react";
+import { Sparkles, Bot, Loader2, icons, type LucideIcon } from "lucide-react";
 import { FinancialCoach } from "../../characters/financial-coach";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getAIInsights } from "@/lib/actions";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 interface FinancialCoachCardProps {
   transactions: Transaction[];
 }
 
+interface Insight {
+    title: string;
+    description: string;
+    icon: keyof typeof icons;
+}
+
+const InsightItem = ({ insight }: { insight: Insight }) => {
+    const IconComponent = icons[insight.icon] || Bot;
+    return (
+        <Card className="bg-background/70 backdrop-blur-sm h-full flex flex-col">
+            <CardHeader className="flex-row items-center gap-4 space-y-0">
+                <IconComponent className="w-8 h-8 text-primary" />
+                <CardTitle className="leading-tight">{insight.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1">
+                <p className="text-sm text-muted-foreground">{insight.description}</p>
+            </CardContent>
+        </Card>
+    )
+}
+
 export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
   const { toast } = useToast();
-  const [insights, setInsights] = React.useState<string | null>(null);
+  const [insights, setInsights] = React.useState<Insight[] | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleGenerateInsights = async () => {
@@ -34,7 +55,7 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
     const result = await getAIInsights(transactions);
 
     if (result.success && result.insights) {
-      setInsights(result.insights);
+      setInsights(result.insights.insights);
       toast({
         title: "Advice Generated!",
         description: "Your financial coach has new tips for you.",
@@ -66,15 +87,25 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
       </CardHeader>
       <CardContent className="flex-1 flex flex-col justify-center items-center text-center">
         {isLoading ? (
-          <div className="space-y-3 w-full">
-            <Skeleton className="h-5 w-4/5 mx-auto" />
-            <Skeleton className="h-5 w-full mx-auto" />
-            <Skeleton className="h-5 w-3/4 mx-auto" />
-          </div>
-        ) : insights ? (
-            <div className="p-4 text-sm rounded-lg bg-background/50 border border-border text-left overflow-y-auto max-h-60 w-full">
-                <p className="whitespace-pre-wrap">{insights}</p>
-            </div>
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        ) : insights && insights.length > 0 ? (
+            <Carousel className="w-full max-w-sm" opts={{loop: true}}>
+                <CarouselContent>
+                    {insights.map((insight, index) => (
+                        <CarouselItem key={index}>
+                            <div className="p-1 h-full">
+                                <InsightItem insight={insight} />
+                            </div>
+                        </CarouselItem>
+                    ))}
+                </CarouselContent>
+                {insights.length > 1 && (
+                    <>
+                        <CarouselPrevious className="-left-4" />
+                        <CarouselNext className="-right-4" />
+                    </>
+                )}
+            </Carousel>
         ) : (
              <div className="flex flex-col items-center gap-2">
                 <Bot className="w-10 h-10 text-primary" />

@@ -9,6 +9,18 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import type { Transaction } from '@/lib/types';
+import type { icons } from 'lucide-react';
+
+const InsightSchema = z.object({
+  title: z.string().describe('The concise title for the financial tip.'),
+  description: z.string().describe('The detailed, actionable description of the financial tip.'),
+  icon: z.string().describe('A relevant icon name from the lucide-react library. For example: "PiggyBank", "Wallet", "TrendingDown", "CreditCard".'),
+});
+
+const FinancialAdviceOutputSchema = z.object({
+  insights: z.array(InsightSchema).describe("An array of 3-5 personalized financial tips."),
+});
+export type FinancialAdviceOutput = z.infer<typeof FinancialAdviceOutputSchema>;
 
 const FinancialAdviceInputSchema = z.object({
   transactions: z.array(z.object({
@@ -25,17 +37,17 @@ const generateInsightsFlow = ai.defineFlow(
   {
     name: 'generateInsightsFlow',
     inputSchema: FinancialAdviceInputSchema,
-    outputSchema: z.string(),
+    outputSchema: FinancialAdviceOutputSchema,
   },
   async ({ transactions }) => {
-    const llmResponse = await ai.generate({
+    const { output } = await ai.generate({
       prompt: `You are a highly experienced personal finance advisor and spending analyst.
 Your input is a JSON array of the user’s transactions with details such as date, description, category, and amount.
 
 Your tasks are to:
 1.  **Analyze Spending Patterns:** Identify the top 3-5 categories and merchants where the most money is spent.
 2.  **Detect Opportunities:** Find recurring subscriptions and non-essential purchases that could be reduced.
-3.  **Provide Personalized Tips:** Give the user 3-5 personalized, actionable tips to reduce their financial burden based on their specific data.
+3.  **Provide Personalized Tips:** Give the user 3-5 personalized, actionable tips to reduce their financial burden based on their specific data. Each tip should be a separate item in the output array.
 4.  **Recommend a Budget:** Suggest a budgeting rule (like 50/30/20) and estimate budget allocations for Needs, Wants, and Savings based on their spending.
 5.  **Suggest Habit Changes:** Offer long-term habit and mindset changes for better financial health.
 
@@ -57,20 +69,22 @@ Use the following reference rules to inform your advice:
 - **Buy Quality Over Quantity:** Invest in durable items to save money long-term.
 
 **Output Format:**
-- Use clear, practical language.
-- Use markdown for formatting (bolding, bullet points).
-- Be encouraging and supportive.
-- If no significant spending pattern is detected, provide general money-saving tips and basic budgeting advice.
+- You MUST provide the output in the specified JSON format.
+- Each insight should have a clear title, a practical description, and a relevant icon name from the lucide-react library.
+- If no significant spending pattern is detected, provide general money-saving tips and basic budgeting advice in the same format.
 
 Here is the user's transaction data:
 ${JSON.stringify(transactions, null, 2)}
 `,
+      output: {
+        schema: FinancialAdviceOutputSchema
+      }
     });
 
-    return llmResponse.text;
+    return output!;
   }
 );
 
-export async function generateInsights(transactions: Transaction[]): Promise<string> {
+export async function generateInsights(transactions: Transaction[]): Promise<FinancialAdviceOutput> {
   return await generateInsightsFlow({ transactions });
 }
