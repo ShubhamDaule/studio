@@ -17,7 +17,7 @@ import { OverviewTab } from "@/components/dashboard/tabs/overview-tab";
 import { TransactionsTab } from "@/components/dashboard/tabs/transactions-tab";
 import { InsightsTab } from "@/components/dashboard/tabs/insights-tab";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { mockCategories } from "@/lib/mock-data";
+import { mockCategories, mockTransactions } from "@/lib/mock-data";
 import type { Transaction, Category, ExtractedTransaction } from "@/lib/types";
 import { LayoutGrid, List, Sparkles, Target } from "lucide-react";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
@@ -29,7 +29,8 @@ export default function DashboardPage() {
     const { setHasTransactions, dateRange, selectedSourceFilter, setFilteredTransactions: setContextFilteredTransactions, addUploadedTransactions, setAllTransactions: setContextAllTransactions } = useDashboardContext();
     const { toast } = useToast();
 
-    const [allTransactions, setAllTransactions] = React.useState<Transaction[]>([]);
+    const [allTransactions, setAllTransactions] = React.useState<Transaction[]>(mockTransactions);
+    const [isUsingMockData, setIsUsingMockData] = React.useState<boolean>(true);
     const [allCategories, setAllCategories] = React.useState<Category[]>(mockCategories);
     
     React.useEffect(() => {
@@ -69,14 +70,19 @@ export default function DashboardPage() {
                 fileSource: fileName
             }));
             
-            setAllTransactions(prev => [...prev, ...transactionsWithSource]);
+            if (isUsingMockData) {
+                setAllTransactions(transactionsWithSource);
+                setIsUsingMockData(false);
+            } else {
+                setAllTransactions(prev => [...prev, ...transactionsWithSource]);
+            }
 
             toast({
                 title: "Upload Successful!",
                 description: `${transactionsWithSource.length} transactions have been added from ${fileName}.`,
             });
         });
-    }, [addUploadedTransactions, toast]);
+    }, [addUploadedTransactions, toast, isUsingMockData]);
 
 
     const totalSpending = React.useMemo(() => {
@@ -276,3 +282,5 @@ export default function DashboardPage() {
         </DndContext>
     );
 }
+
+    

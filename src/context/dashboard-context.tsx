@@ -63,7 +63,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     to: maxDate,
   });
   const [selectedSourceFilter, setSelectedSourceFilter] = React.useState<string>("all");
-  const [hasTransactions, setHasTransactions] = React.useState(transactionFiles.length > 0);
+  const [hasTransactions, setHasTransactions] = React.useState(false);
   const [filteredTransactions, setFilteredTransactions] = React.useState<Transaction[]>([]);
 
   React.useEffect(() => {
@@ -99,3 +99,5 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     </DashboardContext.Provider>
   );
 }
+
+    
