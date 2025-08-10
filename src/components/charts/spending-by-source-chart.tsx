@@ -58,11 +58,12 @@ export function SpendingBySourceChart({ transactions, onPieClick }: { transactio
 
     const sortedSources = Object.entries(sourceTotals).sort((a, b) => b[1] - a[1]);
     const totalSources = sortedSources.length;
-    const hueStep = totalSources > 0 ? 360 / totalSources : 0;
+    const hueStep = totalSources > 1 ? (360 - 60) / (totalSources -1) : 0; // Avoid reds by staying in a 300 degree range
+    const hueOffset = 40; // Start at a non-red color
 
     const aggregated = sortedSources.map(([source, amount], index) => {
         const configKey = `source${index}`;
-        const hue = (hueStep * index) % 360;
+        const hue = (hueOffset + hueStep * index) % 360;
         const color = `hsl(${hue}, 70%, 50%)`;
 
         dynamicChartConfig[configKey] = { label: source, color };
