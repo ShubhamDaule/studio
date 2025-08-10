@@ -63,12 +63,12 @@ function getBankPreProcessing(bankInfo: StatementInfo, rawText: string) {
     let prompt;
 
     const basePrompt = `
-Extract transactions from statement text.
-Required fields:
+Extract transactions from the provided statement text.
+Return a clean JSON array of transactions with the following fields:
 - date: 'YYYY-MM-DD'
-- merchant: Raw merchant name.
-- amount: Purchases are positive, payments/credits are negative.
-Return only a JSON array of transactions. Do not add categories.
+- merchant: The merchant name, cleaned of unnecessary details. If a location provides essential context for an ambiguous merchant, add it in brackets. For example: "Starbucks (New York, NY)".
+- amount: Purchases are positive numbers. Payments and credits are negative numbers.
+Do NOT add categories.
 `;
 
     if (bankInfo.bankName === 'Amex' && bankInfo.statementType === 'Credit Card') {
@@ -136,4 +136,3 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
 
     return { bankName: bankInfo.bankName, transactions: extractedData };
 }
-
