@@ -14,11 +14,9 @@ type SourceFilterProps = {
 export function SourceFilter({ files, selectedSource, onSelectSource }: SourceFilterProps) {
     if (files.length <= 1) return null;
     
-    const isAllSources = selectedSource === "all";
-
     return (
         <Select value={selectedSource} onValueChange={onSelectSource}>
-            <SelectTrigger className={cn("w-full sm:w-auto h-9", isAllSources && "sm:w-48")}>
+            <SelectTrigger className={cn("w-full sm:w-44 h-9")}>
                  <div className="flex items-center gap-2">
                     <Banknote className="h-4 w-4" />
                     <SelectValue placeholder="Filter by source..." />
