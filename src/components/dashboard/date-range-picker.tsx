@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { format, startOfMonth, endOfMonth, isSameDay, isSameMonth, isSameYear } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon, RotateCcw } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
@@ -61,6 +61,10 @@ export function DateRangePicker({
 
     return format(date.from, "LLL dd, y");
   };
+  
+  const handleReset = () => {
+    setDate({ from: minDate, to: maxDate });
+  };
 
 
   return (
@@ -72,7 +76,7 @@ export function DateRangePicker({
             variant={"outline"}
             size="sm"
             className={cn(
-              "w-full sm:w-[180px] justify-start text-left font-normal",
+              "w-full sm:w-auto justify-start text-left font-normal",
               !date && "text-muted-foreground"
             )}
           >
@@ -91,6 +95,17 @@ export function DateRangePicker({
             fromDate={minDate}
             toDate={maxDate}
           />
+           <div className="p-2 border-t">
+            <Button
+              onClick={handleReset}
+              variant="ghost"
+              size="sm"
+              className="w-full justify-center"
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Reset to All Time
+            </Button>
+          </div>
         </PopoverContent>
       </Popover>
     </div>
