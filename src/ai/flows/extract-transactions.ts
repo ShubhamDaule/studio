@@ -5,6 +5,7 @@
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { googleAI } from '@genkit-ai/googleai';
 
 const RawTransactionSchema = z.object({
   date: z.string().describe("Transaction date in 'YYYY-MM-DD' format."),
@@ -132,6 +133,7 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     
     // Step 3: Call AI with the processed text and tailored prompt
     const llmResponse = await ai.generate({
+        model: googleAI.model('gemini-2.0-flash'),
         prompt: `${prompt}
         
         Statement Text:
