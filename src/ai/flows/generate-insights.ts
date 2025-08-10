@@ -39,8 +39,16 @@ const insightsPrompt = ai.definePrompt({
 3.  **Provide Actionable Tips:** Offer specific, practical, and easy-to-understand recommendations. For example, instead of "spend less on food," suggest "try meal prepping to reduce your dining out expenses."
 4.  **Tone:** Be encouraging, supportive, and non-judgmental. Your goal is to empower the user, not to criticize them.
 5.  **Output Format:** Present the insights in a clear, concise, and easy-to-read format. Use markdown for lists or emphasis where appropriate.`,
-  prompt: `Spending Data: {{{spendingData}}}
-Financial Goals: {{{financialGoals}}}`,
+  prompt: `Analyze the following financial data and provide insights.
+
+Spending Data:
+{{{spendingData}}}
+
+{{#if financialGoals}}
+Financial Goals:
+{{{financialGoals}}}
+{{/if}}
+`,
 });
 
 // Define the Genkit flow

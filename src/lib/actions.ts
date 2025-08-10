@@ -1,7 +1,8 @@
 
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
-import type { Transaction, Tip, QueryResult, Budget } from "@/lib/types";
+import { askAi } from "@/ai/flows/ask-ai-flow";
+import type { Transaction, QueryResult, Budget } from "@/lib/types";
 
 export async function getAIInsights(transactions: Transaction[]) {
   try {
@@ -15,28 +16,20 @@ export async function getAIInsights(transactions: Transaction[]) {
 }
 
 export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string }> {
-    // This would in reality call a Genkit flow. For now, it returns mock data.
-    if (query.toLowerCase().includes("groceries")) {
-        return { 
-            result: {
-                answer: "You spent $422.72 on groceries in October. Your budget was $400.",
-                chartData: {
-                    type: 'pie',
-                    data: [
-                        { name: 'Whole Foods', value: 75.50 },
-                        { name: 'Target', value: 55.43 },
-                        { name: 'Safeway', value: 95.12 },
-                        { name: 'Trader Joe\'s', value: 62.10 },
-                        { name: 'Walmart', value: 78.32 },
-                         { name: 'Costco', value: 450.78 },
-                    ]
-                }
-            }
-        };
+    try {
+        const transactionsJson = JSON.stringify(transactions.map(t => ({...t, amount: t.amount.toFixed(2)})));
+        const budgetsJson = JSON.stringify(budgets);
+
+        const result = await askAi({
+            query,
+            transactions: transactionsJson,
+            budgets: budgetsJson,
+        });
+        
+        return { result };
+
+    } catch (e: any) {
+        console.error("Error getting AI query response: ", e);
+        return { error: e.message || "An unknown error occurred" };
     }
-     return { 
-            result: {
-                answer: "I can help with that. Here is a breakdown of your spending.",
-            }
-        };
 }
