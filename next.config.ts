@@ -24,6 +24,10 @@ const nextConfig: NextConfig = {
         "https://*.cloudworkstations.dev",
         "https://*.firebase.studio",
     ]
+  },
+  webpack: (config) => {
+    config.resolve.alias.canvas = false;
+    return config;
   }
 };
 

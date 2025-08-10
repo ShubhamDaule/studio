@@ -31,11 +31,13 @@ function extractRawTransactions(text: string): Omit<ExtractedTransaction, 'categ
     
     // Regex to capture common transaction formats. This is complex and might need adjustment.
     // Groups: 1:Date, 2:Description/Merchant, 3:Amount
-    const transactionRegex = /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+([-\$]?\d{1,3}(?:,?\d{3})*\.\d{2})/;
+    const transactionRegex = /(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\s+(.+?)\s+([-\$]?\d{1,3}(?:,?\d{3})*\.\d{2})/;
 
     function normalizeDate(dateStr: string): string {
         const d = new Date(dateStr);
-        // Handle invalid dates if necessary
+        if (d.getFullYear() < 2000) {
+            d.setFullYear(d.getFullYear() + 2000);
+        }
         return d.toISOString().split('T')[0];
     }
 
