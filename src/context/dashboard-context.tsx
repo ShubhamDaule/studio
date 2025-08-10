@@ -2,26 +2,27 @@
 "use client";
 import type { DateRange } from "react-day-picker";
 import * as React from 'react';
-import type { Transaction, ExtractedTransaction, BankName, StatementType, FinancialSource } from "@/lib/types";
+import type { Transaction, ExtractedTransaction, BankName, StatementType, FinancialSource, TransactionFile } from "@/lib/types";
 import { usePathname } from "next/navigation";
 
 type NewTransactionsCallback = (newTransactions: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType) => void;
 
 type DashboardContextType = {
   allTransactions: Transaction[];
-  setAllTransactions: (transactions: Transaction[]) => void;
+  setAllTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+  transactionFiles: TransactionFile[];
+  setTransactionFiles: React.Dispatch<React.SetStateAction<TransactionFile[]>>;
   dateRange: DateRange | undefined;
   setDateRange: (date: DateRange | undefined) => void;
   selectedSourceFilter: string;
   setSelectedSourceFilter: (source: string) => void;
-  financialSources: FinancialSource[];
-  setFinancialSources: React.Dispatch<React.SetStateAction<FinancialSource[]>>;
   minDate: Date | undefined;
   maxDate: Date | undefined;
   filteredTransactions: Transaction[];
   setFilteredTransactions: (transactions: Transaction[]) => void;
   onNewTransactions: NewTransactionsCallback | null;
   addUploadedTransactions: (callback: NewTransactionsCallback) => void;
+  financialSources: FinancialSource[];
 };
 
 const DashboardContext = React.createContext<DashboardContextType | undefined>(undefined);
@@ -43,7 +44,22 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     const isDashboard = pathname.startsWith('/dashboard');
     const [onNewTransactions, setOnNewTransactions] = React.useState<NewTransactionsCallback | null>(null);
     const [allTransactions, setAllTransactions] = React.useState<Transaction[]>([]);
-    const [financialSources, setFinancialSources] = React.useState<FinancialSource[]>([]);
+    const [transactionFiles, setTransactionFiles] = React.useState<TransactionFile[]>([]);
+
+    const financialSources = React.useMemo(() => {
+        const sourcesMap = new Map<BankName, { type: StatementType; fileNames: Set<string> }>();
+        transactionFiles.forEach(file => {
+            if (!sourcesMap.has(file.bankName)) {
+                sourcesMap.set(file.bankName, { type: file.statementType, fileNames: new Set() });
+            }
+            sourcesMap.get(file.bankName)!.fileNames.add(file.fileName);
+        });
+        return Array.from(sourcesMap.entries()).map(([name, data]) => ({
+            name,
+            type: data.type,
+            fileNames: Array.from(data.fileNames)
+        }));
+    }, [transactionFiles]);
 
     const { minDate, maxDate } = React.useMemo(() => {
         if (!isDashboard || allTransactions.length === 0) return { minDate: undefined, maxDate: undefined };
@@ -72,18 +88,19 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   const value = {
     allTransactions,
     setAllTransactions,
+    transactionFiles,
+    setTransactionFiles,
     dateRange,
     setDateRange,
     selectedSourceFilter,
     setSelectedSourceFilter,
-    financialSources,
-    setFinancialSources,
     minDate,
     maxDate,
     filteredTransactions,
     setFilteredTransactions,
     onNewTransactions,
     addUploadedTransactions,
+    financialSources
   };
 
   return (

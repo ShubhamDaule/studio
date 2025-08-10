@@ -17,6 +17,12 @@ export type FinancialSource = {
   fileNames: string[];
 };
 
+export type TransactionFile = {
+  fileName: string;
+  bankName: BankName;
+  statementType: StatementType;
+};
+
 export type Transaction = {
   id: string;
   date: string; // YYYY-MM-DD

@@ -17,12 +17,12 @@ import { TransactionsTab } from "@/components/dashboard/tabs/transactions-tab";
 import { InsightsTab } from "@/components/dashboard/tabs/insights-tab";
 import { useDashboardContext } from "@/context/dashboard-context";
 import { mockCategories, mockTransactions } from "@/lib/mock-data";
-import type { Transaction, Category, ExtractedTransaction, FinancialSource } from "@/lib/types";
-import { LayoutGrid, List, Sparkles, Target, Trash } from "lucide-react";
+import type { Transaction, Category, TransactionFile } from "@/lib/types";
+import { LayoutGrid, List, Sparkles, Target, Trash, X } from "lucide-react";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useToast } from "@/hooks/use-toast";
-import { SourceCard } from "@/components/dashboard/source-card";
+import { FilePill } from "@/components/dashboard/file-pill";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +33,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
@@ -42,38 +41,28 @@ export default function DashboardPage() {
         selectedSourceFilter, 
         setFilteredTransactions: setContextFilteredTransactions, 
         addUploadedTransactions, 
-        setAllTransactions: setContextAllTransactions,
         allTransactions,
         setAllTransactions,
+        transactionFiles,
+        setTransactionFiles,
         financialSources,
-        setFinancialSources
     } = useDashboardContext();
     const { toast } = useToast();
     const [isUsingMockData, setIsUsingMockData] = React.useState<boolean>(true);
     const [allCategories, setAllCategories] = React.useState<Category[]>(mockCategories);
-    const [sourceToDelete, setSourceToDelete] = React.useState<FinancialSource | null>(null);
+    const [fileToDelete, setFileToDelete] = React.useState<TransactionFile | null>(null);
 
     React.useEffect(() => {
         if (isUsingMockData && allTransactions.length === 0) {
             setAllTransactions(mockTransactions);
-            setFinancialSources([
-                {
-                    name: 'Amex',
-                    type: 'Credit Card',
-                    fileNames: ['statement-q1.pdf', 'statement-q2.pdf'],
-                },
-                {
-                    name: 'Discover',
-                    type: 'Credit Card',
-                    fileNames: ['statement-q3.csv'],
-                }
+            setTransactionFiles([
+                { fileName: 'statement-q1.pdf', bankName: 'Amex', type: 'Credit Card' },
+                { fileName: 'statement-q2.pdf', bankName: 'Amex', type: 'Credit Card' },
+                { fileName: 'statement-q3.csv', bankName: 'Discover', type: 'Credit Card' },
             ]);
         }
-    }, [isUsingMockData, allTransactions, setAllTransactions, setFinancialSources]);
+    }, [isUsingMockData, allTransactions, setAllTransactions, setTransactionFiles]);
 
-    React.useEffect(() => {
-        setContextAllTransactions(allTransactions);
-    }, [allTransactions, setContextAllTransactions]);
 
     const filteredTransactions = React.useMemo(() => {
         return allTransactions.filter((t) => {
@@ -100,23 +89,15 @@ export default function DashboardPage() {
                 fileSource: fileName
             }));
 
+            const newFile: TransactionFile = { fileName, bankName, statementType };
+
             if (isUsingMockData) {
                 setAllTransactions(transactionsWithSource);
-                setFinancialSources([{ name: bankName, type: statementType, fileNames: [fileName] }]);
+                setTransactionFiles([newFile]);
                 setIsUsingMockData(false);
             } else {
                 setAllTransactions(prev => [...prev, ...transactionsWithSource]);
-                setFinancialSources(prevSources => {
-                    const existingSource = prevSources.find(s => s.name === bankName);
-                    if (existingSource) {
-                        return prevSources.map(s => 
-                            s.name === bankName
-                                ? { ...s, fileNames: [...s.fileNames, fileName] }
-                                : s
-                        );
-                    }
-                    return [...prevSources, { name: bankName, type: statementType, fileNames: [fileName] }];
-                });
+                setTransactionFiles(prev => [...prev, newFile]);
             }
 
             toast({
@@ -124,7 +105,7 @@ export default function DashboardPage() {
                 description: `${transactionsWithSource.length} transactions have been added from ${fileName}.`,
             });
         });
-    }, [addUploadedTransactions, toast, isUsingMockData, setFinancialSources, setIsUsingMockData, setAllTransactions]);
+    }, [addUploadedTransactions, toast, isUsingMockData, setTransactionFiles, setIsUsingMockData, setAllTransactions]);
 
     const totalSpending = React.useMemo(() => {
         return filteredTransactions
@@ -166,8 +147,8 @@ export default function DashboardPage() {
         if (selectedSourceFilter !== "all") {
           return `for ${selectedSourceFilter}`;
         }
-        return `across ${financialSources.length} sources`;
-    }, [selectedSourceFilter, financialSources]);
+        return `across all sources`;
+    }, [selectedSourceFilter]);
 
     const handleCategoryChange = React.useCallback((transactionId: string, newCategory: Category['name']) => {
         setAllTransactions(prev => 
@@ -217,27 +198,30 @@ export default function DashboardPage() {
         deleteBudget(categoryName);
     };
 
-    const handleDeleteSource = () => {
-        if (!sourceToDelete) return;
-        setAllTransactions(prev => prev.filter(t => t.bankName !== sourceToDelete.name));
-        setFinancialSources(prev => prev.filter(s => s.name !== sourceToDelete.name));
+    const handleDeleteFile = () => {
+        if (!fileToDelete) return;
+        setAllTransactions(prev => prev.filter(t => t.fileSource !== fileToDelete.fileName));
+        setTransactionFiles(prev => prev.filter(f => f.fileName !== fileToDelete.fileName));
         toast({
-            title: "Source Removed",
-            description: `All transactions from ${sourceToDelete.name} have been deleted.`
+            title: "File Removed",
+            description: `All transactions from ${fileToDelete.fileName} have been deleted.`
         })
-        setSourceToDelete(null);
+        setFileToDelete(null);
     };
 
     return (
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
                 <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-                    {!isUsingMockData && financialSources.length > 0 && (
-                        <div className="mb-8">
-                            <h2 className="text-xl font-semibold mb-4">Financial Sources</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {financialSources.map(source => (
-                                    <SourceCard key={source.name} source={source} onDelete={() => setSourceToDelete(source)} />
+                    {!isUsingMockData && transactionFiles.length > 0 && (
+                        <div className="mb-8 p-6 bg-muted/30 rounded-lg">
+                            <h2 className="text-xl font-semibold mb-2">Uploaded Statements</h2>
+                            <p className="text-muted-foreground mb-4">
+                                Manage the statements you've uploaded. Remove a file to exclude its transactions.
+                            </p>
+                            <div className="flex flex-wrap gap-3">
+                                {transactionFiles.map(file => (
+                                    <FilePill key={file.fileName} file={file} onDelete={() => setFileToDelete(file)} />
                                 ))}
                             </div>
                         </div>
@@ -331,21 +315,21 @@ export default function DashboardPage() {
                     allCategories={allCategories}
                 />
 
-                <AlertDialog open={!!sourceToDelete} onOpenChange={(open) => !open && setSourceToDelete(null)}>
+                <AlertDialog open={!!fileToDelete} onOpenChange={(open) => !open && setFileToDelete(null)}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
                             This will permanently delete all transactions from{' '}
-                            <strong>{sourceToDelete?.name}</strong> ({sourceToDelete?.fileNames.length} file(s)). 
+                            <strong>{fileToDelete?.fileName}</strong>. 
                             This action cannot be undone.
                         </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteSource} className="bg-destructive hover:bg-destructive/90">
+                        <AlertDialogAction onClick={handleDeleteFile} className="bg-destructive hover:bg-destructive/90">
                             <Trash className="mr-2 h-4 w-4" />
-                            Delete Source
+                            Delete File
                         </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
