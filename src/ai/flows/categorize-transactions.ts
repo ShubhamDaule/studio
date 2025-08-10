@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 const ExtractedTransactionSchema = z.object({
   date: z.string().describe("Transaction date in 'YYYY-MM-DD' format."),
-  merchant: z.string().describe("Cleaned merchant name (remove prefixes, suffixes, IDs, and keep only readable brand name)."),
+  merchant: z.string().describe("Cleaned merchant name."),
   amount: z.number().describe("Transaction amount (positive for purchases, negative for payments/refunds)."),
   category: z.string().describe("One of the master categories provided."),
 });
@@ -24,31 +24,22 @@ const CategorizeTransactionsInputSchema = z.object({
     merchant: z.string(),
     amount: z.number(),
   })),
-  bankName: z.string().optional(),
 });
 
 export type CategorizeTransactionsInput = z.infer<typeof CategorizeTransactionsInputSchema>;
-
-const getPrompt = (bankName?: string) => {
-    let context = "You are a financial expert AI.";
-    if (bankName && bankName !== 'Unknown') {
-        context = `You are a financial expert AI specializing in statements from ${bankName}.`;
-    }
-
-    return `${context} Based on the merchant name from the provided JSON, categorize each transaction into one of these master categories:
-Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous.
-
-Return only a valid JSON array of objects, with the 'category' field added to each transaction.
-`;
-}
-
 
 export async function categorizeTransactions(input: CategorizeTransactionsInput): Promise<ExtractedTransaction[]> {
     if (input.rawTransactions.length === 0) {
         return [];
     }
+
+    const masterCategories = "Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous";
     
-    const prompt = getPrompt(input.bankName);
+    const prompt = `You are a financial expert AI. Based on the merchant name from the provided JSON, categorize each transaction into one of these master categories:
+${masterCategories}.
+
+Return only a valid JSON array of objects, with the 'category' field added to each transaction.
+`;
 
     const llmResponse = await ai.generate({
         prompt: `${prompt}

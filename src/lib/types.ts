@@ -65,6 +65,8 @@ export type ExtractedTransaction = {
     category: Category['name'];
 };
 
+export type RawTransaction = Omit<ExtractedTransaction, 'category'>;
+
 export type ExtractedData = {
     accountType: "Bank Account" | "Credit Card" | "Unknown";
     bankName: string;

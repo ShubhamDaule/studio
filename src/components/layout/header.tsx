@@ -147,7 +147,7 @@ const DashboardNav = () => {
         setIsLoading(true);
         toast({
             title: "Processing Statement...",
-            description: "Reading your file and extracting transactions.",
+            description: "Reading your file and sending to the AI for processing. This may take a moment.",
         });
 
         try {
@@ -158,14 +158,9 @@ const DashboardNav = () => {
                 const page = await pdf.getPage(i);
                 const content = await page.getTextContent();
                 const pageText = content.items.map(item => (item as any).str).join(" ");
-                fullText += pageText + "\\n";
+                fullText += "\\n" + pageText;
             }
             
-            toast({
-                title: "Text Extracted, Calling AI...",
-                description: "AI is now analyzing the text to find and categorize your transactions. This may take a moment.",
-            });
-
             const result = await extractAndCategorizeTransactions(fullText);
 
             if (result.error || !result.data) {

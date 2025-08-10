@@ -1,28 +1,20 @@
 
 'use server';
 /**
- * @fileOverview An AI flow for extracting and categorizing transaction data from PDF text.
- * This flow uses a multi-step process:
- * 1. Detects bank and statement type.
- * 2. Pre-processes the text based on the bank.
- * 3. Uses a tailored prompt to extract and categorize transactions.
+ * @fileOverview An AI flow for extracting transaction data from PDF text using bank-specific rules.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-const ExtractedTransactionSchema = z.object({
+const RawTransactionSchema = z.object({
   date: z.string().describe("Transaction date in 'YYYY-MM-DD' format."),
-  merchant: z.string().describe("Cleaned merchant name (remove prefixes, suffixes, IDs, and keep only readable brand name)."),
+  merchant: z.string().describe("The raw merchant description from the statement."),
   amount: z.number().describe("Transaction amount (positive for purchases, negative for payments/refunds)."),
-  category: z.string().describe("One of the master categories provided."),
 });
 
-const CategorizedDataSchema = z.object({
-    transactions: z.array(ExtractedTransactionSchema),
-});
+const ExtractedDataSchema = z.array(RawTransactionSchema);
 
-
-export type ExtractedTransaction = z.infer<typeof ExtractedTransactionSchema>;
+export type RawTransaction = z.infer<typeof RawTransactionSchema>;
 
 const ExtractTransactionsInputSchema = z.object({
   pdfText: z.string(),
@@ -30,18 +22,21 @@ const ExtractTransactionsInputSchema = z.object({
 
 export type ExtractTransactionsInput = z.infer<typeof ExtractTransactionsInputSchema>;
 
+type BankName = 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Unknown';
+type StatementType = 'Credit Card' | 'Bank Account' | 'Unknown';
+
+type StatementInfo = {
+  bankName: BankName;
+  statementType: StatementType;
+};
+
 // ************************************************************************************
 // STEP 1: Bank & Statement Type Detection
 // ************************************************************************************
-type StatementInfo = {
-  bankName: 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Unknown';
-  statementType: 'Credit Card' | 'Bank Account' | 'Unknown';
-};
-
 function detectBankAndStatementType(text: string): StatementInfo {
   const lowerText = text.toLowerCase();
   
-  let bankName: StatementInfo['bankName'] = 'Unknown';
+  let bankName: BankName = 'Unknown';
   if (lowerText.includes('discover')) bankName = 'Discover';
   else if (lowerText.includes('american express') || lowerText.includes('amex')) bankName = 'Amex';
   else if (lowerText.includes('chase')) bankName = 'Chase';
@@ -49,7 +44,7 @@ function detectBankAndStatementType(text: string): StatementInfo {
   else if (lowerText.includes('wells fargo')) bankName = 'Wells Fargo';
   else if (lowerText.includes('citi')) bankName = 'Citi';
 
-  let statementType: StatementInfo['statementType'] = 'Unknown';
+  let statementType: StatementType = 'Unknown';
   if (['available credit', 'minimum payment', 'credit line'].some(k => lowerText.includes(k))) {
     statementType = 'Credit Card';
   } else if (['checking', 'savings', 'deposits'].some(k => lowerText.includes(k))) {
@@ -59,6 +54,7 @@ function detectBankAndStatementType(text: string): StatementInfo {
   return { bankName, statementType };
 }
 
+
 // ************************************************************************************
 // STEP 2: Pre-processing & Prompt Generation
 // ************************************************************************************
@@ -66,24 +62,14 @@ function getBankPreProcessing(bankInfo: StatementInfo, rawText: string) {
     let text = rawText;
     let prompt;
 
-    const masterCategories = "Payment, Rewards, Groceries, Dining, Entertainment, Shopping, Travel & Transport, Subscriptions, Health, Utilities, Education, Housing & Rent, Insurance, Investments & Savings, Charity & Donations, Government & Taxes, Fees & Charges, Home Improvement & Hardware, Office Supplies, Miscellaneous";
-
     const basePrompt = `
 You are an expert financial AI. Your task is to extract transactions from the provided text from a bank statement.
 For each transaction, extract the following:
 - date: Format as 'YYYY-MM-DD'.
-- merchant: Clean the merchant name. **CRITICAL**: Ignore surrounding text that is not part of the merchant name.
+- merchant: The raw transaction description.
 - amount: Payments, refunds, or credits MUST be negative numbers. Purchases or debits MUST be positive numbers.
-- category: Choose from: ${masterCategories}.
-  - **Payment Rule**: If the description contains "PAYMENT", "AUTOPAY", "AUTO PAY", or "TRANSFER", categorize it as 'Payment'.
-  - **Refund Rule**: If the amount is negative and it's NOT a payment, categorize it based on the merchant's usual category (e.g., a refund from a grocery store is 'Groceries').
-  - **Standard Categorization**: For all other transactions, categorize by pattern:
-    - **Amazon Prime subscriptions are 'Entertainment'. Other Amazon purchases are 'Shopping'.**
-    - Names with “Mart”, “Market”, “Grocery” → 'Groceries'
-    - Streaming services (Netflix, Spotify) → 'Entertainment'
-    - Coffee shops, restaurants → 'Dining'
-    - Ride-sharing, public transport, gas → 'Travel & Transport'
-Return a valid JSON object with a "transactions" array.
+
+Return only a valid JSON array of transaction objects. Do not include categories.
 `;
 
     if (bankInfo.bankName === 'Amex' && bankInfo.statementType === 'Credit Card') {
@@ -110,11 +96,10 @@ Return a valid JSON object with a "transactions" array.
     return { processedText: text, prompt };
 }
 
-
 // ************************************************************************************
 // STEP 3: Main AI Flow
 // ************************************************************************************
-export async function extractTransactions(input: ExtractTransactionsInput): Promise<ExtractedTransaction[]> {
+export async function extractTransactions(input: ExtractTransactionsInput): Promise<RawTransaction[]> {
     const { pdfText } = input;
 
     // Step 1: Detect bank and type
@@ -133,9 +118,9 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
         ---
         `,
         output: {
-            schema: CategorizedDataSchema,
+            schema: ExtractedDataSchema,
         },
     });
 
-    return llmResponse.output?.transactions || [];
+    return llmResponse.output || [];
 }

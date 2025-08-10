@@ -1,7 +1,7 @@
 
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
-import { askAi } from "@/ai/flows/ask-ai-flow";
+import { categorizeTransactions } from "@/ai/flows/categorize-transactions";
 import { extractTransactions } from "@/ai/flows/extract-transactions";
 import type { Transaction, QueryResult, Budget, ExtractedTransaction } from "@/lib/types";
 
@@ -36,37 +36,25 @@ export async function getAIInsights(transactions: Transaction[]) {
   }
 }
 
-export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string }> {
-    if (!query) {
-        return { error: "Please enter a question." };
-    }
-    if (!transactions || transactions.length === 0) {
-        return { error: "No transactions to analyze." };
-    }
-    
-    try {
-        const result = await askAi({
-            query,
-            transactionData: JSON.stringify(transactions),
-            budgetData: JSON.stringify(budgets),
-        });
-        return { result };
-    } catch (e: any) {
-        console.error("Error getting AI query response:", e);
-        return { error: getFriendlyErrorMessage(e) };
-    }
-}
-
 export async function extractAndCategorizeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; error?: string }> {
     if (!pdfText) {
         return { error: "No text from PDF to process." };
     }
 
     try {
-        const data = await extractTransactions({ pdfText });
-        return { data };
+        // Step 1: Extract raw transactions using the advanced flow
+        const rawTransactions = await extractTransactions({ pdfText });
+        if (!rawTransactions || rawTransactions.length === 0) {
+            return { data: [] };
+        }
+        
+        // Step 2: Categorize the extracted transactions
+        const categorizedData = await categorizeTransactions({ rawTransactions });
+
+        return { data: categorizedData };
     } catch (e: any) {
-        console.error("Error extracting transactions from PDF:", e);
+        console.error("Error extracting and categorizing transactions from PDF:", e);
         return { error: getFriendlyErrorMessage(e) };
     }
 }
+
