@@ -103,9 +103,16 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
 
     // Step 1: Detect bank and type
     const bankInfo = detectBankAndStatementType(pdfText);
+    console.log('======== BANK DETECTION ========');
+    console.log(`Detected Bank: ${bankInfo.bankName}, Type: ${bankInfo.statementType}`);
+    console.log('==============================\n');
+
 
     // Step 2: Pre-process text and get tailored prompt
     const { processedText, prompt } = getBankPreProcessing(bankInfo, pdfText);
+    console.log('======== PRE-PROCESSED TEXT FOR AI ========');
+    console.log(processedText);
+    console.log('=========================================\n');
     
     // Step 3: Call AI with the processed text and tailored prompt
     const llmResponse = await ai.generate({
@@ -120,6 +127,13 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
             schema: ExtractedDataSchema,
         },
     });
+    
+    const extractedData = llmResponse.output || [];
+    console.log('======== AI EXTRACTION OUTPUT ========');
+    console.log(JSON.stringify(extractedData, null, 2));
+    console.log('====================================\n');
 
-    return llmResponse.output || [];
+
+    return extractedData;
 }
+
