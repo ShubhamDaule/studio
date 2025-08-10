@@ -31,7 +31,7 @@ interface Insight {
 const InsightItem = ({ insight }: { insight: Insight }) => {
     const IconComponent = icons[insight.icon] || Bot;
     return (
-        <Card className="bg-background/70 backdrop-blur-sm h-full flex flex-col">
+        <Card className="bg-background/70 backdrop-blur-sm flex flex-col">
             <CardHeader className="flex-row items-center gap-4 space-y-0">
                 <IconComponent className="w-8 h-8 text-primary" />
                 <CardTitle className="leading-tight">{insight.title}</CardTitle>
@@ -89,11 +89,11 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
         {isLoading ? (
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
         ) : insights && insights.length > 0 ? (
-            <Carousel className="w-full max-w-sm" opts={{loop: true}}>
-                <CarouselContent>
+            <Carousel className="w-full max-w-sm" opts={{loop: true, align: "start"}}>
+                <CarouselContent className="-ml-2">
                     {insights.map((insight, index) => (
-                        <CarouselItem key={index}>
-                            <div className="p-1 h-full">
+                        <CarouselItem key={index} className="pl-2 md:basis-1/2 lg:basis-full">
+                            <div className="p-1">
                                 <InsightItem insight={insight} />
                             </div>
                         </CarouselItem>
