@@ -26,27 +26,19 @@ const GenerateInsightsOutputSchema = z.object({
 });
 export type GenerateInsightsOutput = z.infer<typeof GenerateInsightsOutputSchema>;
 
-// Define the tool for fetching stock prices
-const wiselySpendTool = ai.defineTool({
-  name: 'wiselySpendTool',
-  description: 'This tool provides advice on how to wisely spend money given their current financial situation.',
-  inputSchema: z.object({
-    spendingData: z.string().describe('The user\'s recent spending data.'),
-    financialGoals: z.string().optional().describe('The user\'s financial goals.'),
-  }),
-  outputSchema: z.string(),
-  run: async (input) => {
-    return `Based on your spending data, here are some tips on how to wisely spend money: Reduce eating out by 20%, find cheaper gas prices, and negotiate lower cell phone bills`;
-  },
-});
-
 // Define the prompt for generating insights
 const insightsPrompt = ai.definePrompt({
   name: 'insightsPrompt',
-  tools: [wiselySpendTool],
   input: {schema: GenerateInsightsInputSchema},
   output: {schema: GenerateInsightsOutputSchema},
-  system: `You are a personal finance advisor. Analyze the user's spending data and provide personalized, actionable insights to help them save money and achieve their financial goals. Use the wiselySpendTool to come up with ways to save money.`,
+  system: `You are a personal finance advisor. Your task is to analyze the user's spending data and provide personalized, actionable insights to help them save money and achieve their financial goals.
+
+**Analysis Guidelines:**
+1.  **Review Spending:** Carefully examine the provided spending data, looking for patterns, high-spending categories, and potential areas for reduction.
+2.  **Consider Goals:** If financial goals are provided, tailor your advice to help the user reach them.
+3.  **Provide Actionable Tips:** Offer specific, practical, and easy-to-understand recommendations. For example, instead of "spend less on food," suggest "try meal prepping to reduce your dining out expenses."
+4.  **Tone:** Be encouraging, supportive, and non-judgmental. Your goal is to empower the user, not to criticize them.
+5.  **Output Format:** Present the insights in a clear, concise, and easy-to-read format. Use markdown for lists or emphasis where appropriate.`,
   prompt: `Spending Data: {{{spendingData}}}
 Financial Goals: {{{financialGoals}}}`,
 });
