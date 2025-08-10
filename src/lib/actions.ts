@@ -4,6 +4,8 @@ import { generateInsights } from "@/ai/flows/generate-insights";
 import { askAi } from "@/ai/flows/ask-ai-flow";
 import { extractTransactions } from "@/ai/flows/extract-transactions";
 import type { Transaction, QueryResult, Budget, ExtractedData } from "@/lib/types";
+import pdf from "pdf-parse/lib/pdf-parse";
+
 
 function getFriendlyErrorMessage(error: any): string {
     const defaultMessage = 'An unexpected error occurred. Please try again.';
@@ -56,13 +58,16 @@ export async function getAiQueryResponse(query: string, transactions: Transactio
     }
 }
 
-export async function extractTransactionsFromPdf(pdfText: string): Promise<{ data?: ExtractedData; error?: string }> {
-    if (!pdfText) {
-        return { error: "No text content found in the PDF." };
+export async function extractTransactionsFromPdf(pdfDataUri: string): Promise<{ data?: ExtractedData; error?: string }> {
+    if (!pdfDataUri) {
+        return { error: "No PDF data received." };
     }
 
     try {
-        const data = await extractTransactions({ pdfText });
+        // Convert data URI to buffer
+        const buffer = Buffer.from(pdfDataUri.split(',')[1], 'base64');
+        const pdfData = await pdf(buffer);
+        const data = await extractTransactions({ pdfText: pdfData.text });
         return { data };
     } catch (e: any) {
         console.error("Error extracting transactions from PDF:", e);

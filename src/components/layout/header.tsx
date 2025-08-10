@@ -22,7 +22,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { extractTransactionsFromPdf } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
-import pdf from "pdf-parse/lib/pdf-parse";
 
 const Logo = () => (
     <div className="flex items-center gap-2 flex-shrink-0">
@@ -152,11 +151,10 @@ const DashboardNav = () => {
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
-                const arrayBuffer = e.target?.result;
-                if (!arrayBuffer) throw new Error("Could not read file.");
+                const dataUri = e.target?.result as string;
+                if (!dataUri) throw new Error("Could not read file.");
 
-                const pdfData = await pdf(Buffer.from(arrayBuffer as ArrayBuffer));
-                const result = await extractTransactionsFromPdf(pdfData.text);
+                const result = await extractTransactionsFromPdf(dataUri);
 
                 if (result.error || !result.data) {
                     throw new Error(result.error || "Failed to extract transactions.");
@@ -179,7 +177,7 @@ const DashboardNav = () => {
                 if(fileInputRef.current) fileInputRef.current.value = "";
             }
         };
-        reader.readAsArrayBuffer(file);
+        reader.readAsDataURL(file);
     };
 
     return (
