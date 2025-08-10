@@ -92,10 +92,12 @@ export default function DashboardPage() {
             const newFile: TransactionFile = { fileName, bankName, statementType };
 
             if (isUsingMockData) {
+                // First upload, replace mock data
                 setAllTransactions(transactionsWithSource);
                 setTransactionFiles([newFile]);
                 setIsUsingMockData(false);
             } else {
+                // Subsequent uploads, append data
                 setAllTransactions(prev => [...prev, ...transactionsWithSource]);
                 setTransactionFiles(prev => [...prev, newFile]);
             }
