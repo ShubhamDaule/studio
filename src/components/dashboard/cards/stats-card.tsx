@@ -16,11 +16,11 @@ export default function StatsCard({ title, value, icon, description, onClick }: 
     <Card 
         onClick={onClick} 
         className={cn(
-            "card-interactive"
+            "card-interactive group"
         )}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium group-hover:text-primary transition-colors">{title}</CardTitle>
         {icon}
       </CardHeader>
       <CardContent>

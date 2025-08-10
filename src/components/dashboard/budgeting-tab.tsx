@@ -77,11 +77,11 @@ export function BudgetingTab({
     return (
         <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-                <Card className="col-span-1 md:col-span-3">
+                <Card className="col-span-1 md:col-span-3 card-interactive group">
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div>
-                                <CardTitle>Monthly Budgets</CardTitle>
+                                <CardTitle className="group-hover:text-primary transition-colors">Monthly Budgets</CardTitle>
                                 <CardDescription>
                                     Track and manage your spending for each category. Drag to reorder.
                                 </CardDescription>

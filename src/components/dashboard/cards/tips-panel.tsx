@@ -93,14 +93,14 @@ export function TipsPanel({ transactions }: TipsPanelProps) {
 
 
   return (
-    <Card className="h-full flex flex-col overflow-hidden bg-muted/20">
+    <Card className="h-full flex flex-col overflow-hidden bg-muted/20 card-interactive group">
       <CardHeader className="z-10">
         <div className="flex items-center gap-3">
           <div className="w-20 h-20">
              <FinancialCoach />
           </div>
           <div>
-            <CardTitle className="text-xl">Financial Coach</CardTitle>
+            <CardTitle className="text-xl group-hover:text-primary transition-colors">Financial Coach</CardTitle>
             <p className="text-sm text-muted-foreground">
               {isPro ? "AI-powered savings tips just for you." : "Unlock AI savings tips with Pro."}
             </p>

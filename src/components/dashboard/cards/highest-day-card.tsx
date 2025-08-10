@@ -32,9 +32,9 @@ export function HighestDayCard({ day, onClick }: HighestDayCardProps) {
     }, [day]);
 
     return (
-        <Card className="card-interactive" onClick={onClick}>
+        <Card className="card-interactive group" onClick={onClick}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Highest Spending Day</CardTitle>
+                <CardTitle className="text-sm font-medium group-hover:text-primary transition-colors">Highest Spending Day</CardTitle>
                 <CalendarDays className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>

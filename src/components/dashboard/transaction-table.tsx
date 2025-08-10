@@ -137,10 +137,10 @@ export function TransactionTable({
 
 
   return (
-    <Card>
+    <Card className="card-interactive group">
       <CardHeader className="flex flex-row justify-between items-center">
         <div>
-            <CardTitle>All Transactions</CardTitle>
+            <CardTitle className="group-hover:text-primary transition-colors">All Transactions</CardTitle>
             <CardDescription>
               Review and re-categorize your transactions as needed. Click headers to sort.
             </CardDescription>
