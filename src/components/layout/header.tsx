@@ -141,47 +141,50 @@ const DashboardNav = () => {
     const [isLoading, setIsLoading] = React.useState(false);
     
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
 
         setIsLoading(true);
-        toast({
-            title: "Processing Statement...",
-            description: "Reading your file and sending to the AI for processing. This may take a moment.",
-        });
 
-        try {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            let fullText = "";
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                const pageText = content.items.map(item => (item as any).str).join(" ");
-                fullText += "\\n" + pageText;
-            }
-            
-            const result = await extractAndCategorizeTransactions(fullText);
-
-            if (result.error || !result.data) {
-                throw new Error(result.error || "Failed to extract transactions.");
-            }
-
-            if (onNewTransactions) {
-                onNewTransactions(result.data, file.name);
-            }
-
-        } catch (error: any) {
-            console.error("Upload error:", error);
+        for (const file of Array.from(files)) {
             toast({
-                variant: "destructive",
-                title: "Upload Failed",
-                description: error.message || "Could not process the PDF file.",
+                title: `Processing ${file.name}...`,
+                description: "Reading your file and processing with AI. This may take a moment.",
             });
-        } finally {
-            setIsLoading(false);
-            if(fileInputRef.current) fileInputRef.current.value = "";
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let fullText = "";
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const pageText = content.items.map(item => (item as any).str).join(" ");
+                    fullText += "\\n" + pageText;
+                }
+                
+                const result = await extractAndCategorizeTransactions(fullText);
+
+                if (result.error || !result.data) {
+                    throw new Error(result.error || `Failed to extract transactions from ${file.name}.`);
+                }
+
+                if (onNewTransactions) {
+                    onNewTransactions(result.data, file.name);
+                }
+
+            } catch (error: any) {
+                console.error(`Upload error for ${file.name}:`, error);
+                toast({
+                    variant: "destructive",
+                    title: `Upload Failed: ${file.name}`,
+                    description: error.message || "Could not process this PDF file.",
+                });
+            }
         }
+
+        setIsLoading(false);
+        if(fileInputRef.current) fileInputRef.current.value = "";
     };
 
     return (
@@ -205,6 +208,7 @@ const DashboardNav = () => {
                     onChange={handleFileUpload}
                     className="hidden"
                     accept=".pdf"
+                    multiple
                 />
                 <Button 
                     variant="outline" 
