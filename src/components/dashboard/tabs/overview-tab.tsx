@@ -51,12 +51,18 @@ export function OverviewTab({
                     value={totalSpending.toLocaleString("en-US", { style: "currency", currency: "USD" })}
                     icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
                     description={filterDescription}
+                    onClick={() => openDialog('category', {})}
                 />
                 <StatsCard 
                     title="Transactions"
                     value={String(transactionCount)}
                     icon={<ReceiptText className="h-4 w-4 text-muted-foreground" />}
                     description={filterDescription}
+                    onClick={() => {
+                        const tabs = document.querySelector('[role="tablist"]');
+                        const transactionsTab = tabs?.querySelector('[value="transactions"]');
+                        (transactionsTab as HTMLElement)?.click();
+                    }}
                 />
                  <HighestTransactionCard 
                     transaction={highestTransaction}
