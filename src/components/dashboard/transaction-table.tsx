@@ -126,8 +126,8 @@ export function TransactionTable({
                 <SortableHeader column="merchant" label="Merchant" />
                 <SortableHeader column="date" label="Date" />
                 <SortableHeader column="amount" label="Amount" className="text-right" />
-                <TableHead className="text-center text-black dark:text-white font-semibold">Category</TableHead>
-                <TableHead className="text-black dark:text-white font-semibold">Source</TableHead>
+                <TableHead className="text-center text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Category</TableHead>
+                <TableHead className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Source</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
