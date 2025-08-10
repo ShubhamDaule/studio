@@ -27,6 +27,7 @@ import { ArrowUp, ArrowDown, Sparkles, FileDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTiers } from "@/hooks/use-tiers";
 import { format, parseISO } from "date-fns";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -177,38 +178,45 @@ export function TransactionTable({
                     <TableCell className={`text-right font-medium ${transaction.amount < 0 ? 'text-primary' : ''}`}>
                       {formatCurrency(transaction.amount)}
                     </TableCell>
-                    <TableCell className="w-[200px]">
-                      <Select
-                        value={transaction.category}
-                        onValueChange={(value: string) =>
-                          onCategoryChange(transaction.id, value)
-                        }
-                      >
-                        <SelectTrigger className="w-full h-9">
-                          <SelectValue>
-                            <div className="flex items-center gap-2">
-                                <CategoryIcon
-                                    category={allCategories.find(c => c.name === transaction.category)}
-                                    className="h-4 w-4"
-                                />
-                                <span className="text-sm font-medium">{transaction.category}</span>
-                            </div>
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {allCategories.map((cat) => (
-                            <SelectItem key={cat.name} value={cat.name}>
-                              <div className="flex items-center">
-                                <CategoryIcon
-                                  category={cat}
-                                  className="mr-2 h-4 w-4"
-                                />
-                                {cat.name}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <TableCell className="w-[200px] text-center">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                           <Select
+                            value={transaction.category}
+                            onValueChange={(value: string) =>
+                              onCategoryChange(transaction.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-full h-9">
+                              <SelectValue>
+                                <div className="flex items-center gap-2">
+                                    <CategoryIcon
+                                        category={allCategories.find(c => c.name === transaction.category)}
+                                        className="h-4 w-4"
+                                    />
+                                    <span className="text-sm font-medium">{transaction.category}</span>
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allCategories.map((cat) => (
+                                <SelectItem key={cat.name} value={cat.name}>
+                                  <div className="flex items-center">
+                                    <CategoryIcon
+                                      category={cat}
+                                      className="mr-2 h-4 w-4"
+                                    />
+                                    {cat.name}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{transaction.category}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell className="text-muted-foreground truncate max-w-xs">{transaction.fileSource}</TableCell>
                   </TableRow>

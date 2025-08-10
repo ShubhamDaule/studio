@@ -5,6 +5,7 @@
 import { TransactionTable } from "@/components/dashboard/transaction-table";
 import type { Category, Transaction } from "@/lib/types";
 import { useTiers } from "@/hooks/use-tiers";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 type TransactionsTabProps = {
     filteredTransactions: Transaction[];
@@ -20,11 +21,13 @@ export function TransactionsTab({
     const { isPro } = useTiers();
 
     return (
-        <TransactionTable
-            transactions={filteredTransactions}
-            onCategoryChange={handleCategoryChange}
-            allCategories={allCategories}
-            isPro={isPro}
-        />
+        <TooltipProvider>
+            <TransactionTable
+                transactions={filteredTransactions}
+                onCategoryChange={handleCategoryChange}
+                allCategories={allCategories}
+                isPro={isPro}
+            />
+        </TooltipProvider>
     );
 }
