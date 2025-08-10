@@ -7,7 +7,7 @@ import type { RawTransaction, ExtractedTransaction } from './extract-transaction
 const categoryTriggers = [
     { category: "Payment", keywords: ["PAYMENT", "AUTO PAY", "AUTOPAY", "TRANSFER", "ACH PAYMENT", "E-PAY", "DIRECT DEBIT", "CREDIT PAYMENT"] },
     { category: "Rewards", keywords: ["REDEMPTION", "REWARDS", "CASH BACK", "POINTS", "LOYALTY CREDIT"] },
-    { category: "Groceries", keywords: ["MART", "MARKET", "GROCERY", "SUPERMARKET", "TRADER JOE", "SAFEWAY", "KROGER", "WALMART GROCERY", "COSTCO", "ALDI", "WHOLE FOODS"] },
+    { category: "Groceries", keywords: ["MART", "MARKET", "GROCERY", "SUPERMARKET", "TRADER JOE", "SAFEWAY", "KROGER", "WALMART GROCERY", "COSTCO", "ALDI", "WHOLE FOODS", "GROCERS", "DOLLAR TREE"] },
     { category: "Dining", keywords: ["CAFE", "COFFEE", "STARBUCKS", "RESTAURANT", "DINER", "EATERY", "GRILL", "BISTRO", "BAR", "CHIPOTLE", "DOMINOS", "MCDONALD", "KFC", "SUBWAY"] },
     { category: "Entertainment", keywords: ["NETFLIX", "SPOTIFY", "YOUTUBE", "HULU", "HOTSTAR", "GAMING", "STEAM", "XBOX", "PLAYSTATION", "DISNEY+", "AMC", "CINEMA", "THEATER"] },
     { category: "Shopping", keywords: ["AMAZON", "EBAY", "FLIPKART", "SHEIN", "ZARA", "H&M", "TARGET", "BEST BUY", "FASHION", "STORE", "MALL", "WALMART"] },
