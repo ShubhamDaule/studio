@@ -107,13 +107,14 @@ export function CategoryBudget({ category, budget, spent, onBudgetChange, onEdit
                   onChange={(e) => setLocalBudget(parseFloat(e.target.value) || 0)}
                   className="h-8 w-28 text-right"
                   onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                  autoFocus
+                  onBlur={handleSave}
                 />
-                <Button size="sm" onClick={handleSave}>Set</Button>
               </div>
             ) : (
-              <span className="cursor-pointer hover:font-bold" onClick={startEditing}>
+              <Button variant="ghost" className="h-auto p-1 -m-1 text-sm" onClick={startEditing}>
                 of {formatCurrency(budget)}
-              </span>
+              </Button>
             )}
           </span>
         </div>
