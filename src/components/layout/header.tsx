@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 import { categorizeTransactions as categorizeTransactionsAction } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
-import type { ExtractedTransaction, Transaction } from "@/lib/types";
+import type { ExtractedTransaction } from "@/lib/types";
 import type { RawTransaction } from "@/ai/flows/categorize-transactions";
 import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
