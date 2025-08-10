@@ -64,29 +64,28 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
     }, {} as Record<string, number>);
     
     const dynamicChartConfig: ChartConfig = { ...chartConfigBase };
-    const sortedCategories = [...allCategories].sort((a, b) => a.name.localeCompare(b.name));
+    const sortedCategories = Object.entries(categoryTotals).sort((a,b) => b[1] - a[1]);
+    const totalCategories = sortedCategories.length;
+    const hueStep = totalCategories > 0 ? 360 / totalCategories : 0;
 
-    sortedCategories.forEach((cat, index) => {
-        const key = cat.name.toLowerCase().replace(/ & /g, '-&-').replace(/\//g,'-').replace(/ /g, '-');
+    const aggregated = sortedCategories.map(([category, amount], index) => {
+        const key = category.toLowerCase().replace(/ & /g, '-&-').replace(/\//g,'-').replace(/ /g, '-');
+        const hue = (hueStep * index) % 360;
+        const color = `hsl(${hue}, 70%, 50%)`;
+        
         if (!dynamicChartConfig[key]) {
             dynamicChartConfig[key] = {
-                label: cat.name,
-                color: `hsl(var(--chart-${(index % 5) + 1}))`
+                label: category,
+                color: color
             }
         }
-    });
-
-    const aggregated = Object.entries(categoryTotals)
-      .map(([category, amount]) => {
-        const key = category.toLowerCase().replace(/ & /g, '-&-').replace(/\//g,'-').replace(/ /g, '-');
         return {
             name: category,
             value: amount,
             fill: `var(--color-${key})`,
             key
         }
-      })
-      .sort((a, b) => b.value - a.value); // Sort by spending amount, descending
+      });
 
       return { aggregatedData: aggregated, chartConfig: dynamicChartConfig satisfies ChartConfig };
   }, [transactions, allCategories]);

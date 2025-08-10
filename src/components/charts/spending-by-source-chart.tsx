@@ -18,19 +18,6 @@ import {
 import type { Transaction } from '@/lib/types';
 import { Banknote } from 'lucide-react';
 
-interface SpendingBySourceChartProps {
-  transactions: Transaction[];
-  onPieClick: (data: any) => void;
-}
-
-const chartColors = [
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-];
-
 const renderActiveShape = (props: any) => {
   const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
   return (
@@ -49,7 +36,7 @@ const renderActiveShape = (props: any) => {
 };
 
 
-export function SpendingBySourceChart({ transactions, onPieClick }: SpendingBySourceChartProps) {
+export function SpendingBySourceChart({ transactions, onPieClick }: { transactions: Transaction[], onPieClick: (data: any) => void }) {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
 
   const { aggregatedData, chartConfig } = React.useMemo(() => {
@@ -69,18 +56,23 @@ export function SpendingBySourceChart({ transactions, onPieClick }: SpendingBySo
         },
     };
 
-    const aggregated = Object.entries(sourceTotals)
-      .map(([source, amount], index) => {
+    const sortedSources = Object.entries(sourceTotals).sort((a, b) => b[1] - a[1]);
+    const totalSources = sortedSources.length;
+    const hueStep = totalSources > 0 ? 360 / totalSources : 0;
+
+    const aggregated = sortedSources.map(([source, amount], index) => {
         const configKey = `source${index}`;
-        dynamicChartConfig[configKey] = { label: source, color: chartColors[index % chartColors.length] };
+        const hue = (hueStep * index) % 360;
+        const color = `hsl(${hue}, 70%, 50%)`;
+
+        dynamicChartConfig[configKey] = { label: source, color };
         return {
           name: configKey,
           source,
           amount,
           fill: `var(--color-${configKey})`,
         }
-      })
-      .sort((a, b) => b.amount - a.amount);
+      });
       
     return { aggregatedData: aggregated, chartConfig: dynamicChartConfig satisfies ChartConfig };
   }, [transactions]);
@@ -96,7 +88,7 @@ export function SpendingBySourceChart({ transactions, onPieClick }: SpendingBySo
   const formatCurrency = (value: number) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <Card className="flex flex-col h-full card-interactive group">
+    <Card className="flex flex-col h-full card-interactive group" onClick={() => onPieClick({name: null})}>
       <CardHeader>
         <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
             <Banknote className="h-6 w-6" />
@@ -127,8 +119,8 @@ export function SpendingBySourceChart({ transactions, onPieClick }: SpendingBySo
               onMouseLeave={onPieLeave}
               className="cursor-pointer"
             >
-              {aggregatedData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} name={entry.source} />
+              {aggregatedData.map((entry) => (
+                <Cell key={`cell-${entry.name}`} fill={entry.fill} name={entry.source} />
               ))}
             </Pie>
           </PieChart>
