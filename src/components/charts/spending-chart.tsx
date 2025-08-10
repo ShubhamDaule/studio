@@ -65,20 +65,16 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
     
     const dynamicChartConfig: ChartConfig = { ...chartConfigBase };
     const sortedCategories = Object.entries(categoryTotals).sort((a,b) => b[1] - a[1]);
-    const totalCategories = sortedCategories.length;
-    const hueStep = totalCategories > 0 ? 360 / totalCategories : 0;
-
+    
     const aggregated = sortedCategories.map(([category, amount], index) => {
-        const key = category.toLowerCase().replace(/ & /g, '-&-').replace(/\//g,'-').replace(/ /g, '-');
-        const hue = (hueStep * index) % 360;
-        const color = `hsl(${hue}, 70%, 50%)`;
+        const key = category.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const color = `hsl(${index * (360 / sortedCategories.length)}, 70%, 50%)`;
         
-        if (!dynamicChartConfig[key]) {
-            dynamicChartConfig[key] = {
-                label: category,
-                color: color
-            }
+        dynamicChartConfig[key] = {
+            label: category,
+            color: color
         }
+        
         return {
             name: category,
             value: amount,
