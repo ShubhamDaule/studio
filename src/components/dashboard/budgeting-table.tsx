@@ -137,7 +137,7 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
             <SortableHeader column="budget" label="Monthly Budget" />
             <SortableHeader column="spent" label="Spent" />
             <SortableHeader column="periodBudget" label="Period Budget" />
-            <TableHead className="font-semibold text-black dark:text-white">Progress</TableHead>
+            <TableHead className="font-semibold text-black dark:text-white text-center">Progress</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -180,7 +180,7 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                 </TableCell>
                 <TableCell>{formatCurrency(item.spent)}</TableCell>
                 <TableCell>{formatCurrency(item.proratedBudget)}</TableCell>
-                <TableCell className="w-[200px]">
+                <TableCell className="w-[200px] text-center align-middle">
                     <div className="flex items-center gap-2">
                         <span className={cn("w-16 text-right text-xs", item.remaining < 0 && "text-destructive font-semibold")}>
                            ({formatCurrency(item.remaining, true)})
