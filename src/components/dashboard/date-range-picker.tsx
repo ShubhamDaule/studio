@@ -107,24 +107,16 @@ export function DateRangePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <div className="flex items-center justify-end p-2 border-b">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 rounded-full"
-                    onClick={handleReset}
-                  >
-                    <RotateCcw className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Reset to All Time</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+          <div className="flex items-center justify-between p-2 border-b">
+            <span className="text-sm font-medium pl-2">Select a date range</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+              >
+                <RotateCcw className="mr-2 h-4 w-4 text-muted-foreground" />
+                Reset to All Time
+              </Button>
           </div>
 
             <Calendar
