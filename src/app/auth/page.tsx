@@ -52,7 +52,7 @@ const AuthForm = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex flex-col justify-center items-center p-4">
-            <div className="absolute top-8">
+            <div className="absolute top-8 left-8">
                 <Logo />
             </div>
 
