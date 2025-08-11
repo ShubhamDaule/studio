@@ -4,6 +4,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Banknote } from "lucide-react";
+import { Button } from "../ui/button";
 
 type SourceFilterProps = {
     sources: string[];
@@ -16,9 +17,15 @@ export function SourceFilter({ sources, selectedSource, onSelectSource }: Source
     
     return (
         <Select value={selectedSource} onValueChange={onSelectSource}>
-            <SelectTrigger className={cn("w-auto h-9 group transition-colors hover:text-primary")}>
+            <SelectTrigger 
+                className={cn(
+                    "w-auto justify-start text-left font-normal h-9 px-3 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground data-[placeholder]:text-muted-foreground",
+                    !selectedSource && "text-muted-foreground"
+                )}
+                
+            >
                  <div className="flex items-center gap-2">
-                    <Banknote className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <Banknote className="h-4 w-4" />
                     <SelectValue placeholder="Filter by source..." />
                 </div>
             </SelectTrigger>
