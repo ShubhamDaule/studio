@@ -88,12 +88,12 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
 
     if (dialogState.source && typeof activeDialogKey === 'object' && 'name' in activeDialogKey) {
          const { name: sourceName } = activeDialogKey as any;
-         return { ...baseData, source: sourceName, transactions: allTransactions.filter(t => t.bankName === sourceName) };
+         return { ...baseData, source: sourceName, transactions: allTransactions.filter(t => t.fileSource === sourceName) };
     }
     
     // Fallback for simple string keys (like old source handling)
     if (dialogState.source && typeof activeDialogKey === 'string') {
-       return { ...baseData, source: activeDialogKey, transactions: allTransactions.filter(t => t.bankName === activeDialogKey) };
+       return { ...baseData, source: activeDialogKey, transactions: allTransactions.filter(t => t.fileSource === activeDialogKey) };
     }
 
 

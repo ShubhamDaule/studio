@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { TransactionTable } from "../dashboard/transaction-table";
 import type { Transaction, Category } from "@/lib/types";
 import { TopMerchantIcon } from "../icons";
+import { TooltipProvider } from "../ui/tooltip";
 
 type Props = {
   isOpen: boolean;
@@ -11,7 +12,7 @@ type Props = {
   merchant?: string;
   transactions: Transaction[];
   allCategories: Category[];
-  onCategoryChange: (transactionId: string, newCategory: Category) => void;
+  onCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
   isPro: boolean;
 };
 
@@ -31,12 +32,14 @@ export function MerchantTransactionsDialog({ isOpen, onClose, merchant, transact
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[60vh] overflow-auto">
-          <TransactionTable 
-            transactions={transactions} 
-            isPro={isPro} 
-            onCategoryChange={onCategoryChange} 
-            allCategories={allCategories}
-          />
+          <TooltipProvider>
+            <TransactionTable 
+              transactions={transactions} 
+              isPro={isPro} 
+              onCategoryChange={onCategoryChange} 
+              allCategories={allCategories}
+            />
+          </TooltipProvider>
         </div>
       </DialogContent>
     </Dialog>

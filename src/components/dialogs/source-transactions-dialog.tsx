@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { TransactionTable } from "../dashboard/transaction-table";
 import type { Transaction, Category } from "@/lib/types";
 import { Banknote } from "lucide-react";
+import { TooltipProvider } from "../ui/tooltip";
 
 type Props = {
   isOpen: boolean;
@@ -31,12 +32,14 @@ export function SourceTransactionsDialog({ isOpen, onClose, source, transactions
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[60vh] overflow-auto">
-          <TransactionTable 
-            transactions={transactions} 
-            isPro={isPro} 
-            onCategoryChange={onCategoryChange} 
-            allCategories={allCategories} 
-          />
+          <TooltipProvider>
+            <TransactionTable 
+              transactions={transactions} 
+              isPro={isPro} 
+              onCategoryChange={onCategoryChange} 
+              allCategories={allCategories} 
+            />
+          </TooltipProvider>
         </div>
       </DialogContent>
     </Dialog>

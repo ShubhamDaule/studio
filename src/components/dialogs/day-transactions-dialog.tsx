@@ -5,6 +5,7 @@ import { TransactionTable } from "../dashboard/transaction-table";
 import type { Transaction, Category } from "@/lib/types";
 import { format, parseISO } from "date-fns";
 import { Calendar } from "lucide-react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 type Props = {
   isOpen: boolean;
@@ -12,7 +13,7 @@ type Props = {
   date?: string;
   transactions: Transaction[];
   allCategories: Category[];
-  onCategoryChange: (transactionId: string, newCategory: Category) => void;
+  onCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
   isPro: boolean;
 };
 
@@ -32,12 +33,14 @@ export function DayTransactionsDialog({ isOpen, onClose, date, transactions, all
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[60vh] overflow-auto">
-          <TransactionTable 
-            transactions={transactions} 
-            isPro={isPro} 
-            onCategoryChange={onCategoryChange} 
-            allCategories={allCategories}
-          />
+          <TooltipProvider>
+            <TransactionTable 
+              transactions={transactions} 
+              isPro={isPro} 
+              onCategoryChange={onCategoryChange} 
+              allCategories={allCategories}
+            />
+          </TooltipProvider>
         </div>
       </DialogContent>
     </Dialog>

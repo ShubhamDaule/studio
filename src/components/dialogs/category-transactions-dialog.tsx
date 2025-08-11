@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { TransactionTable } from "../dashboard/transaction-table";
 import type { Transaction, Category } from "@/lib/types";
 import { CategoryIcon } from "../icons";
-import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 type Props = {
   isOpen: boolean;
@@ -38,14 +38,14 @@ export function CategoryTransactionsDialog({ isOpen, onClose, category, transact
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[60vh] overflow-auto">
-            <TooltipProvider>
-              <TransactionTable 
-                transactions={transactions} 
-                isPro={isPro} 
-                onCategoryChange={onCategoryChange} 
-                allCategories={allCategories} 
-              />
-            </TooltipProvider>
+          <TooltipProvider>
+            <TransactionTable 
+              transactions={transactions} 
+              isPro={isPro} 
+              onCategoryChange={onCategoryChange} 
+              allCategories={allCategories} 
+            />
+          </TooltipProvider>
         </div>
       </DialogContent>
     </Dialog>
