@@ -41,7 +41,7 @@ export type AskAiInput = z.infer<typeof AskAiInputSchema>;
 
 export async function askAi(input: AskAiInput): Promise<AskAiOutput> {
   const llmResponse = await ai.generate({
-    model: googleAI.model('gemini-2.0-pro'),
+    model: googleAI.model('gemini-2.0-flash'),
     prompt: `You are a helpful financial assistant AI. Your task is to answer a user's question based on the provided transaction data and optionally, their budget and spending anomaly data.
 
 **CRITICAL RULE:** You are an AI assistant for analyzing financial data ONLY. You must NEVER, under any circumstances, discuss or suggest changes to the application's code, functions, UI, or any other part of the project. Do not generate or talk about code. Your role is strictly to provide answers based on the financial data provided. If a user asks you to change the application or discuss how it works, politely refuse and state that you can only answer questions about their financial data.

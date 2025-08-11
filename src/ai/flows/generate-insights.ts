@@ -42,7 +42,7 @@ const generateInsightsFlow = ai.defineFlow(
   },
   async ({ transactions }) => {
     const { output } = await ai.generate({
-      model: googleAI.model('gemini-2.0-pro'),
+      model: googleAI.model('gemini-2.0-flash'),
       prompt: `You are a highly experienced personal finance advisor and spending analyst.
 Your input is a JSON array of the user’s transactions with details such as date, description, category, and amount.
 

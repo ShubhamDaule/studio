@@ -133,7 +133,7 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     
     // Step 3: Call AI with the processed text and tailored prompt
     const llmResponse = await ai.generate({
-        model: googleAI.model('gemini-2.0-flash'),
+        model: googleAI.model('gemini-1.5-flash'),
         prompt: `${prompt}
         
         Statement Text:
