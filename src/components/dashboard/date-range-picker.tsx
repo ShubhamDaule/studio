@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -130,23 +131,6 @@ export function DateRangePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          {/* Quick select buttons */}
-          <div className="p-3 border-b flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const today = new Date();
-                setTempDate({
-                  from: startOfDay(today),
-                  to: endOfDay(today),
-                });
-              }}
-            >
-              Today
-            </Button>
-          </div>
-
           {/* Calendar */}
           <Calendar
             initialFocus
