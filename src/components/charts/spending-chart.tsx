@@ -53,9 +53,10 @@ const renderActiveShape = (props: any) => {
 export function SpendingChart({ transactions, onPieClick, budgets, allCategories }: SpendingChartProps) {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
 
-  const { aggregatedData, chartConfig } = React.useMemo(() => {
-    if (!transactions) return { aggregatedData: [], chartConfig: {} };
+  const { aggregatedData, chartConfig, totalSpending } = React.useMemo(() => {
+    if (!transactions) return { aggregatedData: [], chartConfig: {}, totalSpending: 0 };
     const spendingTransactions = transactions.filter(t => t.amount > 0);
+    const total = spendingTransactions.reduce((acc, t) => acc + t.amount, 0);
     
     const categoryTotals = spendingTransactions.reduce((acc, transaction) => {
       const category = transaction.category;
@@ -83,7 +84,7 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
         }
       });
 
-      return { aggregatedData: aggregated, chartConfig: dynamicChartConfig satisfies ChartConfig };
+      return { aggregatedData: aggregated, chartConfig: dynamicChartConfig satisfies ChartConfig, totalSpending: total };
   }, [transactions, allCategories]);
 
   const onPieEnter = (_: any, index: number) => {
@@ -98,15 +99,10 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
   
   const tooltipFormatter = (value: number, name: string, props: any) => {
     const { payload } = props;
-    const budget = budgets.find(b => b.category === payload.name)?.amount;
     const spentFormatted = formatCurrency(value as number);
-
-    if (budget && budget > 0) {
-      const budgetFormatted = formatCurrency(budget);
-      return `${payload.name}: ${spentFormatted} of ${budgetFormatted}`;
-    }
+    const percentage = totalSpending > 0 ? ((value / totalSpending) * 100).toFixed(1) : 0;
     
-    return `${payload.name}: ${spentFormatted}`;
+    return `${payload.name}: ${spentFormatted} (${percentage}%)`;
   }
 
   return (
