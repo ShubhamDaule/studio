@@ -42,9 +42,9 @@ function detectBankAndStatementType(text: string): StatementInfo {
   const lowerText = text.toLowerCase();
   
   let bankName: BankName = 'Unknown';
-  if (lowerText.includes('discover')) bankName = 'Discover';
+  if (lowerText.includes('chase')) bankName = 'Chase';
+  else if (lowerText.includes('discover')) bankName = 'Discover';
   else if (lowerText.includes('american express') || lowerText.includes('amex')) bankName = 'Amex';
-  else if (lowerText.includes('chase')) bankName = 'Chase';
   else if (lowerText.includes('bank of america')) bankName = 'Bank of America';
   else if (lowerText.includes('wells fargo')) bankName = 'Wells Fargo';
   else if (lowerText.includes('citi')) bankName = 'Citi';
