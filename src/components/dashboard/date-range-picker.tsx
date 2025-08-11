@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { format, startOfMonth, endOfMonth, isSameDay, isSameMonth, isSameYear } from "date-fns"
-import { Calendar as CalendarIcon, X } from "lucide-react"
+import { Calendar as CalendarIcon } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
@@ -30,18 +30,21 @@ export function DateRangePicker({
   maxDate
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [tempDate, setTempDate] = React.useState<DateRange | undefined>(date);
+
+  React.useEffect(() => {
+    setTempDate(date);
+  }, [date]);
 
   const getDisplayString = () => {
     if (!date?.from) {
       return <span>Pick a date range</span>
     }
 
-    // All time
     if (minDate && maxDate && date.to && isSameDay(date.from, minDate) && isSameDay(date.to, maxDate)) {
         return "All time";
     }
 
-    // Full month
     if (date.to && isSameMonth(date.from, date.to) && isSameYear(date.from, date.to)) {
         const firstDay = startOfMonth(date.from);
         const lastDay = endOfMonth(date.to);
@@ -50,7 +53,6 @@ export function DateRangePicker({
         }
     }
 
-    // Standard range
     if (date.to) {
       return (
         <>
@@ -63,15 +65,13 @@ export function DateRangePicker({
     return format(date.from, "LLL dd, y");
   };
 
-  const handleSelect = (range: DateRange | undefined) => {
-    setDate(range);
-    if(range?.from && range?.to) {
-        setIsOpen(false);
-    }
-  }
+  const handleCancel = () => {
+    setTempDate(date); // Reset to original date
+    setIsOpen(false);
+  };
   
-  const handleReset = () => {
-    setDate({ from: minDate, to: maxDate });
+  const handleDone = () => {
+    setDate(tempDate);
     setIsOpen(false);
   };
 
@@ -96,21 +96,24 @@ export function DateRangePicker({
           <Calendar
             initialFocus
             mode="range"
-            defaultMonth={date?.from}
-            selected={date}
-            onSelect={handleSelect}
+            defaultMonth={tempDate?.from}
+            selected={tempDate}
+            onSelect={setTempDate}
             numberOfMonths={1}
             fromDate={minDate}
             toDate={maxDate}
           />
-           <div className="p-2 border-t flex justify-end">
+           <div className="p-3 border-t flex justify-end gap-2">
             <Button
-              onClick={handleReset}
+              onClick={handleCancel}
               variant="ghost"
-              size="sm"
-              disabled={!minDate || !maxDate}
             >
-              Reset to All Time
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDone}
+            >
+              Done
             </Button>
           </div>
         </PopoverContent>
