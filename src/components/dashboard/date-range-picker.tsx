@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { format, startOfMonth, endOfMonth, isSameDay, isSameMonth, isSameYear } from "date-fns"
-import { Calendar as CalendarIcon, RotateCcw } from "lucide-react"
+import { Calendar as CalendarIcon } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
@@ -29,6 +29,12 @@ export function DateRangePicker({
   minDate,
   maxDate
 }: DateRangePickerProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [selectedRange, setSelectedRange] = React.useState<DateRange | undefined>(date);
+
+  React.useEffect(() => {
+    setSelectedRange(date);
+  }, [date]);
 
   const getDisplayString = () => {
     if (!date?.from) {
@@ -62,14 +68,19 @@ export function DateRangePicker({
     return format(date.from, "LLL dd, y");
   };
   
-  const handleReset = () => {
-    setDate({ from: minDate, to: maxDate });
+  const handleDone = () => {
+    setDate(selectedRange);
+    setIsOpen(false);
   };
 
+  const handleCancel = () => {
+    setSelectedRange(date); // Revert to the original date
+    setIsOpen(false);
+  };
 
   return (
     <div className={cn("grid gap-2", className)}>
-      <Popover>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
             id="date"
@@ -88,22 +99,26 @@ export function DateRangePicker({
           <Calendar
             initialFocus
             mode="range"
-            defaultMonth={date?.from}
-            selected={date}
-            onSelect={setDate}
-            numberOfMonths={2}
+            defaultMonth={selectedRange?.from}
+            selected={selectedRange}
+            onSelect={setSelectedRange}
+            numberOfMonths={1}
             fromDate={minDate}
             toDate={maxDate}
           />
-           <div className="p-2 border-t">
+           <div className="p-2 border-t flex justify-end gap-2">
             <Button
-              onClick={handleReset}
+              onClick={handleCancel}
               variant="ghost"
               size="sm"
-              className="w-full justify-center"
             >
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Reset to All Time
+              Cancel
+            </Button>
+             <Button
+              onClick={handleDone}
+              size="sm"
+            >
+              Done
             </Button>
           </div>
         </PopoverContent>
