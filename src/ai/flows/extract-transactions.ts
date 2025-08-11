@@ -58,7 +58,9 @@ function detectBankAndStatementType(text: string): StatementInfo {
     if (bank === 'Unknown') continue;
     const keywords = bankKeywords[bank];
     const count = keywords.reduce((acc, keyword) => {
-        return acc + (lowerText.match(new RegExp(keyword, 'g')) || []).length;
+        // Use word boundaries (\b) to match whole words only
+        const regex = new RegExp(`\\b${keyword}\\b`, 'g');
+        return acc + (lowerText.match(regex) || []).length;
     }, 0);
 
     if (count > maxCount) {
@@ -145,7 +147,7 @@ Return a clean JSON array of transactions.
     
     if (preProcessingFailed) {
         console.warn('Bank-specific pre-processing failed. Falling back to default extraction.');
-        return { processedText: rawText, prompt: `Source: Bank Statement. ${basePrompt}` };
+        return { processedText: rawText, prompt: `Source: ${bankInfo.bankName} Statement. ${basePrompt}` };
     }
 
 
