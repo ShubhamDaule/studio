@@ -15,7 +15,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
+      "relative inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
       className
     )}
     {...props}
@@ -30,13 +30,14 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=inactive]:text-black dark:data-[state=inactive]:text-white data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm",
+      "relative z-10 inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=inactive]:text-black dark:data-[state=inactive]:text-white data-[state=active]:text-primary",
       className
     )}
     {...props}
   />
 ))
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
+
 
 const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
@@ -53,4 +54,75 @@ const TabsContent = React.forwardRef<
 ))
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
-export { Tabs, TabsList, TabsTrigger, TabsContent }
+const AnimatedTabsList = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.List>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
+>(({ className, children, ...props }, ref) => {
+  const [indicatorStyle, setIndicatorStyle] = React.useState({
+    left: 0,
+    width: 0,
+  });
+  const listRef = React.useRef<HTMLDivElement>(null);
+
+  const updateIndicator = React.useCallback(() => {
+    if (listRef.current) {
+      const activeButton = listRef.current.querySelector<HTMLButtonElement>(
+        '[role="tab"][data-state="active"]'
+      );
+      if (activeButton) {
+        setIndicatorStyle({
+          left: activeButton.offsetLeft,
+          width: activeButton.offsetWidth,
+        });
+      }
+    }
+  }, []);
+
+  React.useEffect(() => {
+    updateIndicator();
+    window.addEventListener("resize", updateIndicator);
+    return () => {
+      window.removeEventListener("resize", updateIndicator);
+    };
+  }, [updateIndicator]);
+  
+  // This is a bit of a hack to get the indicator to update when the tabs change
+  React.useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+        for(let mutation of mutations) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'data-state') {
+                updateIndicator();
+            }
+        }
+    });
+
+    if (listRef.current) {
+        const tabButtons = listRef.current.querySelectorAll('[role="tab"]');
+        tabButtons.forEach(tab => {
+             observer.observe(tab, { attributes: true });
+        })
+    }
+    
+    return () => observer.disconnect();
+  }, [updateIndicator]);
+
+  return (
+    <TabsPrimitive.List
+      ref={listRef}
+      className={cn(
+        "relative inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
+        className
+      )}
+      {...props}
+    >
+      <span
+        className="absolute left-0 h-[calc(100%-0.5rem)] rounded-md bg-background shadow-sm transition-all duration-300 ease-in-out"
+        style={indicatorStyle}
+      />
+      {children}
+    </TabsPrimitive.List>
+  );
+});
+AnimatedTabsList.displayName = "AnimatedTabsList";
+
+export { Tabs, AnimatedTabsList as TabsList, TabsTrigger, TabsContent };

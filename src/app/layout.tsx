@@ -39,7 +39,7 @@ export default function RootLayout({
             <DashboardProvider>
                 <div className="flex flex-col min-h-screen">
                   {!noHeaderFooter && <Header />}
-                  <main className="flex-grow">{children}</main>
+                  <main className="flex-grow fade-in">{children}</main>
                   {!noHeaderFooter && <Footer />}
                 </div>
             </DashboardProvider>
