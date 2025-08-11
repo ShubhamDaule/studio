@@ -130,7 +130,6 @@ export function DateRangePicker({
                     size="sm"
                     onClick={handleReset}
                 >
-                    <RotateCcw className="mr-2 h-4 w-4 text-muted-foreground" />
                     Reset to All Time
               </Button>
             </div>
