@@ -111,8 +111,7 @@ export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChar
             <XAxis dataKey="amount" type="number" hide />
             <Tooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="dot" />}
-              formatter={(value, name, item) => `${item.payload.merchant}: ${formatCurrency(value as number)}`}
+              content={<ChartTooltipContent indicator="dot" formatter={(value) => formatCurrency(value as number)} nameKey="merchant" />}
             />
             <Bar 
                 dataKey="amount" 
