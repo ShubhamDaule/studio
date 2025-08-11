@@ -18,6 +18,7 @@ import { ArrowUp, ArrowDown, Edit, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboardContext } from "@/context/dashboard-context";
 import { differenceInCalendarDays, getDaysInMonth } from "date-fns";
+import { Progress } from "@/components/ui/progress";
 
 type TableData = {
     category: Category;
@@ -30,7 +31,7 @@ interface BudgetingTableProps {
   onBudgetChange: (budgets: Budget[]) => void;
 }
 
-type SortableColumn = 'category' | 'budget' | 'spent' | 'periodBudget' | 'remaining';
+type SortableColumn = 'category' | 'budget' | 'spent' | 'periodBudget';
 
 const formatCurrency = (val: number) => {
     const isNegative = val < 0;
@@ -64,11 +65,11 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
 
     return data.map(item => {
         const proratedBudget = item.budget * prorationFactor;
-        const remaining = proratedBudget - item.spent;
+        const progress = proratedBudget > 0 ? (item.spent / proratedBudget) * 100 : 0;
         return {
             ...item,
             proratedBudget,
-            remaining,
+            progress,
         };
     })
 
@@ -90,9 +91,6 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
         case 'periodBudget':
           comparison = a.proratedBudget - b.proratedBudget;
           break;
-        case 'remaining':
-            comparison = a.remaining - b.remaining;
-            break;
       }
       
       return sortDirection === 'asc' ? comparison : -comparison;
@@ -133,7 +131,7 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
             <SortableHeader column="budget" label="Monthly Budget" />
             <SortableHeader column="spent" label="Spent" />
             <SortableHeader column="periodBudget" label="Period Budget" />
-            <SortableHeader column="remaining" label="Remaining" className="text-right" />
+            <TableHead className="font-semibold text-black dark:text-white">Progress</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -176,7 +174,14 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                 </TableCell>
                 <TableCell>{formatCurrency(item.spent)}</TableCell>
                 <TableCell>{formatCurrency(item.proratedBudget)}</TableCell>
-                <TableCell className={cn("text-right font-medium", item.remaining < 0 && "text-destructive")}>{formatCurrency(item.remaining)}</TableCell>
+                <TableCell className="w-[150px]">
+                    <Progress value={Math.min(item.progress, 100)} className="h-3" indicatorClassName={cn(
+                        {
+                        "bg-destructive": item.progress > 100,
+                        "bg-yellow-500": item.progress > 75 && item.progress <= 100,
+                        }
+                    )} />
+                </TableCell>
               </TableRow>
             )})
           ) : (
