@@ -31,7 +31,7 @@ interface BudgetingTableProps {
   onBudgetChange: (budgets: Budget[]) => void;
 }
 
-type SortableColumn = 'category' | 'budget' | 'spent' | 'remaining' | 'progress';
+type SortableColumn = 'category' | 'periodBudget' | 'spent' | 'remaining';
 
 const formatCurrency = (val: number) => {
     const isNegative = val < 0;
@@ -66,11 +66,10 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
     return data.map(item => {
         const proratedBudget = item.budget * prorationFactor;
         const remaining = proratedBudget - item.spent;
-        const progress = proratedBudget > 0 ? (item.spent / proratedBudget) * 100 : 0;
         return {
             ...item,
+            proratedBudget,
             remaining,
-            progress,
         };
     })
 
@@ -83,17 +82,14 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
         case 'category':
           comparison = a.category.name.localeCompare(b.category.name);
           break;
-        case 'budget':
-          comparison = a.budget - b.budget;
+        case 'periodBudget':
+          comparison = a.proratedBudget - b.proratedBudget;
           break;
         case 'spent':
           comparison = a.spent - b.spent;
           break;
         case 'remaining':
             comparison = a.remaining - b.remaining;
-            break;
-        case 'progress':
-            comparison = a.progress - b.progress;
             break;
       }
       
@@ -132,10 +128,9 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
         <TableHeader>
           <TableRow className="hover:bg-muted/0">
             <SortableHeader column="category" label="Category" />
-            <SortableHeader column="budget" label="Monthly Budget" className="text-right" />
+            <SortableHeader column="periodBudget" label="Period Budget" />
             <SortableHeader column="spent" label="Spent" className="text-right" />
             <SortableHeader column="remaining" label="Remaining" className="text-right" />
-            <SortableHeader column="progress" label="Progress" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -151,47 +146,40 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                         <span>{item.category.name}</span>
                     </div>
                 </TableCell>
-                <TableCell className="text-right font-medium w-48">
-                    {isEditing ? (
-                         <div className="flex items-center justify-end gap-1">
-                            <Input 
-                                type="number" 
-                                value={editingValue}
-                                onChange={e => setEditingValue(Number(e.target.value))}
-                                onKeyDown={e => e.key === 'Enter' && handleSave(item.category.name)}
-                                onBlur={() => handleSave(item.category.name)}
-                                className="h-8 w-24 text-right"
-                                autoFocus
-                            />
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleSave(item.category.name)}>
-                                <Check className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-end gap-1 group">
-                           {formatCurrency(item.budget)}
-                           <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(item.category.name, item.budget)}>
-                             <Edit className="h-4 w-4" />
+                <TableCell className="font-medium">
+                    <div className="flex items-center gap-1 group">
+                        <span>{formatCurrency(item.proratedBudget)}</span>
+                        <span className="text-muted-foreground text-xs">/</span>
+                         {isEditing ? (
+                            <div className="flex items-center gap-1">
+                                <Input 
+                                    type="number" 
+                                    value={editingValue}
+                                    onChange={e => setEditingValue(Number(e.target.value))}
+                                    onKeyDown={e => e.key === 'Enter' && handleSave(item.category.name)}
+                                    onBlur={() => handleSave(item.category.name)}
+                                    className="h-8 w-24 text-left"
+                                    autoFocus
+                                />
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleSave(item.category.name)}>
+                                    <Check className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        ) : (
+                             <Button variant="ghost" className="h-auto p-0 font-medium text-xs text-muted-foreground hover:text-primary" onClick={() => handleEdit(item.category.name, item.budget)}>
+                                {formatCurrency(item.budget)}
+                                <Edit className="h-3 w-3 ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                            </Button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </TableCell>
                 <TableCell className="text-right">{formatCurrency(item.spent)}</TableCell>
                 <TableCell className={cn("text-right", item.remaining < 0 && "text-destructive font-medium")}>{formatCurrency(item.remaining)}</TableCell>
-                <TableCell className="w-[200px]">
-                    <Progress value={Math.min(item.progress, 100)} className="h-3" indicatorClassName={cn(
-                        {
-                        "bg-destructive": item.progress > 100,
-                        "bg-yellow-500": item.progress > 80 && item.progress <= 100,
-                        "bg-primary": item.progress <= 80
-                        }
-                    )} />
-                </TableCell>
               </TableRow>
             )})
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+              <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
                 No budgets configured. Go to "Manage Categories" to add some.
               </TableCell>
             </TableRow>
