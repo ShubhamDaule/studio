@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import type { Category, Budget } from "@/lib/types";
 import { CategoryIcon } from "@/components/icons";
 import { ArrowUp, ArrowDown, Edit, Check } from "lucide-react";
@@ -31,7 +30,7 @@ interface BudgetingTableProps {
   onBudgetChange: (budgets: Budget[]) => void;
 }
 
-type SortableColumn = 'category' | 'periodBudget' | 'spent' | 'remaining';
+type SortableColumn = 'category' | 'budget' | 'spent' | 'periodBudget' | 'remaining';
 
 const formatCurrency = (val: number) => {
     const isNegative = val < 0;
@@ -82,11 +81,14 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
         case 'category':
           comparison = a.category.name.localeCompare(b.category.name);
           break;
-        case 'periodBudget':
-          comparison = a.proratedBudget - b.proratedBudget;
+        case 'budget':
+          comparison = a.budget - b.budget;
           break;
         case 'spent':
           comparison = a.spent - b.spent;
+          break;
+        case 'periodBudget':
+          comparison = a.proratedBudget - b.proratedBudget;
           break;
         case 'remaining':
             comparison = a.remaining - b.remaining;
@@ -128,8 +130,9 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
         <TableHeader>
           <TableRow className="hover:bg-muted/0">
             <SortableHeader column="category" label="Category" />
+            <SortableHeader column="budget" label="Monthly Budget" />
+            <SortableHeader column="spent" label="Spent" />
             <SortableHeader column="periodBudget" label="Period Budget" />
-            <SortableHeader column="spent" label="Spent" className="text-right" />
             <SortableHeader column="remaining" label="Remaining" className="text-right" />
           </TableRow>
         </TableHeader>
@@ -148,8 +151,6 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                 </TableCell>
                 <TableCell className="font-medium">
                     <div className="flex items-center gap-1 group">
-                        <span>{formatCurrency(item.proratedBudget)}</span>
-                        <span className="text-muted-foreground text-xs">/</span>
                          {isEditing ? (
                             <div className="flex items-center gap-1">
                                 <Input 
@@ -166,20 +167,21 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                                 </Button>
                             </div>
                         ) : (
-                             <Button variant="ghost" className="h-auto p-0 font-medium text-xs text-muted-foreground hover:text-primary" onClick={() => handleEdit(item.category.name, item.budget)}>
+                             <Button variant="ghost" className="h-auto p-0 font-medium text-foreground hover:text-primary" onClick={() => handleEdit(item.category.name, item.budget)}>
                                 {formatCurrency(item.budget)}
                                 <Edit className="h-3 w-3 ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                            </Button>
                         )}
                     </div>
                 </TableCell>
-                <TableCell className="text-right">{formatCurrency(item.spent)}</TableCell>
-                <TableCell className={cn("text-right", item.remaining < 0 && "text-destructive font-medium")}>{formatCurrency(item.remaining)}</TableCell>
+                <TableCell>{formatCurrency(item.spent)}</TableCell>
+                <TableCell>{formatCurrency(item.proratedBudget)}</TableCell>
+                <TableCell className={cn("text-right font-medium", item.remaining < 0 && "text-destructive")}>{formatCurrency(item.remaining)}</TableCell>
               </TableRow>
             )})
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+              <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
                 No budgets configured. Go to "Manage Categories" to add some.
               </TableCell>
             </TableRow>
