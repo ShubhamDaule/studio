@@ -33,11 +33,15 @@ interface BudgetingTableProps {
 
 type SortableColumn = 'category' | 'budget' | 'spent' | 'periodBudget';
 
-const formatCurrency = (val: number) => {
+const formatCurrency = (val: number, withSign: boolean = false) => {
     const isNegative = val < 0;
     const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.abs(val));
-    return isNegative ? `(${formatted})` : formatted;
+    if (withSign) {
+        return isNegative ? `-${formatted}`: formatted;
+    }
+    return formatted;
 }
+
 
 export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
   const [sortColumn, setSortColumn] = React.useState<SortableColumn>('spent');
@@ -91,8 +95,8 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
           comparison = a.spent - b.spent;
           break;
         case 'periodBudget':
-          comparison = a.proratedBudget - b.proratedBudget;
-          break;
+            comparison = a.proratedBudget - b.proratedBudget;
+            break;
       }
       
       return sortDirection === 'asc' ? comparison : -comparison;
@@ -179,7 +183,7 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                 <TableCell className="w-[200px]">
                     <div className="flex items-center gap-2">
                         <span className={cn("w-16 text-right text-xs", item.remaining < 0 && "text-destructive font-semibold")}>
-                           ({formatCurrency(item.remaining)})
+                           ({formatCurrency(item.remaining, true)})
                         </span>
                         <Progress value={Math.min(item.progress, 100)} className="h-3 flex-1" indicatorClassName={cn(
                             {
