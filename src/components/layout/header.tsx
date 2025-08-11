@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { LogOut, PanelLeft, BarChart3, Upload, Loader2 } from "lucide-react";
+import { LogOut, PanelLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -24,20 +24,10 @@ import { extractAndCategorizeTransactions } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
 import type { ExtractedTransaction, BankName, StatementType } from "@/lib/types";
+import { Logo } from "./logo";
 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
-
-const Logo = () => (
-    <div className="flex items-center gap-2 flex-shrink-0">
-        <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-white" />
-        </div>
-        <span className="hidden sm:inline-block text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
-            SpendWise
-        </span>
-    </div>
-);
 
 const UserNav = () => {
   const { user, signOut } = useAuth();
