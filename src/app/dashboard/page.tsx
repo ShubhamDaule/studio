@@ -74,7 +74,7 @@ export default function DashboardPage() {
             
             const isInDateRange =
                 dateRange?.from && dateRange?.to
-                ? transactionDate >= startOfDay(dateRange.from) && transactionDate <= dateRange.to
+                ? transactionDate >= startOfDay(dateRange.from) && transactionDate <= startOfDay(dateRange.to)
                 : true;
 
             const matchesSource = isUsingMockData
