@@ -148,11 +148,12 @@ const DashboardNav = () => {
 
         setIsLoading(true);
         const allNewTransactions: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType }[] = [];
+        let totalTokensUsed = 0;
 
         await Promise.all(Array.from(files).map(async (file) => {
             toast({
                 title: `Processing ${file.name}...`,
-                description: "Reading your file and processing with AI. This may take a moment.",
+                description: "Reading your file and extracting transactions with AI.",
             });
 
             try {
@@ -178,6 +179,10 @@ const DashboardNav = () => {
                     bankName: result.bankName,
                     statementType: result.statementType,
                 });
+                
+                if (result.usage?.totalTokens) {
+                    totalTokensUsed += result.usage.totalTokens;
+                }
 
             } catch (error: any) {
                 console.error(`Upload error for ${file.name}:`, error);
@@ -189,8 +194,16 @@ const DashboardNav = () => {
             }
         }));
 
-        if (allNewTransactions.length > 0 && onNewTransactions) {
-            onNewTransactions(allNewTransactions);
+        if (allNewTransactions.length > 0) {
+             if (onNewTransactions) {
+                onNewTransactions(allNewTransactions);
+            }
+            if(totalTokensUsed > 0) {
+                 toast({
+                    title: "Processing Complete",
+                    description: `Total tokens used for this batch: ${totalTokensUsed}`,
+                });
+            }
         }
 
         setIsLoading(false);

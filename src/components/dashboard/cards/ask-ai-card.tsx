@@ -44,6 +44,10 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
       });
     } else if (response.result) {
       setResult(response.result);
+       toast({
+        title: "AI Response Received",
+        description: `Tokens used: ${response.usage?.totalTokens}`,
+      });
     }
     
     setIsLoading(false);

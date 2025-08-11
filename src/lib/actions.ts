@@ -3,7 +3,7 @@
 import { generateInsights } from "@/ai/flows/generate-insights";
 import { extractTransactions } from "@/ai/flows/extract-transactions";
 import { askAi } from "@/ai/flows/ask-ai-flow";
-import type { Transaction, QueryResult, Budget, ExtractedTransaction, BankName, StatementType } from "@/lib/types";
+import type { Transaction, QueryResult, Budget, ExtractedTransaction, BankName, StatementType, TokenUsage } from "@/lib/types";
 import { estimateTokens } from "@/lib/tokens";
 
 
@@ -32,9 +32,12 @@ export async function getAIInsights(transactions: Transaction[]) {
     const input = { transactions };
     const insights = await generateInsights(input);
 
-    const usage = {
-        inputTokens: estimateTokens(JSON.stringify(input)),
-        outputTokens: estimateTokens(JSON.stringify(insights)),
+    const inputTokens = estimateTokens(JSON.stringify(input));
+    const outputTokens = estimateTokens(JSON.stringify(insights));
+    const usage: TokenUsage = {
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
     }
 
     return { success: true, insights, usage };
@@ -44,7 +47,7 @@ export async function getAIInsights(transactions: Transaction[]) {
   }
 }
 
-export async function extractAndCategorizeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; error?: string, usage?: { inputTokens: number, outputTokens: number } }> {
+export async function extractAndCategorizeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; error?: string, usage?: TokenUsage }> {
     if (!pdfText) {
         return { error: "No text from PDF to process." };
     }
@@ -57,9 +60,12 @@ export async function extractAndCategorizeTransactions(pdfText: string): Promise
              return { data: [], bankName, statementType };
         }
         
-        const usage = {
-            inputTokens: estimateTokens(JSON.stringify(input)),
-            outputTokens: estimateTokens(JSON.stringify(transactions)),
+        const inputTokens = estimateTokens(JSON.stringify(input));
+        const outputTokens = estimateTokens(JSON.stringify(transactions));
+        const usage: TokenUsage = {
+            inputTokens,
+            outputTokens,
+            totalTokens: inputTokens + outputTokens,
         }
 
         // Add bankName to each transaction object for consistency
@@ -72,7 +78,7 @@ export async function extractAndCategorizeTransactions(pdfText: string): Promise
     }
 }
 
-export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string, usage?: { inputTokens: number, outputTokens: number } }> {
+export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string, usage?: TokenUsage }> {
     if (!query) {
         return { error: "Please enter a question." };
     }
@@ -88,9 +94,12 @@ export async function getAiQueryResponse(query: string, transactions: Transactio
         };
         const result = await askAi(input);
 
-        const usage = {
-            inputTokens: estimateTokens(JSON.stringify(input)),
-            outputTokens: estimateTokens(JSON.stringify(result)),
+        const inputTokens = estimateTokens(JSON.stringify(input));
+        const outputTokens = estimateTokens(JSON.stringify(result));
+        const usage: TokenUsage = {
+            inputTokens,
+            outputTokens,
+            totalTokens: inputTokens + outputTokens,
         }
 
         return { result, usage };

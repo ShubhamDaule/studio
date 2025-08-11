@@ -58,7 +58,7 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
       setInsights(result.insights.insights);
       toast({
         title: "Advice Generated!",
-        description: "Your financial coach has new tips for you.",
+        description: `Your financial coach has new tips for you. (Tokens used: ${result.usage?.totalTokens})`,
       });
     } else {
       toast({
