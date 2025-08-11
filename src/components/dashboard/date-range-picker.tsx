@@ -23,7 +23,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
   date: DateRange | undefined;
@@ -83,9 +82,17 @@ export function DateRangePicker({
       setDate(undefined);
       return;
     }
-    const from = startOfDay(selectedDate.from);
-    const to = selectedDate.to ? endOfDay(selectedDate.to) : endOfDay(selectedDate.from);
-    setDate({ from, to });
+    
+    let normalizedFrom = startOfDay(selectedDate.from);
+    let normalizedTo: Date;
+
+    if (selectedDate.to) {
+      normalizedTo = endOfDay(selectedDate.to);
+    } else {
+      normalizedTo = endOfDay(selectedDate.from);
+    }
+
+    setDate({ from: normalizedFrom, to: normalizedTo });
   };
 
 
@@ -107,18 +114,6 @@ export function DateRangePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <div className="flex items-center justify-between p-2 border-b">
-            <span className="text-sm font-medium pl-2">Select a date range</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleReset}
-              >
-                <RotateCcw className="mr-2 h-4 w-4 text-muted-foreground" />
-                Reset to All Time
-              </Button>
-          </div>
-
             <Calendar
               initialFocus
               mode="range"
@@ -129,6 +124,16 @@ export function DateRangePicker({
               fromDate={minDate}
               toDate={maxDate}
             />
+            <div className="p-3 border-t flex justify-end">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleReset}
+                >
+                    <RotateCcw className="mr-2 h-4 w-4 text-muted-foreground" />
+                    Reset to All Time
+              </Button>
+            </div>
         </PopoverContent>
       </Popover>
     </div>
