@@ -1,21 +1,25 @@
 
 'use server';
 /**
- * @fileOverview An AI flow for extracting transaction data from PDF text using bank-specific rules.
+ * @fileOverview An AI flow for extracting and categorizing transaction data from PDF text.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/googleai';
+import { categoryTriggers } from '@/lib/category-triggers';
 
-const RawTransactionSchema = z.object({
+const ExtractedTransactionSchema = z.object({
   date: z.string().describe("Transaction date in 'YYYY-MM-DD' format."),
   merchant: z.string().describe("The raw merchant description from the statement."),
   amount: z.number().describe("Transaction amount (positive for purchases, negative for payments/refunds)."),
+  category: z.string().describe("The assigned category for the transaction."),
 });
 
-const ExtractedDataSchema = z.array(RawTransactionSchema);
+const ExtractedDataSchema = z.array(ExtractedTransactionSchema);
 
-export type RawTransaction = z.infer<typeof RawTransactionSchema>;
+export type ExtractedTransaction = z.infer<typeof ExtractedTransactionSchema>;
+export type RawTransaction = Omit<ExtractedTransaction, 'category'>;
+
 
 const ExtractTransactionsInputSchema = z.object({
   pdfText: z.string(),
@@ -64,12 +68,21 @@ function getBankPreProcessing(bankInfo: StatementInfo, rawText: string) {
     let prompt;
 
     const basePrompt = `
-Extract transactions from the provided statement text.
-Return a clean JSON array of transactions with the following fields:
+Extract transactions from the provided statement text. For each transaction, provide the following fields:
 - date: 'YYYY-MM-DD'
 - merchant: The merchant name, cleaned of unnecessary details. If a location provides essential context for an ambiguous merchant, add it in brackets. For example: "Starbucks (New York, NY)".
 - amount: Purchases are positive numbers. Payments and credits are negative numbers.
-Do NOT add categories.
+- category: Assign a category to each transaction based on the rules below.
+
+**CRITICAL RULE:** Use the following keyword-based rules to determine the category. The merchant name is the primary signal. If a merchant matches keywords from multiple categories, choose the most specific one. If no keywords match, you MUST assign the category "Miscellaneous".
+
+**Category Rules (Keywords are case-insensitive):**
+${categoryTriggers.map(c => `- **${c.category}**: Keywords -> [${c.keywords.join(', ')}]`).join('\n')}
+
+**Special Rules:**
+- If a merchant contains 'AMAZON' and 'PRIME', categorize it as 'Subscriptions'.
+
+Return a clean JSON array of transactions.
 `;
     let preProcessingFailed = false;
 
@@ -115,7 +128,7 @@ Do NOT add categories.
 // ************************************************************************************
 // STEP 3: Main AI Flow
 // ************************************************************************************
-export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, transactions: RawTransaction[] }> {
+export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, transactions: ExtractedTransaction[] }> {
     const { pdfText } = input;
 
     // Step 1: Detect bank and type

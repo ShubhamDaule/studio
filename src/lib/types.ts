@@ -83,11 +83,3 @@ export type ExtractedTransaction = {
 };
 
 export type RawTransaction = Omit<ExtractedTransaction, 'category' | 'bankName'>;
-
-export type ExtractedData = {
-    accountType: "Bank Account" | "Credit Card" | "Unknown";
-    bankName: string;
-    statementStartDate: string;
-    statementEndDate: string;
-    transactions: ExtractedTransaction[];
-};

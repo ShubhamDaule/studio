@@ -1,9 +1,5 @@
-/**
- * @fileOverview A deterministic function for categorizing transactions based on keyword matching.
- */
-import type { RawTransaction, ExtractedTransaction } from './extract-transactions';
 
-const categoryTriggers = [
+export const categoryTriggers = [
     { category: "Payment", keywords: ["PAYMENT", "AUTO PAY", "AUTOPAY", "TRANSFER", "ACH PAYMENT", "E-PAY", "DIRECT DEBIT", "CREDIT PAYMENT", "REFUND"] },
     { category: "Rewards", keywords: ["REDEMPTION", "REWARDS", "CASH BACK", "POINTS", "LOYALTY CREDIT"] },
     { category: "Groceries", keywords: ["MART", "MARKET", "GROCERY", "SUPERMARKET", "TRADER JOE", "SAFEWAY", "KROGER", "WALMART GROCERY", "COSTCO", "ALDI", "WHOLE FOODS", "GROCERS", "DOLLAR TREE"] },
@@ -24,24 +20,3 @@ const categoryTriggers = [
     { category: "Home Improvement & Hardware", keywords: ["DEPOT", "HOME DEPOT", "LOWE'S", "ACE HARDWARE", "MENARDS", "B&Q", "TRUE VALUE", "BUILDERS", "TOOL", "HARDWARE", "DIY"] },
     { category: "Office Supplies", keywords: ["OFFICE DEPOT", "STAPLES", "OFFICEMAX", "STATIONERY", "PAPER", "PRINTER", "INK", "OFFICE SUPPLY"] },
 ];
-
-export function categorizeTransactions(rawTransactions: RawTransaction[]): ExtractedTransaction[] {
-  return rawTransactions.map(txn => {
-    const merchantUpper = txn.merchant.toUpperCase();
-    
-    // Find first category where any keyword matches merchant text
-    const matchedCategory = categoryTriggers.find(trigger =>
-      trigger.keywords.some(keyword => merchantUpper.includes(keyword))
-    );
-    
-    // Special rule for Amazon
-    if (merchantUpper.includes('AMAZON') && merchantUpper.includes('PRIME')) {
-        return { ...txn, category: 'Subscriptions' }
-    }
-
-    return {
-      ...txn,
-      category: matchedCategory ? matchedCategory.category : "Miscellaneous",
-    };
-  });
-}

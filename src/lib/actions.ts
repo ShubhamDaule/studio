@@ -1,7 +1,6 @@
 
 "use server";
 import { generateInsights } from "@/ai/flows/generate-insights";
-import { categorizeTransactions } from "@/ai/flows/categorize-transactions";
 import { extractTransactions } from "@/ai/flows/extract-transactions";
 import { askAi } from "@/ai/flows/ask-ai-flow";
 import type { Transaction, QueryResult, Budget, ExtractedTransaction, BankName, StatementType } from "@/lib/types";
@@ -43,17 +42,15 @@ export async function extractAndCategorizeTransactions(pdfText: string): Promise
     }
 
     try {
-        // Step 1: Extract raw transactions and bank name using the AI flow
-        const { bankName, statementType, transactions: rawTransactions } = await extractTransactions({ pdfText });
-        if (!rawTransactions || rawTransactions.length === 0) {
-            return { data: [], bankName, statementType };
-        }
-        
-        // Step 2: Categorize the extracted transactions using deterministic keyword logic
-        const categorizedData = categorizeTransactions(rawTransactions);
+        // AI now handles both extraction and categorization in one step
+        const { bankName, statementType, transactions } = await extractTransactions({ pdfText });
 
-        // Step 3: Add bankName to each transaction object
-        const dataWithBankName = categorizedData.map(txn => ({ ...txn, bankName }));
+        if (!transactions) {
+             return { data: [], bankName, statementType };
+        }
+
+        // Add bankName to each transaction object for consistency
+        const dataWithBankName = transactions.map(txn => ({ ...txn, bankName }));
 
         return { data: dataWithBankName, bankName, statementType };
     } catch (e: any) {
