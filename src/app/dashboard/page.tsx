@@ -33,6 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { startOfDay, endOfDay } from "date-fns";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
@@ -67,10 +68,13 @@ export default function DashboardPage() {
 
     const filteredTransactions = React.useMemo(() => {
         return allTransactions.filter((t) => {
-            const transactionDate = new Date(t.date);
+             // Create date object in UTC to avoid timezone issues.
+            const [year, month, day] = t.date.split('-').map(Number);
+            const transactionDate = new Date(Date.UTC(year, month - 1, day));
+            
             const isInDateRange =
                 dateRange?.from && dateRange?.to
-                ? transactionDate >= dateRange.from && transactionDate <= dateRange.to
+                ? transactionDate >= startOfDay(dateRange.from) && transactionDate <= endOfDay(dateRange.to)
                 : true;
 
             const matchesSource = isUsingMockData
@@ -349,4 +353,5 @@ export default function DashboardPage() {
             </div>
         </DndContext>
     );
-}
+
+    
