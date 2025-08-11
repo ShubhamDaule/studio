@@ -69,7 +69,7 @@ const AuthForm = () => {
                         <div 
                             className={cn(
                                 "absolute h-[calc(100%-0.5rem)] w-[calc(50%-0.25rem)] bg-background shadow-sm rounded-full transition-transform duration-300 ease-in-out",
-                                mode === 'signin' ? 'transform translate-x-1' : 'transform translate-x-[calc(100%+0.25rem)]'
+                                mode === 'signin' ? 'transform translate-x-0' : 'transform translate-x-[calc(100%)]'
                             )}
                         />
                         <button 
