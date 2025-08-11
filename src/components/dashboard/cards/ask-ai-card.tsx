@@ -81,7 +81,7 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
                 className="bg-background"
                 disabled={isLoading}
             />
-            {(isLoading || result) && (
+            {(isLoading || result) ? (
                 <div className="w-full min-h-[10rem] p-4 text-sm rounded-lg bg-background/50 border border-border text-left overflow-y-auto mt-4">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
@@ -96,6 +96,12 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
                             )}
                         </div>
                     ) : null}
+                </div>
+            ) : !query && (
+                 <div className="flex flex-col items-center gap-2 mt-4 text-muted-foreground">
+                    <BrainCircuit className="w-10 h-10 text-primary" />
+                    <p className="font-semibold">Ask a question to get started</p>
+                    <p className="text-sm max-w-xs">Your answer and any requested charts will appear here.</p>
                 </div>
             )}
         </div>
