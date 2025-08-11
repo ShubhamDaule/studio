@@ -65,21 +65,27 @@ const AuthForm = () => {
                         </p>
                     </div>
 
-                    <div className="bg-muted p-1 rounded-md flex gap-1 mb-6">
+                    <div className="relative bg-muted p-1 rounded-full flex items-center mb-6">
+                        <div 
+                            className={cn(
+                                "absolute h-[calc(100%-0.5rem)] w-[calc(50%-0.25rem)] bg-background shadow-sm rounded-full transition-transform duration-300 ease-in-out",
+                                mode === 'signin' ? 'transform translate-x-1' : 'transform translate-x-[calc(100%+0.25rem)]'
+                            )}
+                        />
                         <button 
                             onClick={() => setMode('signin')}
                             className={cn(
-                                "w-full py-2 text-sm font-medium rounded",
-                                mode === 'signin' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground'
+                                "relative z-10 w-full py-2 text-sm font-medium rounded-full",
+                                mode === 'signin' ? 'text-primary' : 'text-muted-foreground'
                             )}
                         >
                             Sign In
                         </button>
                         <button 
                             onClick={() => setMode('signup')}
-                             className={cn(
-                                "w-full py-2 text-sm font-medium rounded",
-                                mode === 'signup' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground'
+                            className={cn(
+                                "relative z-10 w-full py-2 text-sm font-medium rounded-full",
+                                mode === 'signup' ? 'text-primary' : 'text-muted-foreground'
                             )}
                         >
                             Sign Up
