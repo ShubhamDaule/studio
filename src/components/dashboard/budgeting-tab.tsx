@@ -12,7 +12,7 @@ import { useBudgets } from "@/hooks/useBudgets";
 import { useDashboardContext } from "@/context/dashboard-context";
 
 type Props = {
-    activeBudgets: Budget[];
+    activeBudgets: Budget[]; // These are the prorated budgets from the hook
     onMultipleBudgetChange: (budgets: Budget[]) => void;
     transactions: Transaction[];
     onSetBudgetOverride: (override: BudgetOverride) => void;
@@ -26,8 +26,6 @@ type Props = {
 };
 
 export function BudgetingTab({
-    activeBudgets: proratedBudgets,
-    onMultipleBudgetChange,
     transactions,
     setAllCategories,
     onAddBudget,
@@ -37,8 +35,7 @@ export function BudgetingTab({
     const {value: isManageDialogOpen, setTrue: openManageDialog, setFalse: closeManageDialog} = useBoolean(false);
     const { dateRange } = useDashboardContext();
 
-    // The useBudgets hook now returns both the base (monthly) budgets and the prorated ones.
-    const { budgets, handleMultipleBudgetChange: handleBaseBudgetChange, activeBudgets } = useBudgets({ allCategories, dateRange, transactions });
+    const { budgets, handleMultipleBudgetChange: handleBaseBudgetChange } = useBudgets({ allCategories, dateRange, transactions });
 
     const spendingByCategory = React.useMemo(() => {
         return transactions.reduce((acc, t) => {
@@ -55,14 +52,12 @@ export function BudgetingTab({
 
     const tableData = React.useMemo(() => {
         return budgetedCategories.map(cat => {
-            // Use the full monthly budget for the 'budget' column
             const monthlyBudget = budgets.find(b => b.category === cat.name);
             const spent = spendingByCategory[cat.name] || 0;
             return {
                 category: cat,
-                budget: monthlyBudget?.amount || 0, // Full monthly budget
-                spent, // Spent within the date range
-                remaining: (monthlyBudget?.amount || 0) - spent, // Remaining based on monthly budget
+                budget: monthlyBudget?.amount || 0,
+                spent,
             };
         });
     }, [budgetedCategories, budgets, spendingByCategory]);

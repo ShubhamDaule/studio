@@ -17,12 +17,13 @@ import type { Category, Budget } from "@/lib/types";
 import { CategoryIcon } from "@/components/icons";
 import { ArrowUp, ArrowDown, Edit, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDashboardContext } from "@/context/dashboard-context";
+import { differenceInCalendarDays, getDaysInMonth } from "date-fns";
 
 type TableData = {
     category: Category;
-    budget: number;
-    spent: number;
-    remaining: number;
+    budget: number; // This will be the full monthly budget
+    spent: number; // This is spent within the date range
 };
 
 interface BudgetingTableProps {
@@ -43,6 +44,7 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc');
   const [editingRow, setEditingRow] = React.useState<string | null>(null);
   const [editingValue, setEditingValue] = React.useState<number>(0);
+  const { dateRange } = useDashboardContext();
 
   const handleSort = (column: SortableColumn) => {
     if (sortColumn === column) {
@@ -53,12 +55,30 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
     }
   };
 
-  const sortedData = React.useMemo(() => {
-    return [...data].sort((a, b) => {
-      let comparison = 0;
-      const aProgress = a.budget > 0 ? (a.spent / a.budget) : 0;
-      const bProgress = b.budget > 0 ? (b.spent / b.budget) : 0;
+  const tableDataWithCalculations = React.useMemo(() => {
+    const daysInMonth = dateRange?.from ? getDaysInMonth(dateRange.from) : 30;
+    let numberOfDays = 30;
+    if (dateRange?.from && dateRange?.to) {
+        numberOfDays = differenceInCalendarDays(dateRange.to, dateRange.from) + 1;
+    }
+    const prorationFactor = numberOfDays / daysInMonth;
 
+    return data.map(item => {
+        const proratedBudget = item.budget * prorationFactor;
+        const remaining = proratedBudget - item.spent;
+        const progress = proratedBudget > 0 ? (item.spent / proratedBudget) * 100 : 0;
+        return {
+            ...item,
+            remaining,
+            progress,
+        };
+    })
+
+  }, [data, dateRange])
+
+  const sortedData = React.useMemo(() => {
+    return [...tableDataWithCalculations].sort((a, b) => {
+      let comparison = 0;
       switch(sortColumn) {
         case 'category':
           comparison = a.category.name.localeCompare(b.category.name);
@@ -73,13 +93,13 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
             comparison = a.remaining - b.remaining;
             break;
         case 'progress':
-            comparison = aProgress - bProgress;
+            comparison = a.progress - b.progress;
             break;
       }
       
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-  }, [data, sortColumn, sortDirection]);
+  }, [tableDataWithCalculations, sortColumn, sortDirection]);
   
   const handleEdit = (categoryName: string, currentBudget: number) => {
     setEditingRow(categoryName);
@@ -112,7 +132,7 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
         <TableHeader>
           <TableRow className="hover:bg-muted/0">
             <SortableHeader column="category" label="Category" />
-            <SortableHeader column="budget" label="Budget" className="text-right" />
+            <SortableHeader column="budget" label="Monthly Budget" className="text-right" />
             <SortableHeader column="spent" label="Spent" className="text-right" />
             <SortableHeader column="remaining" label="Remaining" className="text-right" />
             <SortableHeader column="progress" label="Progress" />
@@ -121,7 +141,6 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
         <TableBody>
           {sortedData.length > 0 ? (
             sortedData.map((item) => {
-              const percentage = item.budget > 0 ? (item.spent / item.budget) * 100 : 0;
               const isEditing = editingRow === item.category.name;
 
               return (
@@ -132,7 +151,7 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                         <span>{item.category.name}</span>
                     </div>
                 </TableCell>
-                <TableCell className="text-right font-medium w-40">
+                <TableCell className="text-right font-medium w-48">
                     {isEditing ? (
                          <div className="flex items-center justify-end gap-1">
                             <Input 
@@ -160,11 +179,11 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                 <TableCell className="text-right">{formatCurrency(item.spent)}</TableCell>
                 <TableCell className={cn("text-right", item.remaining < 0 && "text-destructive font-medium")}>{formatCurrency(item.remaining)}</TableCell>
                 <TableCell className="w-[200px]">
-                    <Progress value={Math.min(percentage, 100)} className="h-3" indicatorClassName={cn(
+                    <Progress value={Math.min(item.progress, 100)} className="h-3" indicatorClassName={cn(
                         {
-                        "bg-destructive": percentage > 100,
-                        "bg-yellow-500": percentage > 80 && percentage <= 100,
-                        "bg-primary": percentage <= 80
+                        "bg-destructive": item.progress > 100,
+                        "bg-yellow-500": item.progress > 80 && item.progress <= 100,
+                        "bg-primary": item.progress <= 80
                         }
                     )} />
                 </TableCell>
@@ -182,4 +201,3 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
     </div>
   );
 }
-
