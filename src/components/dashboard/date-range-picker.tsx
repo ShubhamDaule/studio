@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -133,17 +132,6 @@ export function DateRangePicker({
         <PopoverContent className="w-auto p-0" align="start">
           {/* Quick select buttons */}
           <div className="p-3 border-b flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const from = startOfMonth(new Date());
-                const to = endOfMonth(new Date());
-                setTempDate({ from, to });
-              }}
-            >
-              This Month
-            </Button>
             <Button
               size="sm"
               variant="outline"
