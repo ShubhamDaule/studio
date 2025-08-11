@@ -57,7 +57,7 @@ const AuthForm = () => {
             </div>
 
             <main className="w-full max-w-md mx-auto">
-                <div className="bg-card/80 backdrop-blur-sm border rounded-lg shadow-lg p-8">
+                <div className="bg-card/80 backdrop-blur-sm border rounded-lg shadow-lg p-8 transition-all duration-300 ease-in-out">
                     <div className="text-center mb-6">
                         <h1 className="text-2xl font-bold">Welcome</h1>
                         <p className="text-muted-foreground">
