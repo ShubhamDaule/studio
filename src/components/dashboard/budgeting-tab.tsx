@@ -37,7 +37,8 @@ export function BudgetingTab({
     const {value: isManageDialogOpen, setTrue: openManageDialog, setFalse: closeManageDialog} = useBoolean(false);
     const { dateRange } = useDashboardContext();
 
-    const { budgets, handleMultipleBudgetChange: handleBaseBudgetChange } = useBudgets({ allCategories, dateRange, transactions });
+    // The useBudgets hook now returns both the base (monthly) budgets and the prorated ones.
+    const { budgets, handleMultipleBudgetChange: handleBaseBudgetChange, activeBudgets } = useBudgets({ allCategories, dateRange, transactions });
 
     const spendingByCategory = React.useMemo(() => {
         return transactions.reduce((acc, t) => {
@@ -49,21 +50,22 @@ export function BudgetingTab({
     }, [transactions]);
     
     const budgetedCategories = allCategories.filter(
-      (c) => proratedBudgets.some((b) => b.category === c.name)
+      (c) => budgets.some((b) => b.category === c.name)
     );
 
     const tableData = React.useMemo(() => {
         return budgetedCategories.map(cat => {
-            const proratedBudget = proratedBudgets.find(b => b.category === cat.name);
+            // Use the full monthly budget for the 'budget' column
+            const monthlyBudget = budgets.find(b => b.category === cat.name);
             const spent = spendingByCategory[cat.name] || 0;
             return {
                 category: cat,
-                budget: proratedBudget?.amount || 0,
-                spent,
-                remaining: (proratedBudget?.amount || 0) - spent,
+                budget: monthlyBudget?.amount || 0, // Full monthly budget
+                spent, // Spent within the date range
+                remaining: (monthlyBudget?.amount || 0) - spent, // Remaining based on monthly budget
             };
         });
-    }, [budgetedCategories, proratedBudgets, spendingByCategory]);
+    }, [budgetedCategories, budgets, spendingByCategory]);
 
     return (
         <>
@@ -73,7 +75,7 @@ export function BudgetingTab({
                         <div>
                             <CardTitle>Budgets</CardTitle>
                             <CardDescription>
-                                Track and manage your spending for each category. Budgets are prorated based on your selected date range.
+                                Set your monthly budget for each category. Spending and progress reflect the selected date range.
                             </CardDescription>
                         </div>
                         <Button size="sm" onClick={openManageDialog}>
@@ -85,7 +87,7 @@ export function BudgetingTab({
                 <CardContent>
                    <BudgetingTable 
                     data={tableData}
-                    onBudgetChange={handleBaseBudgetChange} // Pass the base budget updater here
+                    onBudgetChange={handleBaseBudgetChange}
                    />
                 </CardContent>
             </Card>
