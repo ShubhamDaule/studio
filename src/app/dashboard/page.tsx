@@ -68,14 +68,13 @@ export default function DashboardPage() {
 
     const filteredTransactions = React.useMemo(() => {
         return allTransactions.filter((t) => {
-             // Create date object in UTC to avoid timezone issues.
             const [year, month, day] = t.date.split('-').map(Number);
-            const transactionDate = new Date(Date.UTC(year, month - 1, day));
+            const transactionDate = Date.UTC(year, month - 1, day);
+
+            const rangeFrom = dateRange?.from ? startOfDay(dateRange.from).getTime() : 0;
+            const rangeTo = dateRange?.to ? startOfDay(dateRange.to).getTime() : Infinity;
             
-            const isInDateRange =
-                dateRange?.from && dateRange?.to
-                ? transactionDate >= startOfDay(dateRange.from) && transactionDate <= startOfDay(dateRange.to)
-                : true;
+            const isInDateRange = transactionDate >= rangeFrom && transactionDate <= rangeTo;
 
             const matchesSource = isUsingMockData
                 ? selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter
