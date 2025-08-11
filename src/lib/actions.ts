@@ -4,6 +4,7 @@ import { generateInsights } from "@/ai/flows/generate-insights";
 import { extractTransactions } from "@/ai/flows/extract-transactions";
 import { askAi } from "@/ai/flows/ask-ai-flow";
 import type { Transaction, QueryResult, Budget, ExtractedTransaction, BankName, StatementType } from "@/lib/types";
+import { estimateTokens } from "@/lib/tokens";
 
 
 function getFriendlyErrorMessage(error: any): string {
@@ -28,38 +29,50 @@ export async function getAIInsights(transactions: Transaction[]) {
   }
 
   try {
-    const insights = await generateInsights(transactions);
-    return { success: true, insights };
+    const input = { transactions };
+    const insights = await generateInsights(input);
+
+    const usage = {
+        inputTokens: estimateTokens(JSON.stringify(input)),
+        outputTokens: estimateTokens(JSON.stringify(insights)),
+    }
+
+    return { success: true, insights, usage };
   } catch (e: any) {
     console.error("Error getting AI insights:", e);
     return { success: false, error: getFriendlyErrorMessage(e) };
   }
 }
 
-export async function extractAndCategorizeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; error?: string }> {
+export async function extractAndCategorizeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; error?: string, usage?: { inputTokens: number, outputTokens: number } }> {
     if (!pdfText) {
         return { error: "No text from PDF to process." };
     }
 
     try {
-        // AI now handles both extraction and categorization in one step
-        const { bankName, statementType, transactions } = await extractTransactions({ pdfText });
+        const input = { pdfText };
+        const { bankName, statementType, transactions } = await extractTransactions(input);
 
         if (!transactions) {
              return { data: [], bankName, statementType };
+        }
+        
+        const usage = {
+            inputTokens: estimateTokens(JSON.stringify(input)),
+            outputTokens: estimateTokens(JSON.stringify(transactions)),
         }
 
         // Add bankName to each transaction object for consistency
         const dataWithBankName = transactions.map(txn => ({ ...txn, bankName }));
 
-        return { data: dataWithBankName, bankName, statementType };
+        return { data: dataWithBankName, bankName, statementType, usage };
     } catch (e: any) {
         console.error("Error extracting and categorizing transactions from PDF:", e);
         return { error: getFriendlyErrorMessage(e) };
     }
 }
 
-export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string }> {
+export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string, usage?: { inputTokens: number, outputTokens: number } }> {
     if (!query) {
         return { error: "Please enter a question." };
     }
@@ -68,12 +81,19 @@ export async function getAiQueryResponse(query: string, transactions: Transactio
     }
 
     try {
-        const result = await askAi({
+        const input = {
             query,
             transactionData: JSON.stringify(transactions),
             budgetData: JSON.stringify(budgets),
-        });
-        return { result };
+        };
+        const result = await askAi(input);
+
+        const usage = {
+            inputTokens: estimateTokens(JSON.stringify(input)),
+            outputTokens: estimateTokens(JSON.stringify(result)),
+        }
+
+        return { result, usage };
     } catch (e: any) {
         console.error("Error getting AI query response:", e);
         return { error: getFriendlyErrorMessage(e) };

@@ -83,3 +83,9 @@ export type ExtractedTransaction = {
 };
 
 export type RawTransaction = Omit<ExtractedTransaction, 'category' | 'bankName'>;
+
+export type TokenUsage = {
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
+}
