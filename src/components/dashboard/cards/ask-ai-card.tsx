@@ -81,21 +81,23 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
                 className="bg-background"
                 disabled={isLoading}
             />
-             <div className="w-full min-h-[10rem] p-4 text-sm rounded-lg bg-background/50 border border-border text-left overflow-y-auto">
-                {isLoading ? (
-                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                        <BrainCircuit className="h-8 w-8 mb-2 animate-pulse" />
-                        <p>Thinking...</p>
-                    </div>
-                ) : result ? (
-                    <div>
-                        <p className="whitespace-pre-wrap">{result.answer}</p>
-                        {result.chartData && (
-                            <DynamicChart chartData={result.chartData} />
-                        )}
-                    </div>
-                ) : null}
-            </div>
+            {(isLoading || result) && (
+                <div className="w-full min-h-[10rem] p-4 text-sm rounded-lg bg-background/50 border border-border text-left overflow-y-auto">
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                            <BrainCircuit className="h-8 w-8 mb-2 animate-pulse" />
+                            <p>Thinking...</p>
+                        </div>
+                    ) : result ? (
+                        <div>
+                            <p className="whitespace-pre-wrap">{result.answer}</p>
+                            {result.chartData && (
+                                <DynamicChart chartData={result.chartData} />
+                            )}
+                        </div>
+                    ) : null}
+                </div>
+            )}
         </div>
       </CardContent>
        <CardFooter className="z-10">
