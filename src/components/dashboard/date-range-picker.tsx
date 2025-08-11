@@ -12,7 +12,7 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, RotateCcw } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
   date: DateRange | undefined;
@@ -38,12 +39,6 @@ export function DateRangePicker({
   minDate,
   maxDate,
 }: DateRangePickerProps) {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [tempDate, setTempDate] = React.useState<DateRange | undefined>(date);
-
-  React.useEffect(() => {
-    setTempDate(date);
-  }, [date]);
 
   const getDisplayString = () => {
     if (!date?.from) {
@@ -79,43 +74,24 @@ export function DateRangePicker({
     return format(date.from, "LLL dd, y");
   };
 
-  const handleCancel = () => {
-    setTempDate(date); // Reset to original date
-    setIsOpen(false);
+  const handleReset = () => {
+    setDate({ from: minDate, to: maxDate });
   };
-
-  const handleDone = () => {
-    if (!tempDate?.from) {
-      setIsOpen(false);
+  
+  const handleDateSelect = (selectedDate: DateRange | undefined) => {
+    if (!selectedDate?.from) {
+      setDate(undefined);
       return;
     }
-
-    let normalizedFrom = startOfDay(tempDate.from);
-    let normalizedTo: Date;
-
-    if (tempDate.to) {
-      normalizedTo = endOfDay(tempDate.to);
-
-      // Auto-expand to full month if same month/year
-      if (
-        isSameMonth(tempDate.from, tempDate.to) &&
-        isSameYear(tempDate.from, tempDate.to)
-      ) {
-        normalizedFrom = startOfMonth(tempDate.from);
-        normalizedTo = endOfMonth(tempDate.to);
-      }
-    } else {
-      // Single day → inclusive to end of day
-      normalizedTo = endOfDay(tempDate.from);
-    }
-
-    setDate({ from: normalizedFrom, to: normalizedTo });
-    setIsOpen(false);
+    const from = startOfDay(selectedDate.from);
+    const to = selectedDate.to ? endOfDay(selectedDate.to) : endOfDay(selectedDate.from);
+    setDate({ from, to });
   };
+
 
   return (
     <div className={cn("grid gap-2", className)}>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <Popover>
         <PopoverTrigger asChild>
           <Button
             id="date"
@@ -131,24 +107,35 @@ export function DateRangePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          {/* Calendar */}
-          <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={tempDate?.from}
-            selected={tempDate}
-            onSelect={setTempDate}
-            numberOfMonths={1}
-            fromDate={minDate}
-            toDate={maxDate}
-          />
+          <div className="relative">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 z-10 h-7 w-7 rounded-full"
+                    onClick={handleReset}
+                  >
+                    <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Reset to All Time</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-          {/* Footer buttons */}
-          <div className="p-3 border-t flex justify-end gap-2">
-            <Button onClick={handleCancel} variant="ghost">
-              Cancel
-            </Button>
-            <Button onClick={handleDone}>Done</Button>
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={date?.from}
+              selected={date}
+              onSelect={handleDateSelect}
+              numberOfMonths={1}
+              fromDate={minDate}
+              toDate={maxDate}
+            />
           </div>
         </PopoverContent>
       </Popover>
