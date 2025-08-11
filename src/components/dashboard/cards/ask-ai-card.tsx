@@ -83,8 +83,9 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
             />
              <div className="w-full min-h-[10rem] p-4 text-sm rounded-lg bg-background/50 border border-border text-left overflow-y-auto">
                 {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                        <BrainCircuit className="h-8 w-8 mb-2 animate-pulse" />
+                        <p>Thinking...</p>
                     </div>
                 ) : result ? (
                     <div>
@@ -93,12 +94,7 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
                             <DynamicChart chartData={result.chartData} />
                         )}
                     </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                        <BrainCircuit className="h-8 w-8 mb-2" />
-                        <p>Your answer will appear here.</p>
-                    </div>
-                )}
+                ) : null}
             </div>
         </div>
       </CardContent>
