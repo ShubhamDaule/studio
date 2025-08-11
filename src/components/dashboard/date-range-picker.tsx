@@ -107,14 +107,14 @@ export function DateRangePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <div className="relative">
+          <div className="flex items-center justify-end p-2 border-b">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-2 right-2 z-10 h-7 w-7 rounded-full"
+                    className="h-7 w-7 rounded-full"
                     onClick={handleReset}
                   >
                     <RotateCcw className="h-4 w-4 text-muted-foreground" />
@@ -125,6 +125,7 @@ export function DateRangePicker({
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+          </div>
 
             <Calendar
               initialFocus
@@ -136,7 +137,6 @@ export function DateRangePicker({
               fromDate={minDate}
               toDate={maxDate}
             />
-          </div>
         </PopoverContent>
       </Popover>
     </div>
