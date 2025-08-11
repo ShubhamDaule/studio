@@ -66,10 +66,12 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
     return data.map(item => {
         const proratedBudget = item.budget * prorationFactor;
         const progress = proratedBudget > 0 ? (item.spent / proratedBudget) * 100 : 0;
+        const remaining = proratedBudget - item.spent;
         return {
             ...item,
             proratedBudget,
             progress,
+            remaining,
         };
     })
 
@@ -174,13 +176,18 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                 </TableCell>
                 <TableCell>{formatCurrency(item.spent)}</TableCell>
                 <TableCell>{formatCurrency(item.proratedBudget)}</TableCell>
-                <TableCell className="w-[150px]">
-                    <Progress value={Math.min(item.progress, 100)} className="h-3" indicatorClassName={cn(
-                        {
-                        "bg-destructive": item.progress > 100,
-                        "bg-yellow-500": item.progress > 75 && item.progress <= 100,
-                        }
-                    )} />
+                <TableCell className="w-[200px]">
+                    <div className="flex items-center gap-2">
+                        <span className={cn("w-16 text-right text-xs", item.remaining < 0 && "text-destructive font-semibold")}>
+                           ({formatCurrency(item.remaining)})
+                        </span>
+                        <Progress value={Math.min(item.progress, 100)} className="h-3 flex-1" indicatorClassName={cn(
+                            {
+                            "bg-destructive": item.progress > 100,
+                            "bg-yellow-500": item.progress > 75 && item.progress <= 100,
+                            }
+                        )} />
+                    </div>
                 </TableCell>
               </TableRow>
             )})
