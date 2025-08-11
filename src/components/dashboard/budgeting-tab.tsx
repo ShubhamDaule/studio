@@ -8,6 +8,8 @@ import { Settings2 } from "lucide-react";
 import { useBoolean } from "@/hooks/use-boolean";
 import { ManageCategoriesDialog } from "../dialogs/manage-categories-dialog";
 import { BudgetingTable } from "./budgeting-table";
+import { useBudgets } from "@/hooks/useBudgets";
+import { useDashboardContext } from "@/context/dashboard-context";
 
 type Props = {
     activeBudgets: Budget[];
@@ -24,7 +26,7 @@ type Props = {
 };
 
 export function BudgetingTab({
-    activeBudgets,
+    activeBudgets: proratedBudgets,
     onMultipleBudgetChange,
     transactions,
     setAllCategories,
@@ -33,6 +35,9 @@ export function BudgetingTab({
     onDeleteBudget,
 }: Props) {
     const {value: isManageDialogOpen, setTrue: openManageDialog, setFalse: closeManageDialog} = useBoolean(false);
+    const { dateRange } = useDashboardContext();
+
+    const { budgets, handleMultipleBudgetChange: handleBaseBudgetChange } = useBudgets({ allCategories, dateRange, transactions });
 
     const spendingByCategory = React.useMemo(() => {
         return transactions.reduce((acc, t) => {
@@ -44,21 +49,21 @@ export function BudgetingTab({
     }, [transactions]);
     
     const budgetedCategories = allCategories.filter(
-      (c) => activeBudgets.some((b) => b.category === c.name)
+      (c) => proratedBudgets.some((b) => b.category === c.name)
     );
 
     const tableData = React.useMemo(() => {
         return budgetedCategories.map(cat => {
-            const budget = activeBudgets.find(b => b.category === cat.name);
+            const proratedBudget = proratedBudgets.find(b => b.category === cat.name);
             const spent = spendingByCategory[cat.name] || 0;
             return {
                 category: cat,
-                budget: budget?.amount || 0,
+                budget: proratedBudget?.amount || 0,
                 spent,
-                remaining: (budget?.amount || 0) - spent,
+                remaining: (proratedBudget?.amount || 0) - spent,
             };
         });
-    }, [budgetedCategories, activeBudgets, spendingByCategory]);
+    }, [budgetedCategories, proratedBudgets, spendingByCategory]);
 
     return (
         <>
@@ -66,9 +71,9 @@ export function BudgetingTab({
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                            <CardTitle>Monthly Budgets</CardTitle>
+                            <CardTitle>Budgets</CardTitle>
                             <CardDescription>
-                                Track and manage your spending for each category. Click headers to sort.
+                                Track and manage your spending for each category. Budgets are prorated based on your selected date range.
                             </CardDescription>
                         </div>
                         <Button size="sm" onClick={openManageDialog}>
@@ -80,7 +85,7 @@ export function BudgetingTab({
                 <CardContent>
                    <BudgetingTable 
                     data={tableData}
-                    onBudgetChange={onMultipleBudgetChange}
+                    onBudgetChange={handleBaseBudgetChange} // Pass the base budget updater here
                    />
                 </CardContent>
             </Card>
@@ -89,7 +94,7 @@ export function BudgetingTab({
                 isOpen={isManageDialogOpen}
                 onClose={closeManageDialog}
                 allCategories={allCategories}
-                activeBudgets={activeBudgets}
+                activeBudgets={budgets} // Pass base budgets
                 onAddBudget={onAddBudget}
                 onDeleteBudget={onDeleteBudget}
                 transactions={transactions}

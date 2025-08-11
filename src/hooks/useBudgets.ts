@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
-import { format } from "date-fns";
+import { format, differenceInCalendarDays, getDaysInMonth } from "date-fns";
 import type { Transaction, Category, Budget, BudgetOverride } from "@/lib/types";
 
 // Default monthly budgets
@@ -37,22 +37,31 @@ export function useBudgets({ allCategories, dateRange, transactions }: UseBudget
 
   const activeBudgets = React.useMemo(() => {
     const currentMonth = dateRange?.from ? format(dateRange.from, 'yyyy-MM') : format(new Date(), 'yyyy-MM');
+    const daysInMonth = dateRange?.from ? getDaysInMonth(dateRange.from) : 30;
     
+    let numberOfDays = 30; // Default to a month
+    if (dateRange?.from && dateRange?.to) {
+        // Add 1 to include both start and end days
+        numberOfDays = differenceInCalendarDays(dateRange.to, dateRange.from) + 1;
+    }
+
+    const prorationFactor = numberOfDays / daysInMonth;
+
     return allCategories
         .filter(cat => !['Payment', 'Rewards', 'Investments & Savings', 'Fees & Charges', 'Government & Taxes'].includes(cat.name))
-        .filter(cat => budgets.some(b => b.category === cat.name)) // Ensure only budgeted categories are active
+        .filter(cat => budgets.some(b => b.category === cat.name))
         .map(category => {
             const override = budgetOverrides.find(o => o.month === currentMonth && o.category === category.name);
-            if (override) {
-                return { category: category.name, amount: override.amount };
-            }
-            const defaultBudget = budgets.find(b => b.category === category.name);
-            return { category: category.name, amount: defaultBudget?.amount || 0 };
+            const baseBudget = override?.amount ?? budgets.find(b => b.category === category.name)?.amount ?? 0;
+            const proratedBudget = baseBudget * prorationFactor;
+
+            return { category: category.name, amount: proratedBudget };
     });
   }, [allCategories, budgets, budgetOverrides, dateRange]);
 
 
   const handleMultipleBudgetChange = (updatedBudgets: Budget[]) => {
+    // This function updates the base monthly budget, not the prorated view
     setBudgets(prev => {
         const newBudgets = [...prev];
         updatedBudgets.forEach(ub => {
