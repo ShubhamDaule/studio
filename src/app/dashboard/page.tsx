@@ -33,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { startOfDay } from "date-fns";
+import { startOfDay, endOfDay } from "date-fns";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
@@ -67,21 +67,21 @@ export default function DashboardPage() {
 
 
     const filteredTransactions = React.useMemo(() => {
-        return allTransactions.filter((t) => {
-            const [year, month, day] = t.date.split('-').map(Number);
-            const transactionDate = Date.UTC(year, month - 1, day);
-
-            const rangeFrom = dateRange?.from ? startOfDay(dateRange.from).getTime() : 0;
-            const rangeTo = dateRange?.to ? startOfDay(dateRange.to).getTime() : Infinity;
-            
-            const isInDateRange = transactionDate >= rangeFrom && transactionDate <= rangeTo;
-
-            const matchesSource = isUsingMockData
-                ? selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter
-                : selectedSourceFilter === "all" || t.bankName === selectedSourceFilter;
-                
-            return isInDateRange && matchesSource;
-        });
+      return allTransactions.filter((t) => {
+        const [year, month, day] = t.date.split('-').map(Number);
+        const transactionDate = new Date(year, month - 1, day).getTime();
+    
+        const rangeFrom = dateRange?.from ? startOfDay(dateRange.from).getTime() : 0;
+        const rangeTo = dateRange?.to ? endOfDay(dateRange.to).getTime() : Infinity;
+    
+        const isInDateRange = transactionDate >= rangeFrom && transactionDate <= rangeTo;
+    
+        const matchesSource = isUsingMockData
+          ? selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter
+          : selectedSourceFilter === "all" || t.bankName === selectedSourceFilter;
+    
+        return isInDateRange && matchesSource;
+      });
     }, [allTransactions, dateRange, selectedSourceFilter, isUsingMockData]);
 
     React.useEffect(() => {

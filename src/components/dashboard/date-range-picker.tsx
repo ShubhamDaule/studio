@@ -1,25 +1,34 @@
 
-"use client"
+"use client";
 
-import * as React from "react"
-import { format, startOfMonth, endOfMonth, isSameDay, isSameMonth, isSameYear } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
-import type { DateRange } from "react-day-picker"
+import * as React from "react";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  isSameDay,
+  isSameMonth,
+  isSameYear,
+  startOfDay,
+  endOfDay,
+} from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import type { DateRange } from "react-day-picker";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 
 interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
-    date: DateRange | undefined;
-    setDate: (date: DateRange | undefined) => void;
-    minDate?: Date;
-    maxDate?: Date;
+  date: DateRange | undefined;
+  setDate: (date: DateRange | undefined) => void;
+  minDate?: Date;
+  maxDate?: Date;
 }
 
 export function DateRangePicker({
@@ -27,7 +36,7 @@ export function DateRangePicker({
   date,
   setDate,
   minDate,
-  maxDate
+  maxDate,
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [tempDate, setTempDate] = React.useState<DateRange | undefined>(date);
@@ -38,28 +47,33 @@ export function DateRangePicker({
 
   const getDisplayString = () => {
     if (!date?.from) {
-      return <span>Pick a date range</span>
+      return <span>Pick a date range</span>;
     }
 
-    if (minDate && maxDate && date.to && isSameDay(date.from, minDate) && isSameDay(date.to, maxDate)) {
-        return "All time";
+    if (
+      minDate &&
+      maxDate &&
+      date.to &&
+      isSameDay(date.from, minDate) &&
+      isSameDay(date.to, maxDate)
+    ) {
+      return "All time";
     }
 
     if (date.to && isSameMonth(date.from, date.to) && isSameYear(date.from, date.to)) {
-        const firstDay = startOfMonth(date.from);
-        const lastDay = endOfMonth(date.to);
-        if (isSameDay(date.from, firstDay) && isSameDay(date.to, lastDay)) {
-            return format(date.from, "MMMM yyyy");
-        }
+      const firstDay = startOfMonth(date.from);
+      const lastDay = endOfMonth(date.to);
+      if (isSameDay(date.from, firstDay) && isSameDay(date.to, lastDay)) {
+        return format(date.from, "MMMM yyyy");
+      }
     }
 
     if (date.to) {
       return (
         <>
-          {format(date.from, "LLL dd, y")} -{" "}
-          {format(date.to, "LLL dd, y")}
+          {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
         </>
-      )
+      );
     }
 
     return format(date.from, "LLL dd, y");
@@ -69,9 +83,33 @@ export function DateRangePicker({
     setTempDate(date); // Reset to original date
     setIsOpen(false);
   };
-  
+
   const handleDone = () => {
-    setDate(tempDate);
+    if (!tempDate?.from) {
+      setIsOpen(false);
+      return;
+    }
+
+    let normalizedFrom = startOfDay(tempDate.from);
+    let normalizedTo: Date;
+
+    if (tempDate.to) {
+      normalizedTo = endOfDay(tempDate.to);
+
+      // Auto-expand to full month if same month/year
+      if (
+        isSameMonth(tempDate.from, tempDate.to) &&
+        isSameYear(tempDate.from, tempDate.to)
+      ) {
+        normalizedFrom = startOfMonth(tempDate.from);
+        normalizedTo = endOfMonth(tempDate.to);
+      }
+    } else {
+      // Single day → inclusive to end of day
+      normalizedTo = endOfDay(tempDate.from);
+    }
+
+    setDate({ from: normalizedFrom, to: normalizedTo });
     setIsOpen(false);
   };
 
@@ -93,6 +131,35 @@ export function DateRangePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
+          {/* Quick select buttons */}
+          <div className="p-3 border-b flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const from = startOfMonth(new Date());
+                const to = endOfMonth(new Date());
+                setTempDate({ from, to });
+              }}
+            >
+              This Month
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const today = new Date();
+                setTempDate({
+                  from: startOfDay(today),
+                  to: endOfDay(today),
+                });
+              }}
+            >
+              Today
+            </Button>
+          </div>
+
+          {/* Calendar */}
           <Calendar
             initialFocus
             mode="range"
@@ -103,21 +170,16 @@ export function DateRangePicker({
             fromDate={minDate}
             toDate={maxDate}
           />
-           <div className="p-3 border-t flex justify-end gap-2">
-            <Button
-              onClick={handleCancel}
-              variant="ghost"
-            >
+
+          {/* Footer buttons */}
+          <div className="p-3 border-t flex justify-end gap-2">
+            <Button onClick={handleCancel} variant="ghost">
               Cancel
             </Button>
-            <Button
-              onClick={handleDone}
-            >
-              Done
-            </Button>
+            <Button onClick={handleDone}>Done</Button>
           </div>
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }
