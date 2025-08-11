@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const noHeaderFooter = ['/login', '/signup', '/pricing'].includes(pathname);
+  const noHeaderFooter = ['/auth', '/pricing'].includes(pathname);
   const isDashboard = pathname.startsWith('/dashboard');
 
   return (

@@ -252,7 +252,7 @@ export default function LandingPage() {
               className="bg-white text-primary hover:bg-white/90 px-8 py-6 text-lg font-semibold w-full sm:w-auto"
               asChild
             >
-              <Link href="/dashboard">Start Free Trial <ArrowRight className="ml-2 w-5 h-5" /></Link>
+              <Link href="/auth?mode=signup">Start Free Trial <ArrowRight className="ml-2 w-5 h-5" /></Link>
             </Button>
             <Button 
               size="lg" 

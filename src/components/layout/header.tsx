@@ -35,7 +35,7 @@ const UserNav = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/login');
+    router.push('/auth');
   }
 
   if (!user) {
@@ -87,8 +87,8 @@ const LandingNav = () => {
                     <UserNav />
                 ) : isLandingPage ? (
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" asChild><Link href="/login">Login</Link></Button>
-                        <Button asChild><Link href="/signup">Get Started</Link></Button>
+                        <Button variant="ghost" asChild><Link href="/auth">Login</Link></Button>
+                        <Button asChild><Link href="/auth?mode=signup">Get Started</Link></Button>
                     </div>
                 ): null}
             </div>
@@ -104,8 +104,8 @@ const LandingNav = () => {
                             <div className="flex flex-col gap-8 pt-8">
                                 <LandingNavLinks />
                                  <div className="flex flex-col gap-4">
-                                    <Button variant="outline" asChild><Link href="/login">Login</Link></Button>
-                                    <Button asChild><Link href="/signup">Get Started</Link></Button>
+                                    <Button variant="outline" asChild><Link href="/auth">Login</Link></Button>
+                                    <Button asChild><Link href="/auth?mode=signup">Get Started</Link></Button>
                                 </div>
                             </div>
                         </SheetContent>

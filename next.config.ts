@@ -6,6 +6,20 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/login',
+        destination: '/auth',
+        permanent: true,
+      },
+      {
+        source: '/signup',
+        destination: '/auth',
+        permanent: true,
+      },
+    ]
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
