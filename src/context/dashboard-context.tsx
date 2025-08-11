@@ -23,6 +23,8 @@ type DashboardContextType = {
   onNewTransactions: NewTransactionsCallback | null;
   addUploadedTransactions: (callback: NewTransactionsCallback) => void;
   financialSources: FinancialSource[];
+  isUsingMockData: boolean;
+  setIsUsingMockData: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const DashboardContext = React.createContext<DashboardContextType | undefined>(undefined);
@@ -46,6 +48,8 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
 
     const [allTransactions, setAllTransactions] = React.useState<Transaction[]>([]);
     const [transactionFiles, setTransactionFiles] = React.useState<TransactionFile[]>([]);
+    const [isUsingMockData, setIsUsingMockData] = React.useState<boolean>(true);
+
 
     const financialSources = React.useMemo(() => {
         const sourcesMap = new Map<BankName, { type: StatementType; fileNames: Set<string> }>();
@@ -100,7 +104,9 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     setFilteredTransactions,
     onNewTransactions,
     addUploadedTransactions,
-    financialSources
+    financialSources,
+    isUsingMockData,
+    setIsUsingMockData
   };
 
   return (

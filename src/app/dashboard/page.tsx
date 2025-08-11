@@ -46,9 +46,10 @@ export default function DashboardPage() {
         transactionFiles,
         setTransactionFiles,
         financialSources,
+        isUsingMockData,
+        setIsUsingMockData,
     } = useDashboardContext();
     const { toast } = useToast();
-    const [isUsingMockData, setIsUsingMockData] = React.useState<boolean>(true);
     const [allCategories, setAllCategories] = React.useState<Category[]>(mockCategories);
     const [fileToDelete, setFileToDelete] = React.useState<TransactionFile | null>(null);
 
@@ -71,11 +72,14 @@ export default function DashboardPage() {
                 dateRange?.from && dateRange?.to
                 ? transactionDate >= dateRange.from && transactionDate <= dateRange.to
                 : true;
-            const matchesSource =
-                selectedSourceFilter === "all" || t.bankName === selectedSourceFilter;
+
+            const matchesSource = isUsingMockData
+                ? selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter
+                : selectedSourceFilter === "all" || t.bankName === selectedSourceFilter;
+                
             return isInDateRange && matchesSource;
         });
-    }, [allTransactions, dateRange, selectedSourceFilter]);
+    }, [allTransactions, dateRange, selectedSourceFilter, isUsingMockData]);
 
     React.useEffect(() => {
         setContextFilteredTransactions(filteredTransactions);

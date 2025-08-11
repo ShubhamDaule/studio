@@ -134,9 +134,11 @@ const DashboardNav = () => {
         minDate,
         maxDate,
         financialSources,
+        transactionFiles,
         selectedSourceFilter,
         setSelectedSourceFilter,
         onNewTransactions,
+        isUsingMockData,
     } = useDashboardContext();
     const { toast } = useToast();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -210,6 +212,10 @@ const DashboardNav = () => {
         if(fileInputRef.current) fileInputRef.current.value = "";
     };
 
+    const sources = isUsingMockData 
+        ? transactionFiles.map(f => f.fileName)
+        : financialSources.map(s => s.name);
+
     return (
        <>
         <div className="flex w-full items-center justify-end gap-2">
@@ -221,7 +227,7 @@ const DashboardNav = () => {
                     maxDate={maxDate}
                 />
                 <SourceFilter
-                    sources={financialSources.map(s => s.name)}
+                    sources={sources}
                     selectedSource={selectedSourceFilter}
                     onSelectSource={setSelectedSourceFilter}
                 />
