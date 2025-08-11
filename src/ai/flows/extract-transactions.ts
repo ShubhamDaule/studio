@@ -40,14 +40,34 @@ type StatementInfo = {
 // ************************************************************************************
 function detectBankAndStatementType(text: string): StatementInfo {
   const lowerText = text.toLowerCase();
+
+  const bankKeywords: Record<BankName, string[]> = {
+    'Chase': ['chase'],
+    'Discover': ['discover'],
+    'Amex': ['american express', 'amex'],
+    'Bank of America': ['bank of america'],
+    'Wells Fargo': ['wells fargo'],
+    'Citi': ['citi'],
+    'Unknown': [],
+  };
+
+  let maxCount = 0;
+  let detectedBank: BankName = 'Unknown';
+
+  for (const bank of Object.keys(bankKeywords) as BankName[]) {
+    if (bank === 'Unknown') continue;
+    const keywords = bankKeywords[bank];
+    const count = keywords.reduce((acc, keyword) => {
+        return acc + (lowerText.match(new RegExp(keyword, 'g')) || []).length;
+    }, 0);
+
+    if (count > maxCount) {
+        maxCount = count;
+        detectedBank = bank;
+    }
+  }
   
-  let bankName: BankName = 'Unknown';
-  if (lowerText.includes('chase')) bankName = 'Chase';
-  else if (lowerText.includes('discover')) bankName = 'Discover';
-  else if (lowerText.includes('american express') || lowerText.includes('amex')) bankName = 'Amex';
-  else if (lowerText.includes('bank of america')) bankName = 'Bank of America';
-  else if (lowerText.includes('wells fargo')) bankName = 'Wells Fargo';
-  else if (lowerText.includes('citi')) bankName = 'Citi';
+  let bankName: BankName = detectedBank;
 
   let statementType: StatementType = 'Unknown';
   if (['available credit', 'minimum payment', 'credit line', 'card account'].some(k => lowerText.includes(k))) {
