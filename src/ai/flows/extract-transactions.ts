@@ -67,11 +67,16 @@ function getBankPreProcessing(bankInfo: StatementInfo, rawText: string) {
     let text = rawText;
     let prompt;
 
+    // Define amount instructions based on statement type
+    const amountInstruction = bankInfo.statementType === 'Bank Account'
+        ? "Bank account debits (withdrawals/purchases) should be POSITIVE numbers. Bank account credits (deposits) should be NEGATIVE numbers. Reverse the sign if necessary."
+        : "Purchases are POSITIVE numbers. Payments and credits are NEGATIVE numbers.";
+
     const basePrompt = `
 Extract transactions from the provided statement text. For each transaction, provide the following fields:
 - date: 'YYYY-MM-DD'
 - merchant: The merchant name, cleaned of unnecessary details. If a location provides essential context for an ambiguous merchant, add it in brackets. For example: "Starbucks (New York, NY)".
-- amount: Purchases are positive numbers. Payments and credits are negative numbers.
+- amount: ${amountInstruction}
 - category: Assign a category to each transaction based on the rules below.
 
 **CRITICAL RULE:** Use the following keyword-based rules to determine the category. The merchant name is the primary signal. If a merchant matches keywords from multiple categories, choose the most specific one. If no keywords match, you MUST assign the category "Miscellaneous".
@@ -107,8 +112,10 @@ Return a clean JSON array of transactions.
              else preProcessingFailed = true;
 
             prompt = `Source: Discover Credit Card Statement. ${basePrompt}`;
+        } else if (bankInfo.statementType === 'Bank Account') {
+             prompt = `Source: Bank Account Statement. ${basePrompt}`;
         } else {
-            // Default prompt for unknown banks
+            // Default prompt for unknown banks or types
             prompt = `Source: Bank Statement. ${basePrompt}`;
         }
     } catch(e) {
