@@ -33,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { startOfDay, endOfDay } from "date-fns";
+import { startOfDay } from "date-fns";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
@@ -74,7 +74,7 @@ export default function DashboardPage() {
             
             const isInDateRange =
                 dateRange?.from && dateRange?.to
-                ? transactionDate >= startOfDay(dateRange.from) && transactionDate <= endOfDay(dateRange.to)
+                ? transactionDate >= startOfDay(dateRange.from) && transactionDate <= dateRange.to
                 : true;
 
             const matchesSource = isUsingMockData
