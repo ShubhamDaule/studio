@@ -84,7 +84,7 @@ export function BudgetingTab({
                                     Track and manage your spending for each category. Drag to reorder.
                                 </CardDescription>
                             </div>
-                             <Button variant="outline" onClick={openManageDialog}>
+                             <Button size="sm" onClick={openManageDialog}>
                                 <Settings2 className="mr-2 h-4 w-4"/>
                                 Manage Categories
                             </Button>
