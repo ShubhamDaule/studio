@@ -16,7 +16,7 @@ export function SourceFilter({ sources, selectedSource, onSelectSource }: Source
     
     return (
         <Select value={selectedSource} onValueChange={onSelectSource}>
-            <SelectTrigger className={cn("w-auto h-9")}>
+            <SelectTrigger className={cn("w-auto h-9 hover:bg-primary/10")}>
                  <div className="flex items-center gap-2">
                     <Banknote className="h-4 w-4" />
                     <SelectValue placeholder="Filter by source..." />
