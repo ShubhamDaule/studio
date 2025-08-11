@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { format, startOfMonth, endOfMonth, isSameDay, isSameMonth, isSameYear } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon, X } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
@@ -30,11 +30,6 @@ export function DateRangePicker({
   maxDate
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [selectedRange, setSelectedRange] = React.useState<DateRange | undefined>(date);
-
-  React.useEffect(() => {
-    setSelectedRange(date);
-  }, [date]);
 
   const getDisplayString = () => {
     if (!date?.from) {
@@ -67,14 +62,16 @@ export function DateRangePicker({
 
     return format(date.from, "LLL dd, y");
   };
-  
-  const handleDone = () => {
-    setDate(selectedRange);
-    setIsOpen(false);
-  };
 
-  const handleCancel = () => {
-    setSelectedRange(date); // Revert to the original date
+  const handleSelect = (range: DateRange | undefined) => {
+    setDate(range);
+    if(range?.from && range?.to) {
+        setIsOpen(false);
+    }
+  }
+  
+  const handleReset = () => {
+    setDate({ from: minDate, to: maxDate });
     setIsOpen(false);
   };
 
@@ -99,26 +96,21 @@ export function DateRangePicker({
           <Calendar
             initialFocus
             mode="range"
-            defaultMonth={selectedRange?.from}
-            selected={selectedRange}
-            onSelect={setSelectedRange}
+            defaultMonth={date?.from}
+            selected={date}
+            onSelect={handleSelect}
             numberOfMonths={1}
             fromDate={minDate}
             toDate={maxDate}
           />
-           <div className="p-2 border-t flex justify-end gap-2">
+           <div className="p-2 border-t flex justify-end">
             <Button
-              onClick={handleCancel}
+              onClick={handleReset}
               variant="ghost"
               size="sm"
+              disabled={!minDate || !maxDate}
             >
-              Cancel
-            </Button>
-             <Button
-              onClick={handleDone}
-              size="sm"
-            >
-              Done
+              Reset to All Time
             </Button>
           </div>
         </PopoverContent>
