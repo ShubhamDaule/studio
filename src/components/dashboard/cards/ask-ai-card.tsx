@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import type { Transaction, QueryResult, Budget } from "@/lib/types";
-import { Sparkles, Loader2, Bot } from "lucide-react";
+import { Sparkles, Loader2, BrainCircuit } from "lucide-react";
 import { AskAiCharacter } from "../../characters/ask-ai-character";
 import { getAiQueryResponse } from "@/lib/actions";
 import { DynamicChart } from "../charts/dynamic-chart";
@@ -95,7 +95,7 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                        <Bot className="h-8 w-8 mb-2" />
+                        <BrainCircuit className="h-8 w-8 mb-2" />
                         <p>Your answer will appear here.</p>
                     </div>
                 )}

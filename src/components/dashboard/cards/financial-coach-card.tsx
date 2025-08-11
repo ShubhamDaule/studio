@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Transaction } from "@/lib/types";
-import { Sparkles, Bot, Loader2, icons, type LucideIcon, RefreshCcw } from "lucide-react";
+import { Sparkles, Bot, Loader2, icons, type LucideIcon, RefreshCcw, BrainCircuit } from "lucide-react";
 import { FinancialCoach } from "../../characters/financial-coach";
 import { getAIInsights } from "@/lib/actions";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -108,7 +108,7 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
             </Carousel>
         ) : (
              <div className="flex flex-col items-center gap-2">
-                <Bot className="w-10 h-10 text-primary" />
+                <BrainCircuit className="w-10 h-10 text-primary" />
                 <p className="font-semibold">Ready for your check-in?</p>
                 <p className="text-sm text-muted-foreground max-w-xs">Click the button below to get personalized advice from your coach.</p>
             </div>
