@@ -108,7 +108,7 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
             </Carousel>
         ) : (
              <div className="flex flex-col items-center gap-2">
-                <BrainCircuit className="w-10 h-10 text-primary" />
+                <Bot className="w-10 h-10 text-primary" />
                 <p className="font-semibold">Ready for your check-in?</p>
                 <p className="text-sm text-muted-foreground max-w-xs">Click the button below to get personalized advice from your coach.</p>
             </div>
