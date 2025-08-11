@@ -136,7 +136,7 @@ const DashboardNav = () => {
         financialSources,
         selectedSourceFilter,
         setSelectedSourceFilter,
-        onNewTransactions,
+        addUploadedTransactions,
     } = useDashboardContext();
     const { toast } = useToast();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -189,8 +189,8 @@ const DashboardNav = () => {
             }
         }));
 
-        if (allNewTransactions.length > 0 && onNewTransactions) {
-            onNewTransactions(allNewTransactions);
+        if (allNewTransactions.length > 0 && addUploadedTransactions) {
+            addUploadedTransactions(allNewTransactions);
         }
 
         setIsLoading(false);
@@ -221,7 +221,6 @@ const DashboardNav = () => {
                     multiple
                 />
                 <Button 
-                    variant="outline" 
                     size="sm" 
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isLoading}
