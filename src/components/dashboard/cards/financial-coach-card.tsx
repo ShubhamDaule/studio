@@ -71,7 +71,7 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
   };
   
   return (
-    <Card className="h-full flex flex-col overflow-hidden bg-muted/20 card-interactive group">
+    <Card className="h-full flex flex-col overflow-hidden card-interactive group">
       <CardHeader className="z-10">
         <div className="flex items-center gap-3">
             <div className="w-20 h-20">
