@@ -82,7 +82,7 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
                 disabled={isLoading}
             />
             {(isLoading || result) && (
-                <div className="w-full min-h-[10rem] p-4 text-sm rounded-lg bg-background/50 border border-border text-left overflow-y-auto">
+                <div className="w-full min-h-[10rem] p-4 text-sm rounded-lg bg-background/50 border border-border text-left overflow-y-auto mt-4">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                             <BrainCircuit className="h-8 w-8 mb-2 animate-pulse" />
