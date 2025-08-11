@@ -51,7 +51,7 @@ export function OverviewTab({
                     value={totalSpending.toLocaleString("en-US", { style: "currency", currency: "USD" })}
                     icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
                     description={filterDescription}
-                    onClick={() => openDialog('category', {})}
+                    onClick={() => openDialog('category', { category: 'all' })}
                 />
                 <StatsCard 
                     title="Transactions"
@@ -78,7 +78,7 @@ export function OverviewTab({
                 )}
             </div>
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data.category)} budgets={activeBudgets} allCategories={allCategories} />
+                <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data)} budgets={activeBudgets} allCategories={allCategories} />
                 <SpendingByDayChart transactions={filteredTransactions} onBarClick={(data) => openDialog('day', data.date)} />
             </div>
             <>

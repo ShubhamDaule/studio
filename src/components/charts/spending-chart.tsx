@@ -110,13 +110,13 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
   }
 
   return (
-    <Card className="flex flex-col h-full card-interactive group" onClick={() => onPieClick({})}>
+    <Card className="flex flex-col h-full card-interactive group" onClick={() => onPieClick({ category: 'all' })}>
       <CardHeader>
         <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
             <PieChartIcon className="h-6 w-6" />
             Spending Breakdown
         </CardTitle>
-        <CardDescription>Monthly spending by category. Click for details.</CardDescription>
+        <CardDescription>Monthly spending by category. Click a slice for details.</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -137,7 +137,10 @@ export function SpendingChart({ transactions, onPieClick, budgets, allCategories
                 innerRadius="30%"
                 outerRadius="80%"
                 strokeWidth={2}
-                onClick={(data) => onPieClick({ category: data.name })}
+                onClick={(data, index, e) => {
+                  e.stopPropagation();
+                  onPieClick({ category: data.name })
+                }}
                 onMouseEnter={onPieEnter}
                 onMouseLeave={onPieLeave}
                 className="cursor-pointer"

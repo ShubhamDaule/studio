@@ -42,7 +42,7 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
     transactionDetail: false,
   });
   
-  const [activeDialogKey, setActiveDialogKey] = useState<string | Transaction | null>(null);
+  const [activeDialogKey, setActiveDialogKey] = useState<any | null>(null);
 
   const openDialog = useCallback((type: DialogType, key: any | null) => {
     if(!key) return;
@@ -65,31 +65,37 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
 
     if (!activeDialogKey) return baseData;
     
-    if (typeof activeDialogKey === 'string') {
-        if (dialogState.day) {
-            return { ...baseData, date: activeDialogKey, transactions: transactions.filter(t => t.date === activeDialogKey) };
-        }
-    }
-
-    if (typeof activeDialogKey === 'object' && activeDialogKey !== null && 'id' in activeDialogKey && dialogState.transactionDetail) {
+    if (dialogState.transactionDetail && typeof activeDialogKey === 'object' && activeDialogKey !== null && 'id' in activeDialogKey) {
         return { ...baseData, transaction: activeDialogKey };
     }
-    
-    if (typeof activeDialogKey === 'object' && activeDialogKey !== null) {
-        const { category, merchant, name: sourceName } = activeDialogKey as any;
-        if(dialogState.category) {
-            const txns = category 
-                ? transactions.filter(t => t.category === category) 
-                : transactions;
-            return { ...baseData, category, transactions: txns };
-        }
-        if(dialogState.merchant) {
-            return { ...baseData, merchant, transactions: transactions.filter(t => t.merchant === merchant) };
-        }
-        if(dialogState.source) {
-            return { ...baseData, source: sourceName, transactions: allTransactions.filter(t => t.bankName === sourceName) };
-        }
+
+    if (dialogState.day && typeof activeDialogKey === 'string') {
+        return { ...baseData, date: activeDialogKey, transactions: transactions.filter(t => t.date === activeDialogKey) };
     }
+    
+    if (dialogState.category && typeof activeDialogKey === 'object' && 'category' in activeDialogKey) {
+        const { category } = activeDialogKey;
+        const txns = category === 'all'
+            ? transactions.filter(t => t.amount > 0)
+            : transactions.filter(t => t.category === category);
+        return { ...baseData, category, transactions: txns };
+    }
+    
+    if (dialogState.merchant && typeof activeDialogKey === 'object' && 'merchant' in activeDialogKey) {
+        const { merchant } = activeDialogKey;
+        return { ...baseData, merchant, transactions: transactions.filter(t => t.merchant === merchant) };
+    }
+
+    if (dialogState.source && typeof activeDialogKey === 'object' && 'name' in activeDialogKey) {
+         const { name: sourceName } = activeDialogKey as any;
+         return { ...baseData, source: sourceName, transactions: allTransactions.filter(t => t.bankName === sourceName) };
+    }
+    
+    // Fallback for simple string keys (like old source handling)
+    if (dialogState.source && typeof activeDialogKey === 'string') {
+       return { ...baseData, source: activeDialogKey, transactions: allTransactions.filter(t => t.bankName === activeDialogKey) };
+    }
+
 
     return baseData;
   }, [activeDialogKey, dialogState, transactions, allTransactions, allCategories, handleCategoryChange, isPro]);
