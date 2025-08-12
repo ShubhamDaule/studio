@@ -137,7 +137,7 @@ export default function Pricing() {
                       ))}
                     </ul>
 
-                    <Button onClick={() => choosePlan(plan)} className="w-full h-11 bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 mt-auto">
+                    <Button onClick={() => choosePlan(plan)} className="w-full h-11 btn-gradient-base btn-hover-fade mt-auto">
                       {plan.name === "Free" ? "Start for free" : `Choose ${plan.name}`} <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </CardContent>
