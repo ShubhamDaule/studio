@@ -150,8 +150,8 @@ body {
     .btn-outline-primary {
       @apply 
         border border-primary/20 
-        bg-white 
-        text-green-600   /* green font at rest, adjust as needed */
+        bg-card 
+        text-primary
         font-bold 
         transition-smooth 
         hover:bg-gradient-to-r 
@@ -161,8 +161,6 @@ body {
         hover:border-0 
         hover:opacity-90;
     }
-
-
 
     .btn-hover-fade {
       @apply hover:opacity-90;
