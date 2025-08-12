@@ -43,13 +43,13 @@ export default function LandingPage() {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Button 
-                className="btn-gradient-base btn-hover-fade btn-lg w-full sm:w-auto"
+                className="btn-gradient-base btn-hover-fade px-8 py-6 text-lg w-full sm:w-auto"
                 asChild
               >
                 <Link href="/dashboard">Try It Yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
               </Button>
               <Button
-                className="btn-outline-primary btn-hover-fade w-full sm:w-auto"
+                className="bg-white text-primary border border-primary font-bold px-8 py-6 text-lg transition-smooth hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white hover:border-0 w-full sm:w-auto"
                 asChild
               >
                 <Link href="/dashboard">Try Mock Data</Link>
@@ -250,7 +250,7 @@ export default function LandingPage() {
               <Link href="/auth?mode=signup">Get Started <ArrowRight className="ml-2 w-5 h-5" /></Link>
             </Button>
             <Button
-              className="btn-outline-primary w-full sm:w-auto"
+              className="bg-white text-primary border border-primary font-bold px-8 py-6 text-lg transition-smooth hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white hover:border-0 w-full sm:w-auto"
               asChild
             >
               <Link href="/dashboard">Try Mock Data</Link>

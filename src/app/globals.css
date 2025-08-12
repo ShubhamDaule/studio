@@ -150,39 +150,17 @@ body {
     .btn-outline-primary {
       @apply 
         border border-primary
-        bg-white
-        text-primary
-        font-bold 
+        bg-transparent 
+        text-primary 
         transition-smooth 
-        px-8 py-6 text-lg
-        hover:bg-gradient-to-r 
-        hover:from-primary 
-        hover:to-accent 
-        hover:text-white 
-        hover:border-0 
-        hover:opacity-90;
-    }
-    .btn-outline-primary-large {
-      @apply 
-        bg-white
-        text-primary
-        font-bold
-        px-8 py-6 text-xl
-        border border-primary/20
-        transition-smooth
-        hover:bg-gradient-to-r
-        hover:from-primary
-        hover:to-accent
-        hover:text-white
-        hover:border-0
-        hover:opacity-90;
+        hover:bg-primary/10;
     }
 
     .btn-hover-fade {
       @apply hover:opacity-90;
     }
     .btn-lg {
-      @apply px-8 py-6 text-xl;
+      @apply px-8 py-6 text-lg;
     }
     .btn-md {
       @apply px-6 py-3 text-base;
