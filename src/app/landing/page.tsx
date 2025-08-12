@@ -49,7 +49,7 @@ export default function LandingPage() {
                 <Link href="/dashboard">Try It Yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
               </Button>
               <Button
-                className="btn-outline-primary w-full sm:w-auto"
+                className="btn-outline-primary btn-hover-fade btn-lg w-full sm:w-auto"
                 asChild
               >
                 <Link href="/dashboard">Try Mock Data</Link>
@@ -244,14 +244,13 @@ export default function LandingPage() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              className="btn-gradient-base btn-hover-fade btn-lg bg-white text-primary hover:bg-white/90 w-full sm:w-auto"
+              className="btn-gradient-base btn-hover-fade btn-lg w-full sm:w-auto"
               asChild
             >
-              <Link href="/auth?mode=signup">Try It Yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
+              <Link href="/auth?mode=signup">Get Started <ArrowRight className="ml-2 w-5 h-5" /></Link>
             </Button>
             <Button 
-              variant="outline"
-              className="btn-outline-primary border-white text-white hover:bg-white/10 w-full sm:w-auto"
+              className="btn-outline-primary btn-hover-fade btn-lg w-full sm:w-auto"
               asChild
             >
               <Link href="/dashboard">Try Mock Data</Link>

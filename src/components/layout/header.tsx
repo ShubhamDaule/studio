@@ -89,7 +89,7 @@ const LandingNav = () => {
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" asChild><Link href="/auth">Login</Link></Button>
                         <Button className="btn-gradient-base btn-hover-fade btn-md" asChild>
-                          <Link href="/auth?mode=signup">Get Started</Link>
+                            <Link href="/auth?mode=signup">Get Started</Link>
                         </Button>
                     </div>
                 ): null}
