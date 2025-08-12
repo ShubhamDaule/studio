@@ -144,10 +144,10 @@ body {
       @apply transition-all duration-300 ease-in-out;
     }
     .btn-gradient-base {
-      @apply bg-gradient-to-r from-primary to-accent text-white border-0 transition-smooth font-semibold;
+      @apply bg-gradient-to-r from-primary to-accent text-white border-0 transition-smooth font-bold;
     }
     .btn-outline-primary {
-      @apply border border-primary/20 text-primary bg-transparent hover:bg-primary/10 transition-smooth font-semibold;
+      @apply border border-primary/20 text-primary bg-transparent hover:bg-primary/10 transition-smooth font-bold;
     }
     .btn-hover-fade {
       @apply hover:opacity-90;

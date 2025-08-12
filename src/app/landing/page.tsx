@@ -51,7 +51,7 @@ export default function LandingPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-primary/20 text-primary px-8 py-6 text-lg font-semibold w-full sm:w-auto hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white hover:border-0 transition-smooth"
+                className="border-primary/20 text-primary px-8 py-6 text-lg font-bold w-full sm:w-auto hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white hover:border-0 transition-smooth"
                 asChild
               >
                 <Link href="/dashboard">Try Mock Data</Link>
@@ -254,7 +254,7 @@ export default function LandingPage() {
             <Button
               variant="outline"
               size="lg"
-              className="border-primary/20 text-primary px-8 py-6 text-lg font-semibold w-full sm:w-auto hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white hover:border-0 transition-smooth"
+              className="border-primary/20 text-primary px-8 py-6 text-lg font-bold w-full sm:w-auto hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white hover:border-0 transition-smooth"
               asChild
             >
               <Link href="/dashboard">Try Mock Data</Link>
