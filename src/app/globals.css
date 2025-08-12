@@ -149,11 +149,12 @@ body {
 
     .btn-outline-primary {
       @apply 
-        border border-primary/20 
-        bg-card 
+        border border-primary
+        bg-white
         text-primary
         font-bold 
         transition-smooth 
+        px-8 py-6 text-lg
         hover:bg-gradient-to-r 
         hover:from-primary 
         hover:to-accent 

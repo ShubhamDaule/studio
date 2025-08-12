@@ -49,7 +49,7 @@ export default function LandingPage() {
                 <Link href="/dashboard">Try It Yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
               </Button>
               <Button
-                className="btn-outline-primary-large w-full sm:w-auto"
+                className="btn-outline-primary btn-hover-fade w-full sm:w-auto"
                 asChild
               >
                 <Link href="/dashboard">Try Mock Data</Link>
@@ -250,7 +250,7 @@ export default function LandingPage() {
               <Link href="/auth?mode=signup">Get Started <ArrowRight className="ml-2 w-5 h-5" /></Link>
             </Button>
             <Button
-              className="btn-outline-primary-large w-full sm:w-auto"
+              className="btn-outline-primary w-full sm:w-auto"
               asChild
             >
               <Link href="/dashboard">Try Mock Data</Link>
