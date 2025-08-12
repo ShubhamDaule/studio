@@ -124,7 +124,10 @@ export function TransactionTable({
         <Button 
           variant="ghost" 
           onClick={() => handleSort(column)} 
-          className="px-2 py-1 h-auto -ml-2 text-black dark:text-white font-semibold hover:text-primary hover:bg-transparent"
+          className={cn(
+            "px-2 py-1 h-auto -ml-2 text-black dark:text-white font-semibold hover:text-primary hover:bg-transparent",
+            className?.includes('text-right') && "ml-auto -mr-2 flex"
+          )}
         >
             {label}
             {sortColumn === column && (
@@ -160,8 +163,8 @@ export function TransactionTable({
                 <SortableHeader column="merchant" label="Merchant" />
                 <SortableHeader column="date" label="Date" />
                 <SortableHeader column="amount" label="Amount" className="text-right" />
-                <TableHead>
-                    <div className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default text-center">Category</div>
+                <TableHead className="text-center">
+                    <div className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Category</div>
                 </TableHead>
                 <TableHead>
                     <div className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Source</div>

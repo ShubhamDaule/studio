@@ -113,12 +113,12 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
     setEditingRow(null);
   };
 
-  const SortableHeader = ({ column, label, className }: { column: SortableColumn, label: string, className?: string }) => (
+  const SortableHeader = ({ column, label, className, buttonClassName }: { column: SortableColumn, label: string, className?: string, buttonClassName?: string }) => (
     <TableHead className={cn('font-semibold', className)}>
         <Button 
           variant="ghost" 
           onClick={() => handleSort(column)} 
-          className="px-2 py-1 h-auto -ml-2 text-black dark:text-white font-semibold hover:text-primary hover:bg-transparent"
+          className={cn("px-2 py-1 h-auto -ml-2 text-black dark:text-white font-semibold hover:text-primary hover:bg-transparent", buttonClassName)}
         >
             {label}
             {sortColumn === column && (
@@ -134,9 +134,9 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
         <TableHeader>
           <TableRow className="hover:bg-muted/0">
             <SortableHeader column="category" label="Category" />
-            <SortableHeader column="budget" label="Monthly Budget" />
-            <SortableHeader column="spent" label="Spent" />
-            <SortableHeader column="periodBudget" label="Period Budget" />
+            <SortableHeader column="budget" label="Monthly Budget" className="text-right" buttonClassName="ml-auto -mr-2" />
+            <SortableHeader column="spent" label="Spent" className="text-right" buttonClassName="ml-auto -mr-2" />
+            <SortableHeader column="periodBudget" label="Period Budget" className="text-right" buttonClassName="ml-auto -mr-2" />
             <TableHead className="font-semibold text-black dark:text-white text-center">Progress</TableHead>
           </TableRow>
         </TableHeader>
@@ -153,8 +153,8 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                         <span>{item.category.name}</span>
                     </div>
                 </TableCell>
-                <TableCell className="font-medium">
-                    <div className="flex items-center gap-1 group">
+                <TableCell className="font-medium text-right">
+                    <div className="flex items-center justify-end gap-1 group">
                          {isEditing ? (
                             <div className="flex items-center gap-1">
                                 <Input 
@@ -163,7 +163,7 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                                     onChange={e => setEditingValue(Number(e.target.value))}
                                     onKeyDown={e => e.key === 'Enter' && handleSave(item.category.name)}
                                     onBlur={() => handleSave(item.category.name)}
-                                    className="h-8 w-24 text-left"
+                                    className="h-8 w-24 text-right"
                                     autoFocus
                                 />
                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleSave(item.category.name)}>
@@ -171,15 +171,15 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                                 </Button>
                             </div>
                         ) : (
-                             <Button variant="ghost" className="h-auto p-0 font-medium text-foreground hover:text-primary" onClick={() => handleEdit(item.category.name, item.budget)}>
+                             <Button variant="ghost" className="h-auto p-0 font-medium text-foreground hover:text-primary justify-end w-full" onClick={() => handleEdit(item.category.name, item.budget)}>
                                 {formatCurrency(item.budget)}
                                 <Edit className="h-3 w-3 ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                            </Button>
                         )}
                     </div>
                 </TableCell>
-                <TableCell>{formatCurrency(item.spent)}</TableCell>
-                <TableCell>{formatCurrency(item.proratedBudget)}</TableCell>
+                <TableCell className="text-right">{formatCurrency(item.spent)}</TableCell>
+                <TableCell className="text-right">{formatCurrency(item.proratedBudget)}</TableCell>
                 <TableCell className="w-[200px] text-center align-middle">
                     <div className="flex items-center gap-2">
                         <span className={cn("w-16 text-right text-xs", item.remaining < 0 && "text-destructive font-semibold")}>
