@@ -153,7 +153,7 @@ body {
       @apply hover:opacity-90;
     }
     .btn-lg {
-      @apply px-8 py-6 text-lg;
+      @apply px-8 py-6 text-xl;
     }
     .btn-md {
       @apply px-6 py-3 text-base;
