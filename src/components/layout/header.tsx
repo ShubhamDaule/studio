@@ -88,7 +88,9 @@ const LandingNav = () => {
                 ) : isLandingPage ? (
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" asChild><Link href="/auth">Login</Link></Button>
-                        <Button asChild><Link href="/auth?mode=signup">Get Started</Link></Button>
+                        <Button className="btn-gradient-base btn-hover-fade btn-md" asChild>
+                          <Link href="/auth?mode=signup">Get Started</Link>
+                        </Button>
                     </div>
                 ): null}
             </div>
@@ -105,7 +107,9 @@ const LandingNav = () => {
                                 <LandingNavLinks />
                                  <div className="flex flex-col gap-4">
                                     <Button variant="outline" asChild><Link href="/auth">Login</Link></Button>
-                                    <Button asChild><Link href="/auth?mode=signup">Get Started</Link></Button>
+                                    <Button className="btn-gradient-base btn-hover-fade btn-md" asChild>
+                                      <Link href="/auth?mode=signup">Get Started</Link>
+                                    </Button>
                                 </div>
                             </div>
                         </SheetContent>

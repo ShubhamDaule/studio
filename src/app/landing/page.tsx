@@ -43,16 +43,13 @@ export default function LandingPage() {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 transition-smooth px-8 py-6 text-lg font-semibold w-full sm:w-auto"
+                className="btn-gradient-base btn-hover-fade btn-lg w-full sm:w-auto"
                 asChild
               >
-                <Link href="/dashboard">Try it yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
+                <Link href="/dashboard">Try It Yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
               </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="border-primary/20 text-primary hover:bg-primary/5 px-8 py-6 text-lg font-semibold w-full sm:w-auto"
+              <Button
+                className="btn-outline-primary w-full sm:w-auto"
                 asChild
               >
                 <Link href="/dashboard">Try Mock Data</Link>
@@ -247,17 +244,14 @@ export default function LandingPage() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              size="lg" 
-              variant="secondary"
-              className="bg-white text-primary hover:bg-white/90 px-8 py-6 text-lg font-semibold w-full sm:w-auto"
+              className="btn-gradient-base btn-hover-fade btn-lg bg-white text-primary hover:bg-white/90 w-full sm:w-auto"
               asChild
             >
-              <Link href="/auth?mode=signup">Start Free Trial <ArrowRight className="ml-2 w-5 h-5" /></Link>
+              <Link href="/auth?mode=signup">Try It Yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
             </Button>
             <Button 
-              size="lg" 
               variant="outline"
-              className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold w-full sm:w-auto"
+              className="btn-outline-primary border-white text-white hover:bg-white/10 w-full sm:w-auto"
               asChild
             >
               <Link href="/dashboard">Try Mock Data</Link>
