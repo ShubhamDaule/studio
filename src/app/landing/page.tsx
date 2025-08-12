@@ -14,9 +14,10 @@ import {
   Zap,
   ArrowRight,
   CheckCircle,
-  Calendar,
-  Target
+  BrainCircuit,
+  Eye
 } from "lucide-react";
+import Image from "next/image";
 
 export default function LandingPage() {
   return (
@@ -42,8 +43,8 @@ export default function LandingPage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Button 
-                className="btn-gradient-base btn-hover-fade px-8 py-6 text-lg w-full sm:w-auto"
+               <Button
+                className="btn-gradient-base btn-hover-fade w-full sm:w-auto px-8 py-6 text-lg"
                 asChild
               >
                 <Link href="/dashboard">Try It Yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
@@ -70,160 +71,58 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-16 sm:py-20 bg-muted/30">
+      {/* Why SpendWise Section */}
+      <section id="why-spendwise" className="py-16 sm:py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-              Powerful Financial <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Analytics</span>
-            </h2>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to understand and optimize your spending habits
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
-                  <PieChart className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle>Spending Breakdown</CardTitle>
-                <CardDescription>
-                  Visualize your expenses by category with interactive charts and detailed breakdowns
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle>Trend Analysis</CardTitle>
-                <CardDescription>
-                  Track spending patterns over time and identify trends to make informed decisions
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
-                  <Target className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle>Smart Insights</CardTitle>
-                <CardDescription>
-                  Get AI-powered recommendations to optimize your spending and reach financial goals
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
-                  <Calendar className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle>Real-time Tracking</CardTitle>
-                <CardDescription>
-                  Monitor your transactions and spending in real-time with automatic categorization
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
-                  <Shield className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle>Bank-level Security</CardTitle>
-                <CardDescription>
-                  Your financial data is protected with enterprise-grade security and encryption
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mb-4">
-                  <Zap className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle>Lightning Fast</CardTitle>
-                <CardDescription>
-                  Process thousands of transactions instantly with our optimized analytics engine
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section id="benefits" className="py-16 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 sm:gap-16 items-center">
-            <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
-                Take Control of Your 
-                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> Financial Future</span>
-              </h2>
-              <p className="text-lg sm:text-xl text-muted-foreground mb-8">
-                Stop wondering where your money goes. Our platform gives you the clarity and insights 
-                you need to make confident financial decisions.
-              </p>
-              
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Identify Money Leaks</h3>
-                    <p className="text-muted-foreground">Discover hidden spending patterns and eliminate unnecessary expenses automatically.</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Set Smarter Budgets</h3>
-                    <p className="text-muted-foreground">Create realistic budgets based on your actual spending history and goals.</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Achieve Financial Goals</h3>
-                    <p className="text-muted-foreground">Track progress toward your goals and get personalized recommendations to reach them faster.</p>
-                  </div>
-                </div>
-              </div>
+            <div className="text-center mb-12 sm:mb-16">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+                Why <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">SpendWise</span>?
+                </h2>
+                <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
+                Go beyond simple tracking. SpendWise gives you the clarity and intelligence to truly master your financial life.
+                </p>
             </div>
-            
-            <div className="relative mt-8 lg:mt-0">
-              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-6 sm:p-8 backdrop-blur-sm">
-                <div className="grid grid-cols-2 gap-4 sm:gap-6">
-                  <div className="bg-card rounded-lg p-4 sm:p-6 shadow-lg">
-                    <DollarSign className="w-8 h-8 text-primary mb-3" />
-                    <div className="text-2xl font-bold mb-1">$8,847</div>
-                    <div className="text-sm text-muted-foreground">Total Spending</div>
+
+          <div className="grid lg:grid-cols-2 gap-12 sm:gap-16 items-center">
+            <div className="relative">
+                <Image 
+                    src="https://placehold.co/600x400.png"
+                    alt="SpendWise Dashboard Preview"
+                    width={600}
+                    height={400}
+                    className="rounded-xl shadow-2xl"
+                    data-ai-hint="financial dashboard"
+                />
+            </div>
+            <div>
+              <div className="space-y-8">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <BrainCircuit className="w-7 h-7 text-primary" />
                   </div>
-                  <div className="bg-card rounded-lg p-4 sm:p-6 shadow-lg">
-                    <BarChart3 className="w-8 h-8 text-accent mb-3" />
-                    <div className="text-2xl font-bold mb-1">37</div>
-                    <div className="text-sm text-muted-foreground">Transactions</div>
+                  <div>
+                    <h3 className="font-semibold text-xl mb-2">AI-Powered Insights</h3>
+                    <p className="text-muted-foreground">Get personalized advice from our Financial Coach, ask questions in plain English, and let our Anomaly Detective find unusual spending for you.</p>
                   </div>
-                  <div className="bg-card rounded-lg p-4 sm:p-6 shadow-lg col-span-2">
-                    <TrendingUp className="w-8 h-8 text-primary mb-3" />
-                    <div className="text-lg font-semibold mb-2">Spending Trend</div>
-                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="w-3/4 h-full bg-gradient-to-r from-primary to-accent"></div>
-                    </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <Eye className="w-7 h-7 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-xl mb-2">Comprehensive Visuals</h3>
+                    <p className="text-muted-foreground">From spending breakdowns to trend analysis and budget tracking, our interactive charts make it easy to see where your money is going.</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <Shield className="w-7 h-7 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-xl mb-2">Secure & Real-Time</h3>
+                    <p className="text-muted-foreground">Upload your statements with confidence. Your data is processed securely and your dashboard updates in real-time as you add transactions.</p>
                   </div>
                 </div>
               </div>
@@ -243,7 +142,7 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
+            <Button
               className="btn-gradient-base btn-hover-fade px-8 py-6 text-lg w-full sm:w-auto"
               asChild
             >
