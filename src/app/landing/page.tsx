@@ -43,7 +43,7 @@ export default function LandingPage() {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Button 
-                className="btn-gradient-base btn-hover-fade btn-lg w-full sm:w-auto"
+                className="btn-gradient-base btn-hover-fade px-8 py-6 text-lg w-full sm:w-auto"
                 asChild
               >
                 <Link href="/dashboard">Try It Yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
@@ -265,3 +265,5 @@ export default function LandingPage() {
     </div>
   );
 };
+
+    
