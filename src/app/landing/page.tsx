@@ -49,7 +49,9 @@ export default function LandingPage() {
                 <Link href="/dashboard">Try It Yourself <ArrowRight className="ml-2 w-5 h-5" /></Link>
               </Button>
               <Button
-                className="btn-outline-primary btn-hover-fade btn-lg w-full sm:w-auto"
+                variant="outline"
+                size="lg"
+                className="border-primary/20 text-primary px-8 py-6 text-lg font-semibold w-full sm:w-auto hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white hover:border-0 transition-smooth"
                 asChild
               >
                 <Link href="/dashboard">Try Mock Data</Link>
@@ -249,8 +251,10 @@ export default function LandingPage() {
             >
               <Link href="/auth?mode=signup">Get Started <ArrowRight className="ml-2 w-5 h-5" /></Link>
             </Button>
-            <Button 
-              className="btn-outline-primary btn-hover-fade btn-lg w-full sm:w-auto"
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-primary/20 text-primary px-8 py-6 text-lg font-semibold w-full sm:w-auto hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white hover:border-0 transition-smooth"
               asChild
             >
               <Link href="/dashboard">Try Mock Data</Link>
