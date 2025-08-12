@@ -68,7 +68,7 @@ const UserNav = () => {
 
 const LandingNavLinks = ({ className }: { className?: string }) => (
     <div className={cn("flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-1", className)}>
-        <Button variant="subtle" asChild><Link href="/landing#why-spendwise">Why SpendWise</Link></Button>
+        <Button variant="subtle" asChild><Link href="/landing">Why SpendWise</Link></Button>
         <Button variant="subtle" asChild><Link href="/pricing">Pricing</Link></Button>
     </div>
 );
