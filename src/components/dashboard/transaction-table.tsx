@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -162,7 +161,7 @@ export function TransactionTable({
               <TableRow className="hover:bg-muted/0">
                 <SortableHeader column="merchant" label="Merchant" />
                 <SortableHeader column="date" label="Date" />
-                <SortableHeader column="amount" label="Amount" className="text-right" />
+                <SortableHeader column="amount" label="Amount" />
                 <TableHead className="text-center">
                     <div className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Category</div>
                 </TableHead>
@@ -179,7 +178,7 @@ export function TransactionTable({
                       {transaction.merchant}
                     </TableCell>
                     <TableCell>{formatDate(transaction.date)}</TableCell>
-                    <TableCell className={`text-right font-medium ${transaction.amount < 0 ? 'text-primary' : ''}`}>
+                    <TableCell className={`font-medium ${transaction.amount < 0 ? 'text-primary' : ''}`}>
                       {formatCurrency(transaction.amount)}
                     </TableCell>
                     <TableCell className="w-[200px] text-center">
