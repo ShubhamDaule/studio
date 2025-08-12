@@ -144,7 +144,7 @@ const AuthForm = () => {
                             )}
                         </div>
 
-                        <Button type="submit" className="w-full bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90">
+                        <Button type="submit" className="w-full btn-gradient-base btn-hover-fade">
                            {mode === 'signin' ? 'Sign In' : 'Create Account'}
                         </Button>
                         

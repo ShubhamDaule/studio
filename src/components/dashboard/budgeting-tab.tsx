@@ -73,7 +73,7 @@ export function BudgetingTab({
                                 Set your monthly budget for each category. Spending and progress reflect the selected date range.
                             </CardDescription>
                         </div>
-                        <Button size="sm" onClick={openManageDialog}>
+                        <Button size="sm" onClick={openManageDialog} className="btn-gradient-base btn-hover-fade">
                             <Settings2 className="mr-2 h-4 w-4"/>
                             Manage Categories
                         </Button>

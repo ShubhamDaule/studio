@@ -147,7 +147,7 @@ export function TransactionTable({
               Review and re-categorize your transactions as needed. Click headers to sort.
             </CardDescription>
         </div>
-        <Button size="sm" onClick={handleExportCSV} disabled={transactions.length === 0}>
+        <Button size="sm" onClick={handleExportCSV} disabled={transactions.length === 0} className="btn-gradient-base btn-hover-fade">
             <FileDown className="mr-2 h-4 w-4" />
             Export as CSV
         </Button>

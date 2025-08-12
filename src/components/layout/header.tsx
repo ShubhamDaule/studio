@@ -237,6 +237,7 @@ const DashboardNav = () => {
                     size="sm" 
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isLoading}
+                    className="btn-gradient-base btn-hover-fade"
                 >
                     {isLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

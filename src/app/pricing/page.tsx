@@ -79,7 +79,7 @@ export default function Pricing() {
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Button variant="link" asChild><Link href="/" className="text-sm text-muted-foreground">← Back to Home</Link></Button>
-          <Button variant="outline" size="sm" asChild><Link href="/auth">Sign in</Link></Button>
+          <Button asChild size="sm" className="btn-gradient-base btn-hover-fade"><Link href="/auth">Sign in</Link></Button>
         </div>
       </header>
 
