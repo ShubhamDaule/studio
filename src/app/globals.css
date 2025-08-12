@@ -146,9 +146,24 @@ body {
     .btn-gradient-base {
       @apply bg-gradient-to-r from-primary to-accent text-white border-0 transition-smooth font-bold;
     }
+
     .btn-outline-primary {
-      @apply border border-primary/20 text-primary bg-transparent hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white hover:border-0 transition-smooth font-bold;
+      @apply 
+        border border-primary/20 
+        bg-white 
+        text-green-600   /* green font at rest, adjust as needed */
+        font-bold 
+        transition-smooth 
+        hover:bg-gradient-to-r 
+        hover:from-primary 
+        hover:to-accent 
+        hover:text-white 
+        hover:border-0 
+        hover:opacity-90;
     }
+
+
+
     .btn-hover-fade {
       @apply hover:opacity-90;
     }
