@@ -27,13 +27,14 @@ import type { ExtractedTransaction, BankName, StatementType } from "@/lib/types"
 import { Logo } from "./logo";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
+import { Progress } from "@/components/ui/progress";
 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 const UserNav = () => {
   const { user, signOut } = useAuth();
-  const { tokenBalance } = useTiers();
+  const { tokenBalance, maxTokens } = useTiers();
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -53,6 +54,8 @@ const UserNav = () => {
     }
     return name.substring(0, 2);
   }
+
+  const tokenPercentage = maxTokens > 0 ? (tokenBalance / maxTokens) * 100 : 0;
 
   return (
       <DropdownMenu>
@@ -76,18 +79,22 @@ const UserNav = () => {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => router.push('/pricing')}>
-             <div className="flex items-center justify-between w-full">
-                <div className="flex items-center">
-                    <Coins className="mr-2 h-4 w-4" />
-                    <span>Tokens</span>
+           <div className="px-2 py-1.5 text-sm">
+                <div className="flex items-center justify-between w-full mb-1">
+                    <span className="font-medium flex items-center gap-2">
+                        <Coins className="h-4 w-4 text-muted-foreground" /> Tokens
+                    </span>
+                    <span className="font-bold text-primary">{tokenBalance} / {maxTokens}</span>
                 </div>
-                <span className="font-bold text-primary">{tokenBalance}</span>
-             </div>
-          </DropdownMenuItem>
+                <Progress value={tokenPercentage} className="h-2" />
+            </div>
            <DropdownMenuItem onSelect={() => router.push('/settings')}>
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
+          </DropdownMenuItem>
+           <DropdownMenuItem onSelect={() => router.push('/pricing')}>
+            <Coins className="mr-2 h-4 w-4" />
+            <span>Manage Plan</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
             <LogOut className="mr-2 h-4 w-4" />

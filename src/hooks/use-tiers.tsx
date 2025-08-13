@@ -1,6 +1,6 @@
 
 "use client";
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import { useToast } from './use-toast';
 
 const TOKENS_PER_APP_TOKEN = 2000;
@@ -10,10 +10,17 @@ export const calculateAppTokens = (apiTokens: number): number => {
   return Math.max(1, Math.ceil(apiTokens / TOKENS_PER_APP_TOKEN));
 }
 
+const TIER_CONFIG = {
+    free: { tokens: 5 },
+    pro: { tokens: 20 },
+    premium: { tokens: 45 },
+};
+
 type TiersContextType = {
   isPro: boolean;
   isPremium: boolean;
   tokenBalance: number;
+  maxTokens: number;
   setIsPro: (isPro: boolean) => void;
   setIsPremium: (isPremium: boolean) => void;
   setTokenBalance: React.Dispatch<React.SetStateAction<number>>;
@@ -33,23 +40,29 @@ export const useTiers = () => {
 export const TiersProvider = ({ children }: { children: ReactNode }) => {
   const [isPro, setIsPro] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
-  const [tokenBalance, setTokenBalance] = useState(20); // Default to Pro plan's tokens
+  const [tokenBalance, setTokenBalance] = useState(TIER_CONFIG.pro.tokens);
   const { toast } = useToast();
+
+  const maxTokens = useMemo(() => {
+    if (isPremium) return TIER_CONFIG.premium.tokens;
+    if (isPro) return TIER_CONFIG.pro.tokens;
+    return TIER_CONFIG.free.tokens;
+  }, [isPro, isPremium]);
 
   const handleSetIsPro = (pro: boolean) => {
     setIsPro(pro);
-    if(pro) setTokenBalance(20);
-    else setTokenBalance(5); // Free plan
-    if(isPremium) setIsPremium(false);
+    setTokenBalance(pro ? TIER_CONFIG.pro.tokens : TIER_CONFIG.free.tokens);
+    if (isPremium) setIsPremium(false);
   }
   
   const handleSetIsPremium = (premium: boolean) => {
       setIsPremium(premium);
-      if(premium) {
-          setTokenBalance(45);
+      if (premium) {
+          setTokenBalance(TIER_CONFIG.premium.tokens);
           setIsPro(true);
       } else {
-         handleSetIsPro(isPro); // Re-evaluate based on pro status
+         // Revert to pro if it was active, otherwise free
+         setTokenBalance(isPro ? TIER_CONFIG.pro.tokens : TIER_CONFIG.free.tokens);
       }
   }
 
@@ -78,6 +91,7 @@ export const TiersProvider = ({ children }: { children: ReactNode }) => {
         isPro, 
         isPremium, 
         tokenBalance,
+        maxTokens,
         setIsPro: handleSetIsPro, 
         setIsPremium: handleSetIsPremium,
         setTokenBalance,
