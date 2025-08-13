@@ -6,14 +6,15 @@ import { getAuth } from "firebase/auth";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
+// IMPORTANT: Replace this with your actual Firebase project configuration.
 const firebaseConfig = {
-  "projectId": "spendwise-backup1",
-  "appId": "1:1071662308737:web:d4f3179dad906c06a09c80",
-  "storageBucket": "spendwise-backup1.firebasestorage.app",
-  "apiKey": "AIzaSyBvXKBR4av3Kbl_zw4T-iIiqp8fKjoPzzA",
-  "authDomain": "spendwise-backup1.firebaseapp.com",
-  "measurementId": "",
-  "messagingSenderId": "1071662308737"
+  apiKey: "REPLACE_WITH_YOUR_API_KEY",
+  authDomain: "REPLACE_WITH_YOUR_AUTH_DOMAIN",
+  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
+  storageBucket: "REPLACE_WITH_YOUR_STORAGE_BUCKET",
+  messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
+  appId: "REPLACE_WITH_YOUR_APP_ID",
+  measurementId: "REPLACE_WITH_YOUR_MEASUREMENT_ID"
 };
 
 // Initialize Firebase
