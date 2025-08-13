@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -23,7 +22,7 @@ export function RawJsonDialog({ isOpen, onClose, onConfirm, jsonData, rawText }:
         <DialogHeader>
           <DialogTitle>Confirm Extracted Data</DialogTitle>
           <DialogDescription>
-            We've processed your PDF. Review the extracted text and the structured transactions below, then click "Continue" to have the AI categorize them.
+            We've processed your PDF. Review the extracted text and the structured transactions below, then click "Continue" to proceed with AI categorization.
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 border rounded-md flex-grow min-h-0">
