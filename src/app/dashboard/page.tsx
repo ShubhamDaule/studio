@@ -67,20 +67,27 @@ export default function DashboardPage() {
 
 
     const filteredTransactions = React.useMemo(() => {
+      if (!allTransactions || allTransactions.length === 0) {
+        return [];
+      }
+      
       return allTransactions.filter((t) => {
         const [year, month, day] = t.date.split('-').map(Number);
-        const transactionDate = new Date(year, month - 1, day).getTime();
+        const transactionDate = new Date(year, month - 1, day);
+
+        if (isNaN(transactionDate.getTime())) return false; // Invalid date in transaction data
+
+        const rangeFrom = dateRange?.from ? startOfDay(dateRange.from) : null;
+        const rangeTo = dateRange?.to ? endOfDay(dateRange.to) : null;
     
-        const rangeFrom = dateRange?.from ? startOfDay(dateRange.from).getTime() : 0;
-        const rangeTo = dateRange?.to ? endOfDay(dateRange.to).getTime() : Infinity;
-    
-        const isInDateRange = transactionDate >= rangeFrom && transactionDate <= rangeTo;
+        const isInDateRange = (!rangeFrom || transactionDate >= rangeFrom) && (!rangeTo || transactionDate <= rangeTo);
     
         const matchesSource = selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter || t.bankName === selectedSourceFilter;
     
         return isInDateRange && matchesSource;
       });
     }, [allTransactions, dateRange, selectedSourceFilter]);
+
 
     React.useEffect(() => {
         setContextFilteredTransactions(filteredTransactions);
