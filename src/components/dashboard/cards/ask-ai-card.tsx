@@ -18,7 +18,8 @@ import { Sparkles, Loader2, BrainCircuit } from "lucide-react";
 import { AskAiCharacter } from "../../characters/ask-ai-character";
 import { getAiQueryResponse } from "@/lib/actions";
 import { DynamicChart } from "../charts/dynamic-chart";
-import { useTiers } from "@/hooks/use-tiers";
+import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
+import { estimateTokens } from "@/lib/tokens";
 
 interface AskAiCardProps {
   transactions: Transaction[];
@@ -31,13 +32,23 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
   const [query, setQuery] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [result, setResult] = React.useState<QueryResult | null>(null);
+
+  const estimatedTokens = React.useMemo(() => {
+    const usage = {
+      query,
+      transactions,
+      budgets,
+    }
+    const apiTokens = estimateTokens(JSON.stringify(usage));
+    return calculateAppTokens(apiTokens);
+  }, [query, transactions, budgets]);
   
   const handleQuery = async () => {
-    if (tokenBalance < 1) {
+    if (tokenBalance < estimatedTokens) {
         toast({
             variant: "destructive",
             title: "Insufficient Tokens",
-            description: "You need at least 1 token to use Ask AI.",
+            description: `You need at least ${estimatedTokens.toFixed(1)} token(s) to use Ask AI.`,
         });
         return;
     }
@@ -130,7 +141,7 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
           ): (
              <Sparkles className="mr-2 h-4 w-4" />
           )}
-         {isLoading ? "Thinking..." : "Ask AI (1 Token)"}
+         {isLoading ? "Thinking..." : `Ask AI (${estimatedTokens.toFixed(1)} Token${estimatedTokens > 1 ? 's' : ''})`}
         </Button>
       </CardFooter>
     </Card>

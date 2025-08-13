@@ -56,6 +56,10 @@ const UserNav = () => {
   }
 
   const tokenPercentage = maxTokens > 0 ? (tokenBalance / maxTokens) * 100 : 0;
+  
+  const formatTokenDisplay = (num: number) => {
+    return Number.isInteger(num) ? num : num.toFixed(1);
+  }
 
   return (
       <DropdownMenu>
@@ -84,7 +88,7 @@ const UserNav = () => {
                     <span className="font-medium flex items-center gap-2">
                         <Coins className="h-4 w-4 text-muted-foreground" /> Tokens
                     </span>
-                    <span className="font-bold text-primary">{tokenBalance} / {maxTokens}</span>
+                    <span className="font-bold text-primary">{formatTokenDisplay(tokenBalance)} / {maxTokens}</span>
                 </div>
                 <Progress value={tokenPercentage} className="h-2" />
             </div>
@@ -230,7 +234,7 @@ const DashboardNav = () => {
                 toast({
                     variant: "destructive",
                     title: "Insufficient Tokens",
-                    description: `You need ${appTokensToConsume} token(s) to upload these files, but you only have ${tokenBalance}.`,
+                    description: `You need ${appTokensToConsume.toFixed(1)} token(s) to upload these files, but you only have ${tokenBalance.toFixed(1)}.`,
                 });
             } else if (consumeTokens(totalApiTokens)) {
                  if (onNewTransactions) {

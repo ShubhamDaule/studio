@@ -1,4 +1,3 @@
-
 "use client";
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import { useToast } from './use-toast';
@@ -7,7 +6,8 @@ const TOKENS_PER_APP_TOKEN = 2000;
 
 export const calculateAppTokens = (apiTokens: number): number => {
   if (apiTokens <= 0) return 0;
-  return Math.max(1, Math.ceil(apiTokens / TOKENS_PER_APP_TOKEN));
+  // Calculate proportional tokens, but ensure it's at least 1.
+  return Math.max(1, apiTokens / TOKENS_PER_APP_TOKEN);
 }
 
 const TIER_CONFIG = {
@@ -40,7 +40,7 @@ export const useTiers = () => {
 export const TiersProvider = ({ children }: { children: ReactNode }) => {
   const [isPro, setIsPro] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
-  const [tokenBalance, setTokenBalance] = useState(TIER_CONFIG.pro.tokens);
+  const [tokenBalance, setTokenBalance] = useState<number>(TIER_CONFIG.pro.tokens);
   const { toast } = useToast();
 
   const maxTokens = useMemo(() => {
@@ -73,15 +73,16 @@ export const TiersProvider = ({ children }: { children: ReactNode }) => {
         toast({
             variant: "destructive",
             title: "Insufficient Tokens",
-            description: `You need ${appTokensToConsume} token(s) for this action, but you only have ${tokenBalance}.`,
+            description: `You need ${appTokensToConsume.toFixed(1)} token(s) for this action, but you only have ${tokenBalance.toFixed(1)}.`,
         });
         return false;
     }
-
-    setTokenBalance(prev => prev - appTokensToConsume);
+    
+    const newBalance = tokenBalance - appTokensToConsume;
+    setTokenBalance(newBalance);
      toast({
         title: "Tokens Consumed",
-        description: `${appTokensToConsume} token(s) were used. You have ${tokenBalance - appTokensToConsume} remaining.`,
+        description: `${appTokensToConsume.toFixed(1)} token(s) were used. You have ${newBalance.toFixed(1)} remaining.`,
     });
     return true;
   }, [tokenBalance, toast]);

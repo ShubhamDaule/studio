@@ -18,7 +18,7 @@ import { CategoryIcon } from "../../icons";
 import { detectAnomalies } from "@/lib/analytics";
 import { AnomalyDetective } from "../../characters/anomaly-detective";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { useTiers } from "@/hooks/use-tiers";
+import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
 import { estimateTokens } from "@/lib/tokens";
 
 interface AnomaliesCardProps {
@@ -61,13 +61,18 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
     // Clear anomalies when transactions change
     setAnomalies([]);
   }, [transactions]);
+  
+  const estimatedTokens = React.useMemo(() => {
+    const apiTokens = estimateTokens(JSON.stringify(transactions));
+    return calculateAppTokens(apiTokens);
+  }, [transactions]);
 
   const handleScan = async () => {
-    if (tokenBalance < 1) {
+    if (tokenBalance < estimatedTokens) {
         toast({
             variant: "destructive",
             title: "Insufficient Tokens",
-            description: "You need at least 1 token to use the Anomaly Detective.",
+            description: `You need at least ${estimatedTokens.toFixed(1)} token(s) to use the Anomaly Detective.`,
         });
         return;
     }
@@ -166,7 +171,7 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Analyzing..." : "Ask the Detective (1 Token)"}
+          {isLoading ? "Analyzing..." : `Ask the Detective (${estimatedTokens.toFixed(1)} Token${estimatedTokens > 1 ? 's' : ''})`}
         </Button>
       </CardFooter>
     </Card>

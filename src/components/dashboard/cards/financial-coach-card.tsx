@@ -17,7 +17,8 @@ import { Sparkles, Bot, Loader2, type LucideIcon, RefreshCcw, BrainCircuit, icon
 import { FinancialCoach } from "../../characters/financial-coach";
 import { getAIInsights } from "@/lib/actions";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { useTiers } from "@/hooks/use-tiers";
+import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
+import { estimateTokens } from "@/lib/tokens";
 
 interface FinancialCoachCardProps {
   transactions: Transaction[];
@@ -49,13 +50,18 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
   const { consumeTokens, tokenBalance } = useTiers();
   const [insights, setInsights] = React.useState<Insight[] | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  
+  const estimatedTokens = React.useMemo(() => {
+    const apiTokens = estimateTokens(JSON.stringify(transactions));
+    return calculateAppTokens(apiTokens);
+  }, [transactions]);
 
   const handleGenerateInsights = async () => {
-    if (tokenBalance < 1) {
+    if (tokenBalance < estimatedTokens) {
         toast({
             variant: "destructive",
             title: "Insufficient Tokens",
-            description: "You need at least 1 token to use the Financial Coach.",
+            description: `You need at least ${estimatedTokens.toFixed(1)} token(s) to use the Financial Coach.`,
         });
         return;
     }
@@ -136,7 +142,7 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Generating Advice..." : insights ? "Try Again (1 Token)" : "Ask Your Coach (1 Token)"}
+          {isLoading ? "Generating Advice..." : insights ? `Try Again (${estimatedTokens.toFixed(1)} Token${estimatedTokens > 1 ? 's' : ''})` : `Ask Your Coach (${estimatedTokens.toFixed(1)} Token${estimatedTokens > 1 ? 's' : ''})`}
         </Button>
       </CardFooter>
     </Card>
