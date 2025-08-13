@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { LogOut, PanelLeft, Upload, Loader2 } from "lucide-react";
+import { LogOut, PanelLeft, Upload, Loader2, Settings } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
 import type { ExtractedTransaction, BankName, StatementType } from "@/lib/types";
 import { Logo } from "./logo";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
@@ -42,24 +43,43 @@ const UserNav = () => {
     return null;
   }
   
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'S';
+    const names = name.split(' ');
+    if (names.length > 1) {
+        return `${names[0][0]}${names[names.length - 1][0]}`;
+    }
+    return name.substring(0, 2);
+  }
+
   return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <div className="w-8 h-8 rounded-full bg-gray-200 cursor-pointer" />
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-9 w-9">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                        {getInitials(user.displayName)}
+                    </AvatarFallback>
+                </Avatar>
+            </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user.displayName}</p>
+              <p className="text-sm font-medium leading-none">{user.email}</p>
               <p className="text-xs leading-none text-muted-foreground">
-                {user.email}
+                {user.displayName}
               </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut}>
+           <DropdownMenuItem>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
+            <span>Sign out</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -68,7 +88,7 @@ const UserNav = () => {
 
 const LandingNavLinks = ({ className }: { className?: string }) => (
     <div className={cn("flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-1", className)}>
-        <Button variant="subtle" asChild><Link href="/landing">Why SpendWise</Link></Button>
+        <Button variant="subtle" asChild><Link href="/landing#why-spendwise">Why SpendWise</Link></Button>
         <Button variant="subtle" asChild><Link href="/pricing">Pricing</Link></Button>
     </div>
 );
