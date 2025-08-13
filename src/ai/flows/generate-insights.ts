@@ -73,6 +73,7 @@ Use the following reference rules to inform your advice:
 **Output Format:**
 - You MUST provide the output in the specified JSON format.
 - Each insight should have a clear title, a practical description, and a relevant icon name from the lucide-react library.
+- **CRITICAL ICON RULE:** You MUST choose an icon from the following list ONLY: [ "PiggyBank", "Wallet", "TrendingDown", "CreditCard", "Landmark", "Scale", "ShoppingBag", "ReceiptText", "HeartHandshake", "Sparkles", "Target", "BrainCircuit", "Lightbulb" ].
 - If no significant spending pattern is detected, provide general money-saving tips and basic budgeting advice in the same format.
 
 Here is the user's transaction data:
