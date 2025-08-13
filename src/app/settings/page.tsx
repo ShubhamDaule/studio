@@ -11,25 +11,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Trash } from "lucide-react";
 
 const profileFormSchema = z.object({
   displayName: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50, { message: "Name cannot be longer than 50 characters." }),
 });
 
 export default function SettingsPage() {
-  const { user, updateUserProfile, deleteUserAccount } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof profileFormSchema>>({
@@ -42,23 +30,21 @@ export default function SettingsPage() {
   const onSubmit = async (values: z.infer<typeof profileFormSchema>) => {
     await updateUserProfile(values.displayName);
   };
-  
-  const handleDeleteAccount = async () => {
-    await deleteUserAccount();
-    router.push('/auth');
-  }
 
   if (!user) {
-    return null; // Or a loading spinner, or a redirect
+    return null; 
   }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-2xl">
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Settings</h1>
+        <p className="text-muted-foreground">Manage your account and personal information.</p>
+      </div>
       <div className="space-y-8">
         <Card>
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
-            <CardDescription>Update your personal information.</CardDescription>
+            <CardTitle>Personal Information</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -68,7 +54,7 @@ export default function SettingsPage() {
                   name="displayName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Display Name</FormLabel>
+                      <FormLabel>Full Name</FormLabel>
                       <FormControl>
                         <Input placeholder="Your Name" {...field} />
                       </FormControl>
@@ -76,10 +62,9 @@ export default function SettingsPage() {
                     </FormItem>
                   )}
                 />
-                 <div className="flex justify-between items-center">
-                    <p className="text-sm text-muted-foreground">Your email is {user.email}</p>
+                 <div className="flex justify-start">
                     <Button type="submit" disabled={form.formState.isSubmitting}>
-                        {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+                        {form.formState.isSubmitting ? "Saving..." : "Save Profile"}
                     </Button>
                 </div>
               </form>
@@ -87,36 +72,18 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-destructive">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-destructive">Delete Account</CardTitle>
-            <CardDescription>
-              Permanently delete your account and all associated data. This action cannot be undone.
-            </CardDescription>
+            <CardTitle>Account Information</CardTitle>
           </CardHeader>
-          <CardContent>
-             <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                        <Trash className="mr-2 h-4 w-4" />
-                        Delete My Account
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This will permanently delete your account, including all your transaction data and settings. This action cannot be undone.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive hover:bg-destructive/90">
-                        Yes, delete my account
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+          <CardContent className="space-y-4">
+             <div>
+                <Label htmlFor="email">Email Address</Label>
+                <Input id="email" type="email" value={user.email || ''} disabled className="mt-1" />
+             </div>
+              <p className="text-sm text-muted-foreground">
+                Email cannot be changed. Contact support if you need to update your email address.
+              </p>
           </CardContent>
         </Card>
       </div>
