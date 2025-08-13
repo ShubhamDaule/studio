@@ -14,10 +14,14 @@ type InsightsTabProps = {
 };
 
 export function InsightsTab({ allTransactions, budgets }: InsightsTabProps) {
+    const spendingTransactions = React.useMemo(() => 
+        allTransactions.filter(t => t.amount > 0 && t.category !== "Payment" && t.category !== "Investment"),
+    [allTransactions]);
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-start">
-            <FinancialCoachCard transactions={allTransactions} />
-            <AnomaliesCard transactions={allTransactions} />
+            <FinancialCoachCard transactions={spendingTransactions} />
+            <AnomaliesCard transactions={spendingTransactions} />
             <AskAiCard transactions={allTransactions} budgets={budgets} />
         </div>
     );
