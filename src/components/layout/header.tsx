@@ -214,7 +214,12 @@ const DashboardNav = () => {
                 const result = await preAnalyzeTransactions(fullText);
 
                 if (result.error || !result.data || !result.bankName || !result.statementType || !result.usage) {
-                    throw new Error(result.error || `Could not process ${file.name}.`);
+                    toast({
+                        variant: "destructive",
+                        title: `Upload Failed: ${file.name}`,
+                        description: result.error || "Could not process this PDF file.",
+                    });
+                    continue; 
                 }
 
                 allPendingUploads.push({
