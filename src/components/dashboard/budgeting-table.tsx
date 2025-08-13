@@ -185,7 +185,7 @@ export function BudgetingTable({ data, onBudgetChange }: BudgetingTableProps) {
                         <span className={cn("w-16 text-right text-xs", item.remaining < 0 && "text-destructive font-semibold")}>
                            ({formatCurrency(item.remaining, true)})
                         </span>
-                        <Progress value={Math.min(item.progress, 100)} className="h-4 flex-1" indicatorClassName={cn(
+                        <Progress value={Math.min(item.progress, 100)} className="h-3 flex-1" indicatorClassName={cn(
                             {
                             "bg-destructive": item.progress > 100,
                             "bg-yellow-500": item.progress > 75 && item.progress <= 100,
