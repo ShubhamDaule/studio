@@ -24,32 +24,32 @@ function getFriendlyErrorMessage(error: any): string {
 
 
 export async function getAIInsights(transactions: Transaction[]) {
-  if (!transactions || transactions.length === 0) {
-    return { success: false, error: "No transactions to analyze." };
-  }
-
-  try {
-    const input = { transactions };
-    const insights = await generateInsights(input);
-
-    const inputTokens = estimateTokens(JSON.stringify(input));
-    const outputTokens = estimateTokens(JSON.stringify(insights));
-    const usage: TokenUsage = {
-        inputTokens,
-        outputTokens,
-        totalTokens: inputTokens + outputTokens,
+    if (!transactions || transactions.length === 0) {
+        return { success: false, error: "No transactions to analyze." };
     }
 
-    return { success: true, insights, usage };
-  } catch (e: any) {
-    console.error("Error getting AI insights:", e);
-    return { success: false, error: getFriendlyErrorMessage(e) };
-  }
+    try {
+        const input = { transactions };
+        const insights = await generateInsights(input);
+
+        const inputTokens = estimateTokens(JSON.stringify(input));
+        const outputTokens = estimateTokens(JSON.stringify(insights));
+        const usage: TokenUsage = {
+            inputTokens,
+            outputTokens,
+            totalTokens: inputTokens + outputTokens,
+        }
+
+        return { success: true, insights, usage };
+    } catch (e: any) {
+        console.error("Error getting AI insights:", e);
+        return { success: false, error: getFriendlyErrorMessage(e) };
+    }
 }
 
-export async function extractAndCategorizeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; error?: string, usage?: TokenUsage }> {
+export async function preAnalyzeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; error?: string, usage?: TokenUsage, rawText: string }> {
     if (!pdfText) {
-        return { error: "No text from PDF to process." };
+        return { error: "No text from PDF to process.", rawText: "" };
     }
 
     try {
@@ -57,26 +57,26 @@ export async function extractAndCategorizeTransactions(pdfText: string): Promise
         const { bankName, statementType, transactions } = await extractTransactions(input);
 
         if (!transactions) {
-             return { data: [], bankName, statementType };
+            return { data: [], bankName, statementType, rawText: pdfText };
         }
-        
+
         const inputTokens = estimateTokens(JSON.stringify(input));
         const outputTokens = estimateTokens(JSON.stringify(transactions));
         const usage: TokenUsage = {
             inputTokens,
             outputTokens,
             totalTokens: inputTokens + outputTokens,
-        }
-
-        // Add bankName to each transaction object for consistency
+        };
+        
         const dataWithBankName = transactions.map(txn => ({ ...txn, bankName }));
 
-        return { data: dataWithBankName, bankName, statementType, usage };
+        return { data: dataWithBankName, bankName, statementType, usage, rawText: pdfText };
     } catch (e: any) {
-        console.error("Error extracting and categorizing transactions from PDF:", e);
-        return { error: getFriendlyErrorMessage(e) };
+        console.error("Error pre-analyzing transactions from PDF:", e);
+        return { error: getFriendlyErrorMessage(e), rawText: pdfText };
     }
 }
+
 
 export async function getAiQueryResponse(query: string, transactions: Transaction[], budgets: Budget[]): Promise<{ result?: QueryResult; error?: string, usage?: TokenUsage }> {
     if (!query) {

@@ -1,16 +1,17 @@
+
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "../ui/scroll-area";
-import type { RawTransaction } from "@/ai/flows/extract-transactions";
+import type { ExtractedTransaction } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  jsonData: RawTransaction[] | null;
+  jsonData: ExtractedTransaction[] | null;
   rawText: string | null;
 };
 

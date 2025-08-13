@@ -20,7 +20,7 @@ import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { SourceFilter } from "@/components/dashboard/source-filter";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { extractAndCategorizeTransactions } from "@/lib/actions";
+import { preAnalyzeTransactions } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
 import type { ExtractedTransaction, BankName, StatementType } from "@/lib/types";
@@ -28,9 +28,19 @@ import { Logo } from "./logo";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
 import { Progress } from "@/components/ui/progress";
+import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
+
+type PendingUpload = {
+  data: ExtractedTransaction[];
+  fileName: string;
+  bankName: BankName;
+  statementType: StatementType;
+  rawText: string;
+  usage: { totalTokens: number };
+};
 
 const UserNav = () => {
   const { user, signOut } = useAuth();
@@ -58,8 +68,7 @@ const UserNav = () => {
   const tokenPercentage = maxTokens > 0 ? (tokenBalance / maxTokens) * 100 : 0;
   
   const formatTokenDisplay = (num: number) => {
-    // Show one decimal place if the number is not an integer
-    return Number.isInteger(num) ? num : num.toFixed(1);
+    return num.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   }
 
   return (
@@ -178,20 +187,18 @@ const DashboardNav = () => {
         isUsingMockData,
     } = useDashboardContext();
     const { toast } = useToast();
-    const { consumeTokens, tokenBalance } = useTiers();
+    const { consumeTokens } = useTiers();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isLoading, setIsLoading] = React.useState(false);
-    
+    const [pendingUploads, setPendingUploads] = React.useState<PendingUpload[]>([]);
+
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
         setIsLoading(true);
-        const allNewTransactions: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType }[] = [];
-        let totalAppTokensToConsume = 0;
-        let successfulUploads: { data: ExtractedTransaction[]; fileName: string; bankName: BankName; statementType: StatementType; usage: { totalTokens: number; } }[] = [];
+        const allPendingUploads: PendingUpload[] = [];
 
-        // First, calculate the total token cost for all files.
         for (const file of Array.from(files)) {
             try {
                 const arrayBuffer = await file.arrayBuffer();
@@ -204,59 +211,57 @@ const DashboardNav = () => {
                     fullText += "\\n" + pageText;
                 }
 
-                // We are not calling the AI yet, just getting the potential result to estimate cost.
-                // This call is to a local function that won't make an API call, but we need a placeholder for the result.
-                // This part of the code doesn't actually call the expensive AI. It's for cost estimation.
-                // In a real scenario, you might have a separate, cheaper endpoint for estimation.
-                // For now, we simulate this by calling the action and getting the usage.
-                const result = await extractAndCategorizeTransactions(fullText);
+                const result = await preAnalyzeTransactions(fullText);
 
                 if (result.error || !result.data || !result.bankName || !result.statementType || !result.usage) {
-                    throw new Error(result.error || `Could not estimate cost for ${file.name}.`);
+                    throw new Error(result.error || `Could not process ${file.name}.`);
                 }
-                
-                const appTokensForFile = calculateAppTokens(result.usage.totalTokens);
-                totalAppTokensToConsume += appTokensForFile;
 
-                successfulUploads.push({
+                allPendingUploads.push({
                     data: result.data,
                     fileName: file.name,
                     bankName: result.bankName,
                     statementType: result.statementType,
-                    usage: result.usage
+                    usage: result.usage,
+                    rawText: result.rawText,
                 });
-
             } catch (error: any) {
-                console.error(`Pre-flight check error for ${file.name}:`, error);
+                console.error(`Error during pre-analysis for ${file.name}:`, error);
                 toast({
                     variant: "destructive",
                     title: `Upload Failed: ${file.name}`,
-                    description: error.message || "Could not process this PDF file for cost estimation.",
+                    description: error.message || "Could not process this PDF file.",
                 });
             }
         }
         
-        // Now, check the balance and consume tokens
-        if (totalAppTokensToConsume > 0) {
-            if (consumeTokens(totalAppTokensToConsume, true)) { // Pass true to specify it's an app token amount
-                 if (onNewTransactions) {
-                    onNewTransactions(successfulUploads.map(s => ({
-                        data: s.data,
-                        fileName: s.fileName,
-                        bankName: s.bankName,
-                        statementType: s.statementType,
-                    })));
-                }
-            }
-        } else if (successfulUploads.length > 0) {
-            // This case handles if all files resulted in 0 token cost, but still should be added.
-            if (onNewTransactions) {
-                onNewTransactions(successfulUploads);
-            }
+        if (allPendingUploads.length > 0) {
+            setPendingUploads(allPendingUploads);
         }
 
         setIsLoading(false);
         if(fileInputRef.current) fileInputRef.current.value = "";
+    };
+    
+    const handleConfirmUpload = () => {
+        let totalAppTokensToConsume = 0;
+        
+        pendingUploads.forEach(upload => {
+            const appTokensForFile = calculateAppTokens(upload.usage.totalTokens);
+            totalAppTokensToConsume += appTokensForFile;
+        });
+
+        if (consumeTokens(totalAppTokensToConsume, true)) {
+            if (onNewTransactions) {
+                onNewTransactions(pendingUploads.map(p => ({
+                    data: p.data,
+                    fileName: p.fileName,
+                    bankName: p.bankName,
+                    statementType: p.statementType,
+                })));
+            }
+        }
+        setPendingUploads([]);
     };
 
     const sources = isUsingMockData 
@@ -304,6 +309,16 @@ const DashboardNav = () => {
                 <UserNav />
             </div>
         </div>
+        
+        {pendingUploads.length > 0 && (
+            <RawJsonDialog 
+                isOpen={pendingUploads.length > 0}
+                onClose={() => setPendingUploads([])}
+                onConfirm={handleConfirmUpload}
+                jsonData={pendingUploads.flatMap(p => p.data)}
+                rawText={pendingUploads.map(p => `--- ${p.fileName} ---\n${p.rawText}`).join('\n\n')}
+            />
+        )}
        </>
     )
 }
