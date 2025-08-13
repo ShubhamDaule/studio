@@ -76,13 +76,11 @@ export default function DashboardPage() {
     
         const isInDateRange = transactionDate >= rangeFrom && transactionDate <= rangeTo;
     
-        const matchesSource = isUsingMockData
-          ? selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter
-          : selectedSourceFilter === "all" || t.bankName === selectedSourceFilter;
+        const matchesSource = selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter || t.bankName === selectedSourceFilter;
     
         return isInDateRange && matchesSource;
       });
-    }, [allTransactions, dateRange, selectedSourceFilter, isUsingMockData]);
+    }, [allTransactions, dateRange, selectedSourceFilter]);
 
     React.useEffect(() => {
         setContextFilteredTransactions(filteredTransactions);
