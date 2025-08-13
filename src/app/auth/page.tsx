@@ -177,11 +177,14 @@ const AuthForm = () => {
     );
 };
 
-
-export default function AuthPage() {
+const AuthPageContent = () => {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+         <Suspense fallback={<div>Loading...</div>}>
             <AuthForm />
         </Suspense>
     )
+}
+
+export default function AuthPage() {
+    return <AuthPageContent />
 }
