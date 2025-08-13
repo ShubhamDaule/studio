@@ -283,7 +283,7 @@ export default function DashboardPage() {
                             />
                         </TabsContent>
                         <TabsContent value="insights" className="mt-4">
-                            <InsightsTab allTransactions={allTransactions} budgets={activeBudgets}/>
+                            <InsightsTab allTransactions={allTransactions} budgets={activeBudgets} isMockData={isUsingMockData} />
                         </TabsContent>
                         <TabsContent value="budgeting" className="mt-4">
                             <BudgetingTab
