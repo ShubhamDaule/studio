@@ -19,7 +19,6 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  signInWithFacebook: () => Promise<void>;
   signInWithApple: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -40,7 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => unsubscribe();
   }, []);
   
-  const handleSignIn = async (provider: GoogleAuthProvider | FacebookAuthProvider | OAuthProvider) => {
+  const handleSignIn = async (provider: GoogleAuthProvider | OAuthProvider) => {
     try {
       await signInWithPopup(auth, provider);
       toast({ title: 'Success', description: 'You have successfully signed in.' });
@@ -56,11 +55,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    await handleSignIn(provider);
-  };
-
-  const signInWithFacebook = async () => {
-    const provider = new FacebookAuthProvider();
     await handleSignIn(provider);
   };
   
@@ -91,7 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithFacebook, signInWithApple, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithApple, signOut }}>
       {children}
     </AuthContext.Provider>
   );

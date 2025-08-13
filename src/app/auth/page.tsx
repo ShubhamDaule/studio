@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import { GoogleIcon, FacebookIcon, AppleIcon } from "@/components/icons";
+import { GoogleIcon, AppleIcon } from "@/components/icons";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/layout/logo";
@@ -20,7 +20,7 @@ const AuthForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     
-    const { user, signInWithGoogle, signInWithFacebook, signInWithApple } = useAuth();
+    const { user, signInWithGoogle, signInWithApple } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -159,9 +159,8 @@ const AuthForm = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-2 gap-3">
                             <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2" /> Google</Button>
-                            <Button variant="outline" type="button" onClick={signInWithFacebook}><FacebookIcon className="mr-2" /> Facebook</Button>
                             <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2" /> Apple</Button>
                         </div>
 
