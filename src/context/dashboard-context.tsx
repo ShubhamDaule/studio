@@ -2,10 +2,10 @@
 "use client";
 import type { DateRange } from "react-day-picker";
 import * as React from 'react';
-import type { Transaction, ExtractedTransaction, BankName, StatementType, FinancialSource, TransactionFile } from "@/lib/types";
+import type { Transaction, ExtractedTransaction, BankName, StatementType, FinancialSource, TransactionFile, StatementPeriod } from "@/lib/types";
 import { usePathname } from "next/navigation";
 
-type NewTransactionsCallback = (uploads: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType }[]) => void;
+type NewTransactionsCallback = (uploads: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null }[]) => void;
 
 type DashboardContextType = {
   allTransactions: Transaction[];

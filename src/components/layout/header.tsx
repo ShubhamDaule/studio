@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 import { preAnalyzeTransactions } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
-import type { ExtractedTransaction, BankName, StatementType } from "@/lib/types";
+import type { ExtractedTransaction, BankName, StatementType, StatementPeriod } from "@/lib/types";
 import { Logo } from "./logo";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
@@ -38,6 +38,7 @@ type PendingUpload = {
   fileName: string;
   bankName: BankName;
   statementType: StatementType;
+  statementPeriod: StatementPeriod | null;
   rawText: string;
   usage: { totalTokens: number };
 };
@@ -227,6 +228,7 @@ const DashboardNav = () => {
                     fileName: file.name,
                     bankName: result.bankName,
                     statementType: result.statementType,
+                    statementPeriod: result.statementPeriod,
                     usage: result.usage,
                     rawText: result.rawText,
                 });
@@ -263,6 +265,7 @@ const DashboardNav = () => {
                     fileName: p.fileName,
                     bankName: p.bankName,
                     statementType: p.statementType,
+                    statementPeriod: p.statementPeriod,
                 })));
             }
         }

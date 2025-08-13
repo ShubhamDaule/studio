@@ -7,6 +7,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/googleai';
 import { categoryTriggers } from '@/lib/category-triggers';
+import { format } from 'date-fns';
 
 const ExtractedTransactionSchema = z.object({
   date: z.string().describe("Transaction date in 'YYYY-MM-DD' format."),
@@ -30,13 +31,19 @@ export type ExtractTransactionsInput = z.infer<typeof ExtractTransactionsInputSc
 export type BankName = 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Unknown';
 export type StatementType = 'Credit Card' | 'Bank Account' | 'Unknown';
 
+export type StatementPeriod = {
+    startDate: string; // YYYY-MM-DD
+    endDate: string;   // YYYY-MM-DD
+};
+
 type StatementInfo = {
   bankName: BankName;
   statementType: StatementType;
+  statementPeriod: StatementPeriod | null;
 };
 
 // ************************************************************************************
-// STEP 1: Bank & Statement Type Detection
+// STEP 1: Bank, Type & Statement Period Detection
 // ************************************************************************************
 function detectBankAndStatementType(text: string): StatementInfo {
   const lowerText = text.toLowerCase();
@@ -58,7 +65,6 @@ function detectBankAndStatementType(text: string): StatementInfo {
     if (bank === 'Unknown') continue;
     const keywords = bankKeywords[bank];
     const count = keywords.reduce((acc, keyword) => {
-        // Use word boundaries (\b) to match whole words only
         const regex = new RegExp(`\\b${keyword}\\b`, 'g');
         return acc + (lowerText.match(regex) || []).length;
     }, 0);
@@ -78,7 +84,44 @@ function detectBankAndStatementType(text: string): StatementInfo {
     statementType = 'Bank Account';
   }
 
-  return { bankName, statementType };
+  // Statement Period Detection
+  let statementPeriod: StatementPeriod | null = null;
+  const datePatterns = [
+      /activity period:?\s*(\w+\s\d{1,2})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i,
+      /statement period:?\s*(\w+\s\d{1,2},\s*\d{4})\s*to\s*(\w+\s\d{1,2},\s*\d{4})/i,
+      /(\w+\s\d{1,2},\s*\d{4})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i,
+      /period from\s*(\d{2}\/\d{2}\/\d{4})\s*to\s*(\d{2}\/\d{2}\/\d{4})/i,
+  ];
+
+  for (const pattern of datePatterns) {
+      const match = text.match(pattern);
+      if (match && match.length >= 3) {
+          try {
+              // Handle cases where the year might be missing from the start date
+              let startStr = match[1];
+              const endStr = match[2];
+              const endYear = new Date(endStr).getFullYear();
+              if (!/\d{4}/.test(startStr)) {
+                  startStr += `, ${endYear}`;
+              }
+
+              const startDate = new Date(startStr);
+              const endDate = new Date(endStr);
+              
+              if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                  statementPeriod = {
+                      startDate: format(startDate, 'yyyy-MM-dd'),
+                      endDate: format(endDate, 'yyyy-MM-dd'),
+                  };
+                  break; 
+              }
+          } catch (e) {
+              console.warn(`Could not parse date from match: ${match[0]}`);
+          }
+      }
+  }
+
+  return { bankName, statementType, statementPeriod };
 }
 
 
@@ -157,13 +200,13 @@ Return a clean JSON array of transactions.
 // ************************************************************************************
 // STEP 3: Main AI Flow
 // ************************************************************************************
-export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, transactions: ExtractedTransaction[] }> {
+export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null, transactions: ExtractedTransaction[] }> {
     const { pdfText } = input;
 
-    // Step 1: Detect bank and type
+    // Step 1: Detect bank, type, and period
     const bankInfo = detectBankAndStatementType(pdfText);
     console.log('======== BANK DETECTION ========');
-    console.log(`Detected Bank: ${bankInfo.bankName}, Type: ${bankInfo.statementType}`);
+    console.log(`Detected Bank: ${bankInfo.bankName}, Type: ${bankInfo.statementType}, Period: ${JSON.stringify(bankInfo.statementPeriod)}`);
     console.log('==============================\n');
 
 
@@ -194,5 +237,10 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     console.log('====================================\n');
 
 
-    return { bankName: bankInfo.bankName, statementType: bankInfo.statementType, transactions: extractedData };
+    return { 
+        bankName: bankInfo.bankName, 
+        statementType: bankInfo.statementType, 
+        statementPeriod: bankInfo.statementPeriod,
+        transactions: extractedData 
+    };
 }

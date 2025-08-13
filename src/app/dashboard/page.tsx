@@ -39,6 +39,7 @@ export default function DashboardPage() {
     const { isPro } = useTiers();
     const { 
         dateRange, 
+        setDateRange,
         selectedSourceFilter, 
         setFilteredTransactions: setContextFilteredTransactions, 
         addUploadedTransactions, 
@@ -115,6 +116,18 @@ export default function DashboardPage() {
                 setAllTransactions(prev => [...prev, ...allNewTransactions]);
                 setTransactionFiles(prev => [...prev, ...newFiles]);
             }
+            
+            // Set date range based on the first uploaded file with a valid period
+            if (uploads[0]?.statementPeriod) {
+                try {
+                    const from = parseISO(uploads[0].statementPeriod.startDate);
+                    const to = parseISO(uploads[0].statementPeriod.endDate);
+                    if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
+                        setDateRange({ from, to });
+                    }
+                } catch {}
+            }
+
 
             if (uploads.length > 0) {
                  toast({
@@ -123,7 +136,7 @@ export default function DashboardPage() {
                 });
             }
         });
-    }, [addUploadedTransactions, toast, isUsingMockData, setAllTransactions, setTransactionFiles, setIsUsingMockData]);
+    }, [addUploadedTransactions, toast, isUsingMockData, setAllTransactions, setTransactionFiles, setIsUsingMockData, setDateRange]);
 
     const totalSpending = React.useMemo(() => {
         return filteredTransactions

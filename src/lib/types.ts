@@ -1,6 +1,6 @@
 
 import type { icons } from "lucide-react";
-import type { BankName as ExtractorBankName, StatementType as ExtractorStatementType } from "@/ai/flows/extract-transactions";
+import type { BankName as ExtractorBankName, StatementType as ExtractorStatementType, StatementPeriod } from "@/ai/flows/extract-transactions";
 
 export type BankName = ExtractorBankName;
 export type StatementType = ExtractorStatementType;
@@ -21,6 +21,7 @@ export type TransactionFile = {
   fileName: string;
   bankName: BankName;
   statementType: StatementType;
+  statementPeriod: StatementPeriod | null;
 };
 
 export type Transaction = {
