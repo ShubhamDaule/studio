@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Transaction } from "@/lib/types";
-import { Sparkles, Bot, Loader2, icons, type LucideIcon, RefreshCcw, BrainCircuit } from "lucide-react";
+import { Sparkles, Bot, Loader2, type LucideIcon, RefreshCcw, BrainCircuit, icons } from "lucide-react";
 import { FinancialCoach } from "../../characters/financial-coach";
 import { getAIInsights } from "@/lib/actions";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -29,7 +29,7 @@ interface Insight {
 }
 
 const InsightItem = ({ insight }: { insight: Insight }) => {
-    const IconComponent = icons[insight.icon] || Bot;
+    const IconComponent = (insight.icon && icons[insight.icon]) ? icons[insight.icon] as LucideIcon : Bot;
     return (
         <Card className="bg-background/70 backdrop-blur-sm flex flex-col h-full">
             <CardHeader className="flex-row items-center gap-4 space-y-0">
