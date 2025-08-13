@@ -87,6 +87,6 @@ ${JSON.stringify(transactions, null, 2)}
   }
 );
 
-export async function generateInsights(transactions: Transaction[]): Promise<FinancialAdviceOutput> {
-  return await generateInsightsFlow({ transactions });
+export async function generateInsights(transactions: { transactions: Transaction[] }): Promise<FinancialAdviceOutput> {
+  return await generateInsightsFlow(transactions);
 }
