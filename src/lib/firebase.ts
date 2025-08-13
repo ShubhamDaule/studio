@@ -1,3 +1,4 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
@@ -6,13 +7,13 @@ import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  "projectId": "spendwise-analyzer-7oex8",
-  "appId": "1:574813527964:web:9abc2b527862e585963259",
-  "storageBucket": "spendwise-analyzer-7oex8.appspot.com",
-  "apiKey": "AIzaSyDFfG2fVp2iA32d20QH95QmBT5M5w4J1-E",
-  "authDomain": "spendwise-analyzer-7oex8.firebaseapp.com",
-  "measurementId": "G-B6T6E145D7",
-  "messagingSenderId": "574813527964"
+  "projectId": "spendwise-backup1",
+  "appId": "1:1071662308737:web:d4f3179dad906c06a09c80",
+  "storageBucket": "spendwise-backup1.firebasestorage.app",
+  "apiKey": "AIzaSyBvXKBR4av3Kbl_zw4T-iIiqp8fKjoPzzA",
+  "authDomain": "spendwise-backup1.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "1071662308737"
 };
 
 // Initialize Firebase
