@@ -5,10 +5,11 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   onAuthStateChanged, 
   signOut as firebaseSignOut, 
-  GoogleAuthProvider, 
-  FacebookAuthProvider,
+  GoogleAuthProvider,
   OAuthProvider,
   signInWithPopup,
+  updateProfile,
+  deleteUser,
   User
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -21,6 +22,8 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
   signOut: () => Promise<void>;
+  updateUserProfile: (displayName: string) => Promise<void>;
+  deleteUserAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,6 +79,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const updateUserProfile = async (displayName: string) => {
+    if (!auth.currentUser) return;
+    try {
+        await updateProfile(auth.currentUser, { displayName });
+        setUser({ ...auth.currentUser }); // Force a re-render with the new user info
+        toast({ title: 'Profile Updated', description: 'Your name has been successfully updated.'});
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: error.message || "Could not update your profile.",
+        });
+    }
+  }
+
+  const deleteUserAccount = async () => {
+    if (!auth.currentUser) return;
+    try {
+        await deleteUser(auth.currentUser);
+        toast({ title: 'Account Deleted', description: 'Your account has been permanently deleted.'});
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Deletion Failed",
+            description: error.message || "Could not delete your account.",
+        });
+    }
+  };
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -85,7 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithApple, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithApple, signOut, updateUserProfile, deleteUserAccount }}>
       {children}
     </AuthContext.Provider>
   );
