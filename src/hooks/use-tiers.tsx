@@ -1,3 +1,4 @@
+
 "use client";
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import { useToast } from './use-toast';
@@ -24,7 +25,7 @@ type TiersContextType = {
   setIsPro: (isPro: boolean) => void;
   setIsPremium: (isPremium: boolean) => void;
   setTokenBalance: React.Dispatch<React.SetStateAction<number>>;
-  consumeTokens: (apiTokens: number) => boolean;
+  consumeTokens: (tokensToConsume: number, isAppTokens?: boolean) => boolean;
 };
 
 const TiersContext = createContext<TiersContextType | undefined>(undefined);
@@ -66,14 +67,17 @@ export const TiersProvider = ({ children }: { children: ReactNode }) => {
       }
   }
 
-  const consumeTokens = useCallback((apiTokens: number): boolean => {
-    const appTokensToConsume = calculateAppTokens(apiTokens);
+  const consumeTokens = useCallback((tokensToConsume: number, isAppTokens: boolean = false): boolean => {
+    const appTokensToConsume = isAppTokens ? tokensToConsume : calculateAppTokens(tokensToConsume);
+    
+    const formattedAppTokens = appTokensToConsume.toFixed(1);
+    const formattedBalance = tokenBalance.toFixed(1);
 
     if (tokenBalance < appTokensToConsume) {
         toast({
             variant: "destructive",
             title: "Insufficient Tokens",
-            description: `You need ${appTokensToConsume.toFixed(1)} token(s) for this action, but you only have ${tokenBalance.toFixed(1)}.`,
+            description: `You need ${formattedAppTokens} token(s) for this action, but you only have ${formattedBalance}.`,
         });
         return false;
     }
@@ -82,7 +86,7 @@ export const TiersProvider = ({ children }: { children: ReactNode }) => {
     setTokenBalance(newBalance);
      toast({
         title: "Tokens Consumed",
-        description: `${appTokensToConsume.toFixed(1)} token(s) were used. You have ${newBalance.toFixed(1)} remaining.`,
+        description: `${formattedAppTokens} token(s) were used. You have ${newBalance.toFixed(1)} remaining.`,
     });
     return true;
   }, [tokenBalance, toast]);

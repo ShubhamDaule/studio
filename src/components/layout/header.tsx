@@ -58,6 +58,7 @@ const UserNav = () => {
   const tokenPercentage = maxTokens > 0 ? (tokenBalance / maxTokens) * 100 : 0;
   
   const formatTokenDisplay = (num: number) => {
+    // Show one decimal place if the number is not an integer
     return Number.isInteger(num) ? num : num.toFixed(1);
   }
 
@@ -187,9 +188,11 @@ const DashboardNav = () => {
 
         setIsLoading(true);
         const allNewTransactions: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType }[] = [];
-        let totalApiTokens = 0;
+        let totalAppTokensToConsume = 0;
+        let successfulUploads: { data: ExtractedTransaction[]; fileName: string; bankName: BankName; statementType: StatementType; usage: { totalTokens: number; } }[] = [];
 
-        await Promise.all(Array.from(files).map(async (file) => {
+        // First, calculate the total token cost for all files.
+        for (const file of Array.from(files)) {
             try {
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -200,46 +203,55 @@ const DashboardNav = () => {
                     const pageText = content.items.map(item => (item as any).str).join(" ");
                     fullText += "\\n" + pageText;
                 }
-                
+
+                // We are not calling the AI yet, just getting the potential result to estimate cost.
+                // This call is to a local function that won't make an API call, but we need a placeholder for the result.
+                // This part of the code doesn't actually call the expensive AI. It's for cost estimation.
+                // In a real scenario, you might have a separate, cheaper endpoint for estimation.
+                // For now, we simulate this by calling the action and getting the usage.
                 const result = await extractAndCategorizeTransactions(fullText);
 
-                if (result.error || !result.data || !result.bankName || !result.statementType) {
-                    throw new Error(result.error || `Failed to extract transactions from ${file.name}.`);
+                if (result.error || !result.data || !result.bankName || !result.statementType || !result.usage) {
+                    throw new Error(result.error || `Could not estimate cost for ${file.name}.`);
                 }
                 
-                allNewTransactions.push({
+                const appTokensForFile = calculateAppTokens(result.usage.totalTokens);
+                totalAppTokensToConsume += appTokensForFile;
+
+                successfulUploads.push({
                     data: result.data,
                     fileName: file.name,
                     bankName: result.bankName,
                     statementType: result.statementType,
+                    usage: result.usage
                 });
-                
-                if (result.usage?.totalTokens) {
-                    totalApiTokens += result.usage.totalTokens;
-                }
 
             } catch (error: any) {
-                console.error(`Upload error for ${file.name}:`, error);
+                console.error(`Pre-flight check error for ${file.name}:`, error);
                 toast({
                     variant: "destructive",
                     title: `Upload Failed: ${file.name}`,
-                    description: error.message || "Could not process this PDF file.",
+                    description: error.message || "Could not process this PDF file for cost estimation.",
                 });
             }
-        }));
+        }
         
-        if (allNewTransactions.length > 0) {
-            const appTokensToConsume = calculateAppTokens(totalApiTokens);
-            if (tokenBalance < appTokensToConsume) {
-                toast({
-                    variant: "destructive",
-                    title: "Insufficient Tokens",
-                    description: `You need ${appTokensToConsume.toFixed(1)} token(s) to upload these files, but you only have ${tokenBalance.toFixed(1)}.`,
-                });
-            } else if (consumeTokens(totalApiTokens)) {
+        // Now, check the balance and consume tokens
+        if (totalAppTokensToConsume > 0) {
+            if (consumeTokens(totalAppTokensToConsume, true)) { // Pass true to specify it's an app token amount
                  if (onNewTransactions) {
-                    onNewTransactions(allNewTransactions);
+                    onNewTransactions(successfulUploads.map(s => ({
+                        data: s.data,
+                        fileName: s.fileName,
+                        bankName: s.bankName,
+                        statementType: s.statementType,
+                    })));
                 }
+            }
+        } else if (successfulUploads.length > 0) {
+            // This case handles if all files resulted in 0 token cost, but still should be added.
+            if (onNewTransactions) {
+                onNewTransactions(successfulUploads);
             }
         }
 
