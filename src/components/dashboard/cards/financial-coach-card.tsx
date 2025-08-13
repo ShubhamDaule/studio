@@ -17,6 +17,7 @@ import { Sparkles, Bot, Loader2, type LucideIcon, RefreshCcw, BrainCircuit, icon
 import { FinancialCoach } from "../../characters/financial-coach";
 import { getAIInsights } from "@/lib/actions";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useTiers } from "@/hooks/use-tiers";
 
 interface FinancialCoachCardProps {
   transactions: Transaction[];
@@ -45,21 +46,29 @@ const InsightItem = ({ insight }: { insight: Insight }) => {
 
 export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
   const { toast } = useToast();
+  const { consumeTokens, tokenBalance } = useTiers();
   const [insights, setInsights] = React.useState<Insight[] | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleGenerateInsights = async () => {
+    if (tokenBalance < 1) {
+        toast({
+            variant: "destructive",
+            title: "Insufficient Tokens",
+            description: "You need at least 1 token to use the Financial Coach.",
+        });
+        return;
+    }
+
     setIsLoading(true);
     setInsights(null);
 
     const result = await getAIInsights(transactions);
 
-    if (result.success && result.insights) {
-      setInsights(result.insights.insights);
-      toast({
-        title: "Advice Generated!",
-        description: `Your financial coach has new tips for you. (Tokens used: ${result.usage?.totalTokens})`,
-      });
+    if (result.success && result.insights && result.usage) {
+      if (consumeTokens(result.usage.totalTokens)) {
+        setInsights(result.insights.insights);
+      }
     } else {
       toast({
         variant: "destructive",
@@ -127,7 +136,7 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Generating Advice..." : insights ? "Try Again" : "Ask Your Coach"}
+          {isLoading ? "Generating Advice..." : insights ? "Try Again (1 Token)" : "Ask Your Coach (1 Token)"}
         </Button>
       </CardFooter>
     </Card>

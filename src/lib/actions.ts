@@ -91,6 +91,7 @@ export async function getAiQueryResponse(query: string, transactions: Transactio
             query,
             transactionData: JSON.stringify(transactions),
             budgetData: JSON.stringify(budgets),
+            anomalyData: JSON.stringify([]), // Pass empty array for now
         };
         const result = await askAi(input);
 

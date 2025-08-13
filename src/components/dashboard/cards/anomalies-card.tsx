@@ -18,6 +18,8 @@ import { CategoryIcon } from "../../icons";
 import { detectAnomalies } from "@/lib/analytics";
 import { AnomalyDetective } from "../../characters/anomaly-detective";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useTiers } from "@/hooks/use-tiers";
+import { estimateTokens } from "@/lib/tokens";
 
 interface AnomaliesCardProps {
   transactions: Transaction[];
@@ -51,6 +53,7 @@ const AnomalyItem = ({ anomaly, transaction }: { anomaly: Anomaly; transaction: 
 
 export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
   const { toast } = useToast();
+  const { consumeTokens, tokenBalance } = useTiers();
   const [anomalies, setAnomalies] = React.useState<Anomaly[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -60,11 +63,26 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
   }, [transactions]);
 
   const handleScan = async () => {
+    if (tokenBalance < 1) {
+        toast({
+            variant: "destructive",
+            title: "Insufficient Tokens",
+            description: "You need at least 1 token to use the Anomaly Detective.",
+        });
+        return;
+    }
     setIsLoading(true);
     toast({
       title: "Scanning for Anomalies",
       description: "The detective is on the case, analyzing your transactions...",
     });
+
+    // This is a client-side "action", so token consumption is handled here.
+    const apiTokens = estimateTokens(JSON.stringify(transactions));
+    if(!consumeTokens(apiTokens)) {
+        setIsLoading(false);
+        return;
+    }
 
     const result = await detectAnomalies(transactions);
 
@@ -148,7 +166,7 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Analyzing..." : "Ask the Detective"}
+          {isLoading ? "Analyzing..." : "Ask the Detective (1 Token)"}
         </Button>
       </CardFooter>
     </Card>

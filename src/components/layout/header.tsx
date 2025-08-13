@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { LogOut, PanelLeft, Upload, Loader2, Settings } from "lucide-react";
+import { LogOut, PanelLeft, Upload, Loader2, Settings, Coins } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
   DropdownMenu,
@@ -26,12 +26,14 @@ import * as pdfjsLib from "pdfjs-dist";
 import type { ExtractedTransaction, BankName, StatementType } from "@/lib/types";
 import { Logo } from "./logo";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 const UserNav = () => {
   const { user, signOut } = useAuth();
+  const { tokenBalance } = useTiers();
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -74,6 +76,15 @@ const UserNav = () => {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={() => router.push('/pricing')}>
+             <div className="flex items-center justify-between w-full">
+                <div className="flex items-center">
+                    <Coins className="mr-2 h-4 w-4" />
+                    <span>Tokens</span>
+                </div>
+                <span className="font-bold text-primary">{tokenBalance}</span>
+             </div>
+          </DropdownMenuItem>
            <DropdownMenuItem onSelect={() => router.push('/settings')}>
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
@@ -155,6 +166,7 @@ const DashboardNav = () => {
         isUsingMockData,
     } = useDashboardContext();
     const { toast } = useToast();
+    const { consumeTokens, tokenBalance } = useTiers();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isLoading, setIsLoading] = React.useState(false);
     
@@ -164,14 +176,9 @@ const DashboardNav = () => {
 
         setIsLoading(true);
         const allNewTransactions: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType }[] = [];
-        let totalTokensUsed = 0;
+        let totalApiTokens = 0;
 
         await Promise.all(Array.from(files).map(async (file) => {
-            toast({
-                title: `Processing ${file.name}...`,
-                description: "Reading your file and extracting transactions with AI.",
-            });
-
             try {
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -197,7 +204,7 @@ const DashboardNav = () => {
                 });
                 
                 if (result.usage?.totalTokens) {
-                    totalTokensUsed += result.usage.totalTokens;
+                    totalApiTokens += result.usage.totalTokens;
                 }
 
             } catch (error: any) {
@@ -209,16 +216,19 @@ const DashboardNav = () => {
                 });
             }
         }));
-
+        
         if (allNewTransactions.length > 0) {
-             if (onNewTransactions) {
-                onNewTransactions(allNewTransactions);
-            }
-            if(totalTokensUsed > 0) {
-                 toast({
-                    title: "Processing Complete",
-                    description: `Total tokens used for this batch: ${totalTokensUsed}`,
+            const appTokensToConsume = calculateAppTokens(totalApiTokens);
+            if (tokenBalance < appTokensToConsume) {
+                toast({
+                    variant: "destructive",
+                    title: "Insufficient Tokens",
+                    description: `You need ${appTokensToConsume} token(s) to upload these files, but you only have ${tokenBalance}.`,
                 });
+            } else if (consumeTokens(totalApiTokens)) {
+                 if (onNewTransactions) {
+                    onNewTransactions(allNewTransactions);
+                }
             }
         }
 

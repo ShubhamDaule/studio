@@ -18,6 +18,7 @@ import { Sparkles, Loader2, BrainCircuit } from "lucide-react";
 import { AskAiCharacter } from "../../characters/ask-ai-character";
 import { getAiQueryResponse } from "@/lib/actions";
 import { DynamicChart } from "../charts/dynamic-chart";
+import { useTiers } from "@/hooks/use-tiers";
 
 interface AskAiCardProps {
   transactions: Transaction[];
@@ -26,11 +27,21 @@ interface AskAiCardProps {
 
 export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
   const { toast } = useToast();
+  const { consumeTokens, tokenBalance } = useTiers();
   const [query, setQuery] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [result, setResult] = React.useState<QueryResult | null>(null);
   
   const handleQuery = async () => {
+    if (tokenBalance < 1) {
+        toast({
+            variant: "destructive",
+            title: "Insufficient Tokens",
+            description: "You need at least 1 token to use Ask AI.",
+        });
+        return;
+    }
+    
     setIsLoading(true);
     setResult(null);
 
@@ -42,12 +53,10 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
         title: "Error",
         description: response.error,
       });
-    } else if (response.result) {
-      setResult(response.result);
-       toast({
-        title: "AI Response Received",
-        description: `Tokens used: ${response.usage?.totalTokens}`,
-      });
+    } else if (response.result && response.usage) {
+       if (consumeTokens(response.usage.totalTokens)) {
+         setResult(response.result);
+       }
     }
     
     setIsLoading(false);
@@ -121,7 +130,7 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
           ): (
              <Sparkles className="mr-2 h-4 w-4" />
           )}
-         {isLoading ? "Thinking..." : "Ask AI"}
+         {isLoading ? "Thinking..." : "Ask AI (1 Token)"}
         </Button>
       </CardFooter>
     </Card>
