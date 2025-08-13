@@ -8,10 +8,10 @@ import { getAuth } from "firebase/auth";
 const firebaseConfig = {
   "projectId": "spendwise-analyzer-7oex8",
   "appId": "1:574813527964:web:9abc2b527862e585963259",
-  "storageBucket": "spendwise-analyzer-7oex8.firebasestorage.app",
-  "apiKey": "AIzaSyD00XPQimSLGqM7fykFZtk8g9qPAJfR-AY",
+  "storageBucket": "spendwise-analyzer-7oex8.appspot.com",
+  "apiKey": "AIzaSyDFfG2fVp2iA32d20QH95QmBT5M5w4J1-E",
   "authDomain": "spendwise-analyzer-7oex8.firebaseapp.com",
-  "measurementId": "",
+  "measurementId": "G-B6T6E145D7",
   "messagingSenderId": "574813527964"
 };
 
