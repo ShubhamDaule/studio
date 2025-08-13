@@ -33,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { startOfDay, endOfDay } from "date-fns";
+import { startOfDay, endOfDay, parseISO } from "date-fns";
 
 export default function DashboardPage() {
     const { isPro } = useTiers();
@@ -58,9 +58,9 @@ export default function DashboardPage() {
         if (isUsingMockData && allTransactions.length === 0) {
             setAllTransactions(mockTransactions);
             setTransactionFiles([
-                { fileName: 'statement-q1.pdf', bankName: 'Amex', type: 'Credit Card' },
-                { fileName: 'statement-q2.pdf', bankName: 'Amex', type: 'Credit Card' },
-                { fileName: 'statement-q3.csv', bankName: 'Discover', type: 'Credit Card' },
+                { fileName: 'statement-q1.pdf', bankName: 'Amex', type: 'Credit Card', statementPeriod: { startDate: '2023-10-01', endDate: '2023-10-31' } },
+                { fileName: 'statement-q2.pdf', bankName: 'Amex', type: 'Credit Card', statementPeriod: { startDate: '2023-11-01', endDate: '2023-11-30' } },
+                { fileName: 'statement-q3.csv', bankName: 'Discover', type: 'Credit Card', statementPeriod: { startDate: '2023-11-01', endDate: '2023-11-30' } },
             ]);
         }
     }, [isUsingMockData, allTransactions, setAllTransactions, setTransactionFiles]);
@@ -72,16 +72,13 @@ export default function DashboardPage() {
       }
       
       return allTransactions.filter((t) => {
-        const [year, month, day] = t.date.split('-').map(Number);
-        const transactionDate = new Date(year, month - 1, day);
-
-        if (isNaN(transactionDate.getTime())) return false; // Invalid date in transaction data
+        const transactionDate = parseISO(t.date);
+        if (isNaN(transactionDate.getTime())) return false;
 
         const rangeFrom = dateRange?.from ? startOfDay(dateRange.from) : null;
         const rangeTo = dateRange?.to ? endOfDay(dateRange.to) : null;
     
         const isInDateRange = (!rangeFrom || transactionDate >= rangeFrom) && (!rangeTo || transactionDate <= rangeTo);
-    
         const matchesSource = selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter || t.bankName === selectedSourceFilter;
     
         return isInDateRange && matchesSource;
@@ -107,6 +104,7 @@ export default function DashboardPage() {
                 fileName: upload.fileName,
                 bankName: upload.bankName,
                 statementType: upload.statementType,
+                statementPeriod: upload.statementPeriod,
             }));
 
             if (isUsingMockData) {
@@ -358,4 +356,5 @@ export default function DashboardPage() {
         </DndContext>
     );
 }
+
     
