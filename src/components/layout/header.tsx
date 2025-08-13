@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
 import type { ExtractedTransaction, BankName, StatementType } from "@/lib/types";
 import { Logo } from "./logo";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
@@ -57,6 +57,7 @@ const UserNav = () => {
         <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-9 w-9">
+                    {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName ?? ""} />}
                     <AvatarFallback className="bg-primary text-primary-foreground">
                         {getInitials(user.displayName)}
                     </AvatarFallback>
