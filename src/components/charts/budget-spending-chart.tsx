@@ -38,6 +38,9 @@ const chartConfig = {
 
 export function BudgetSpendingChart({ transactions, budgets }: BudgetSpendingChartProps) {
   const aggregatedData = React.useMemo(() => {
+    if (!transactions) {
+        return [];
+    }
     const spendingByCategory = transactions
       .filter(t => t.amount > 0)
       .reduce((acc, t) => {
