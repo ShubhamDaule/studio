@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -48,7 +47,7 @@ export function OverviewTab({
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatsCard 
                     title="Total Spending"
-                    value={totalSpending.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                    value={(totalSpending ?? 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}
                     icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
                     description={filterDescription}
                     onClick={() => openDialog('category', { category: 'all' })}
