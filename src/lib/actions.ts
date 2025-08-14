@@ -3,7 +3,7 @@
 import { generateInsights } from "@/ai/flows/generate-insights";
 import { extractTransactions } from "@/ai/flows/extract-transactions";
 import { askAi } from "@/ai/flows/ask-ai-flow";
-import type { Transaction, QueryResult, Budget, ExtractedTransaction, BankName, StatementType, TokenUsage } from "@/lib/types";
+import type { Transaction, QueryResult, Budget, ExtractedTransaction, BankName, StatementType, TokenUsage, StatementPeriod } from "@/lib/types";
 import { estimateTokens } from "@/lib/tokens";
 
 
@@ -47,17 +47,17 @@ export async function getAIInsights(transactions: Transaction[]) {
     }
 }
 
-export async function preAnalyzeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; error?: string, usage?: TokenUsage, rawText: string }> {
+export async function preAnalyzeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; statementPeriod?: StatementPeriod | null; error?: string, usage?: TokenUsage, rawText: string }> {
     if (!pdfText) {
         return { error: "No text from PDF to process.", rawText: "" };
     }
 
     try {
         const input = { pdfText };
-        const { bankName, statementType, transactions } = await extractTransactions(input);
+        const { bankName, statementType, statementPeriod, transactions, rawText } = await extractTransactions(input);
 
         if (!transactions) {
-            return { data: [], bankName, statementType, rawText: pdfText };
+            return { data: [], bankName, statementType, statementPeriod, rawText };
         }
 
         const inputTokens = estimateTokens(JSON.stringify(input));
@@ -70,7 +70,7 @@ export async function preAnalyzeTransactions(pdfText: string): Promise<{ data?: 
         
         const dataWithBankName = transactions.map(txn => ({ ...txn, bankName }));
 
-        return { data: dataWithBankName, bankName, statementType, usage, rawText: pdfText };
+        return { data: dataWithBankName, bankName, statementType, statementPeriod, usage, rawText };
     } catch (e: any) {
         console.error("Error pre-analyzing transactions from PDF:", e);
         return { error: getFriendlyErrorMessage(e), rawText: pdfText };

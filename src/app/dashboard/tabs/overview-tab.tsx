@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -10,39 +9,32 @@ import { SpendingBySourceChart } from "@/components/charts/spending-by-source-ch
 import { TopMerchantsChart } from "@/components/charts/top-merchants-chart";
 import { BudgetSpendingChart } from "@/components/charts/budget-spending-chart";
 import { SpendingTrendChart } from "@/components/charts/spending-trend-chart";
-import type { Budget, Category, Transaction } from "@/lib/types";
 import StatsCard from "@/components/dashboard/cards/stats-card";
 import { HighestTransactionCard } from "@/components/dashboard/cards/highest-transaction-card";
 import { HighestDayCard } from "@/components/dashboard/cards/highest-day-card";
 import { CurrentBalanceCard } from "@/components/dashboard/cards/current-balance-card";
+import { useDashboardContext } from "@/context/dashboard-context";
+import { useBudgets } from "@/hooks/useBudgets";
 
 type OverviewTabProps = {
-    totalSpending: number;
-    filterDescription: string;
-    transactionCount: number;
-    highestTransaction: Transaction | null;
     openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant', data: any) => void;
-    currentBalance: number | null;
-    highestDay: { date: string; total: number } | null;
-    filteredTransactions: Transaction[];
-    allTransactions: Transaction[];
-    activeBudgets: Budget[];
-    allCategories: Category[];
 };
 
-export function OverviewTab({
-    totalSpending,
-    filterDescription,
-    transactionCount,
-    highestTransaction,
-    openDialog,
-    currentBalance,
-    highestDay,
-    filteredTransactions,
-    allTransactions,
-    activeBudgets,
-    allCategories,
-}: OverviewTabProps) {
+export function OverviewTab({ openDialog }: OverviewTabProps) {
+    const { 
+        filteredTransactions,
+        allTransactions,
+        allCategories,
+        totalSpending,
+        filterDescription,
+        transactionCount,
+        highestTransaction,
+        currentBalance,
+        highestDay,
+    } = useDashboardContext();
+
+    const { activeBudgets } = useBudgets({allCategories, transactions: filteredTransactions});
+
     return (
         <div className="grid gap-8">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

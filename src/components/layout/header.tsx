@@ -181,11 +181,9 @@ const DashboardNav = () => {
         minDate,
         maxDate,
         financialSources,
-        transactionFiles,
         selectedSourceFilter,
         setSelectedSourceFilter,
-        onNewTransactions,
-        isUsingMockData,
+        addUploadedTransactions,
     } = useDashboardContext();
     const { toast } = useToast();
     const { consumeTokens } = useTiers();
@@ -259,8 +257,8 @@ const DashboardNav = () => {
         });
 
         if (consumeTokens(totalAppTokensToConsume, true)) {
-            if (onNewTransactions) {
-                onNewTransactions(pendingUploads.map(p => ({
+            if (addUploadedTransactions) {
+                addUploadedTransactions(pendingUploads.map(p => ({
                     data: p.data,
                     fileName: p.fileName,
                     bankName: p.bankName,
@@ -271,10 +269,6 @@ const DashboardNav = () => {
         }
         setPendingUploads([]);
     };
-
-    const sources = isUsingMockData 
-        ? transactionFiles.map(f => f.fileName)
-        : financialSources.map(s => s.name);
 
     return (
        <>
@@ -287,7 +281,7 @@ const DashboardNav = () => {
                     maxDate={maxDate}
                 />
                 <SourceFilter
-                    sources={sources}
+                    sources={financialSources.map(s => s.name)}
                     selectedSource={selectedSourceFilter}
                     onSelectSource={setSelectedSourceFilter}
                 />

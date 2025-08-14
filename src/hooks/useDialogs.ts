@@ -4,6 +4,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import type { Transaction, Category } from '@/lib/types';
 import { useTiers } from './use-tiers';
+import { useDashboardContext } from '@/context/dashboard-context';
 
 type DialogType = 'category' | 'day' | 'source' | 'merchant' | 'transactionDetail';
 
@@ -28,10 +29,9 @@ type UseDialogsProps = {
     allTransactions: Transaction[];
     allCategories: Category[];
     handleCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
-    selectedSource: string;
 };
 
-export const useDialogs = ({ transactions, allTransactions, allCategories, handleCategoryChange, selectedSource }: UseDialogsProps) => {
+export const useDialogs = ({ transactions, allTransactions, allCategories, handleCategoryChange }: UseDialogsProps) => {
   const { isPro } = useTiers();
 
   const [dialogState, setDialogState] = useState<DialogState>({
@@ -88,14 +88,12 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
 
     if (dialogState.source && typeof activeDialogKey === 'object' && 'name' in activeDialogKey) {
          const { name: sourceName } = activeDialogKey as any;
-         return { ...baseData, source: sourceName, transactions: allTransactions.filter(t => t.fileSource === sourceName) };
+         return { ...baseData, source: sourceName, transactions: allTransactions.filter(t => t.bankName === sourceName) };
     }
     
-    // Fallback for simple string keys (like old source handling)
     if (dialogState.source && typeof activeDialogKey === 'string') {
-       return { ...baseData, source: activeDialogKey, transactions: allTransactions.filter(t => t.fileSource === activeDialogKey) };
+       return { ...baseData, source: activeDialogKey, transactions: allTransactions.filter(t => t.bankName === activeDialogKey) };
     }
-
 
     return baseData;
   }, [activeDialogKey, dialogState, transactions, allTransactions, allCategories, handleCategoryChange, isPro]);

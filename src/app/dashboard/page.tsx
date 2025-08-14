@@ -11,14 +11,12 @@ import { TransactionDetailDialog } from "@/components/dialogs/transaction-detail
 import { BudgetingTab } from "@/components/dashboard/budgeting-tab";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useTiers } from "@/hooks/use-tiers";
 import { OverviewTab } from "@/components/dashboard/tabs/overview-tab";
 import { TransactionsTab } from "@/components/dashboard/tabs/transactions-tab";
 import { InsightsTab } from "@/components/dashboard/tabs/insights-tab";
 import { useDashboardContext } from "@/context/dashboard-context";
-import { mockCategories, mockTransactions } from "@/lib/mock-data";
-import type { Transaction, Category, TransactionFile } from "@/lib/types";
-import { LayoutGrid, List, Sparkles, Target, Trash, X } from "lucide-react";
+import type { Category, TransactionFile } from "@/lib/types";
+import { LayoutGrid, List, Sparkles, Target, Trash } from "lucide-react";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useToast } from "@/hooks/use-toast";
@@ -33,161 +31,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { startOfDay, endOfDay, parseISO } from "date-fns";
 
 export default function DashboardPage() {
-    const { isPro } = useTiers();
     const { 
-        dateRange, 
-        setDateRange,
-        selectedSourceFilter, 
-        setFilteredTransactions: setContextFilteredTransactions, 
-        addUploadedTransactions, 
+        filteredTransactions,
         allTransactions,
         setAllTransactions,
+        allCategories,
+        setAllCategories,
         transactionFiles,
         setTransactionFiles,
-        financialSources,
         isUsingMockData,
-        setIsUsingMockData,
+        handleCategoryChange,
     } = useDashboardContext();
+    
     const { toast } = useToast();
-    const [allCategories, setAllCategories] = React.useState<Category[]>(mockCategories);
     const [fileToDelete, setFileToDelete] = React.useState<TransactionFile | null>(null);
-
-    React.useEffect(() => {
-        if (isUsingMockData && allTransactions.length === 0) {
-            setAllTransactions(mockTransactions);
-            setTransactionFiles([
-                { fileName: 'statement-q1.pdf', bankName: 'Amex', type: 'Credit Card', statementPeriod: { startDate: '2023-10-01', endDate: '2023-10-31' } },
-                { fileName: 'statement-q2.pdf', bankName: 'Amex', type: 'Credit Card', statementPeriod: { startDate: '2023-11-01', endDate: '2023-11-30' } },
-                { fileName: 'statement-q3.csv', bankName: 'Discover', type: 'Credit Card', statementPeriod: { startDate: '2023-11-01', endDate: '2023-11-30' } },
-            ]);
-        }
-    }, [isUsingMockData, allTransactions, setAllTransactions, setTransactionFiles]);
-
-
-    const filteredTransactions = React.useMemo(() => {
-      if (!allTransactions || allTransactions.length === 0) {
-        return [];
-      }
-      
-      return allTransactions.filter((t) => {
-        const transactionDate = parseISO(t.date);
-        if (isNaN(transactionDate.getTime())) return false;
-
-        const rangeFrom = dateRange?.from ? startOfDay(dateRange.from) : null;
-        const rangeTo = dateRange?.to ? endOfDay(dateRange.to) : null;
-    
-        const isInDateRange = (!rangeFrom || transactionDate >= rangeFrom) && (!rangeTo || transactionDate <= rangeTo);
-        const matchesSource = selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter || t.bankName === selectedSourceFilter;
-    
-        return isInDateRange && matchesSource;
-      });
-    }, [allTransactions, dateRange, selectedSourceFilter]);
-
-
-    React.useEffect(() => {
-        setContextFilteredTransactions(filteredTransactions);
-    }, [filteredTransactions, setContextFilteredTransactions]);
-
-    React.useEffect(() => {
-        addUploadedTransactions((uploads) => {
-             const allNewTransactions = uploads.flatMap(upload => 
-                upload.data.map(t => ({
-                    ...t,
-                    id: crypto.randomUUID(),
-                    fileSource: upload.fileName,
-                }))
-            );
-
-            const newFiles: TransactionFile[] = uploads.map(upload => ({
-                fileName: upload.fileName,
-                bankName: upload.bankName,
-                statementType: upload.statementType,
-                statementPeriod: upload.statementPeriod,
-            }));
-
-            if (isUsingMockData) {
-                setAllTransactions(allNewTransactions);
-                setTransactionFiles(newFiles);
-                setIsUsingMockData(false);
-            } else {
-                setAllTransactions(prev => [...prev, ...allNewTransactions]);
-                setTransactionFiles(prev => [...prev, ...newFiles]);
-            }
-            
-            // Set date range based on the first uploaded file with a valid period
-            if (uploads[0]?.statementPeriod) {
-                try {
-                    const from = parseISO(uploads[0].statementPeriod.startDate);
-                    const to = parseISO(uploads[0].statementPeriod.endDate);
-                    if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
-                        setDateRange({ from, to });
-                    }
-                } catch {}
-            }
-
-
-            if (uploads.length > 0) {
-                 toast({
-                    title: "Uploads Successful!",
-                    description: `${allNewTransactions.length} transactions from ${uploads.length} file(s) have been added.`,
-                });
-            }
-        });
-    }, [addUploadedTransactions, toast, isUsingMockData, setAllTransactions, setTransactionFiles, setIsUsingMockData, setDateRange]);
-
-    const totalSpending = React.useMemo(() => {
-        return filteredTransactions
-        .filter((t) => t.amount > 0 && t.category !== "Payment" && t.category !== "Investment")
-        .reduce((acc, t) => acc + t.amount, 0);
-    }, [filteredTransactions]);
-
-    const highestTransaction = React.useMemo(() => {
-        if (filteredTransactions.length === 0) return null;
-        return filteredTransactions.reduce((max, t) => (t.amount > max.amount ? t : max), filteredTransactions[0]);
-    }, [filteredTransactions]);
-
-    const transactionCount = React.useMemo(() => {
-        return filteredTransactions.length;
-    }, [filteredTransactions]);
-
-    const spendingByDay = React.useMemo(() => {
-        const byDay: { [date: string]: number } = {};
-        filteredTransactions
-        .filter((t) => t.amount > 0 && t.category !== "Payment" && t.category !== "Investment")
-        .forEach((t) => {
-            byDay[t.date] = (byDay[t.date] || 0) + t.amount;
-        });
-        return Object.entries(byDay).map(([date, total]) => ({ date, total }));
-    }, [filteredTransactions]);
-
-    const highestDay = React.useMemo(() => {
-        if (spendingByDay.length === 0) return null;
-        return spendingByDay.reduce((max, day) => (day.total > max.total ? day : max), spendingByDay[0]);
-    }, [spendingByDay]);
-
-    const currentBalance = React.useMemo(() => {
-        if (selectedSourceFilter === 'all') return null; // Can't calculate balance for all sources
-        const sourceTransactions = allTransactions.filter(t => t.bankName === selectedSourceFilter);
-        return sourceTransactions.reduce((acc, t) => acc - t.amount, 0);
-    }, [allTransactions, selectedSourceFilter]);
-    
-    const filterDescription = React.useMemo(() => {
-        if (selectedSourceFilter !== "all") {
-          return `for ${selectedSourceFilter}`;
-        }
-        return `across all sources`;
-    }, [selectedSourceFilter]);
-
-    const handleCategoryChange = React.useCallback((transactionId: string, newCategory: Category['name']) => {
-        setAllTransactions(prev => 
-        prev.map(t => 
-            t.id === transactionId ? { ...t, category: newCategory } : t
-        )
-        );
-    }, [setAllTransactions]);
 
     const {
         budgets,
@@ -198,7 +57,7 @@ export default function DashboardPage() {
         handleDeleteBudgetOverride,
         addBudget,
         deleteBudget
-    } = useBudgets({allCategories, dateRange, transactions: filteredTransactions});
+    } = useBudgets({allCategories, transactions: filteredTransactions});
 
     const {
         dialogState,
@@ -210,7 +69,6 @@ export default function DashboardPage() {
         allTransactions,
         allCategories,
         handleCategoryChange,
-        selectedSource: selectedSourceFilter
     });
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -277,29 +135,13 @@ export default function DashboardPage() {
                             </TabsTrigger>
                         </TabsList>
                         <TabsContent value="overview" className="mt-4">
-                            <OverviewTab 
-                            totalSpending={totalSpending}
-                            filterDescription={filterDescription}
-                            transactionCount={transactionCount}
-                            highestTransaction={highestTransaction}
-                            openDialog={openDialog}
-                            currentBalance={currentBalance}
-                            highestDay={highestDay}
-                            filteredTransactions={filteredTransactions}
-                            allTransactions={allTransactions}
-                            activeBudgets={activeBudgets}
-                            allCategories={allCategories}
-                            />
+                            <OverviewTab openDialog={openDialog} />
                         </TabsContent>
                         <TabsContent value="transactions" className="mt-4">
-                            <TransactionsTab 
-                            filteredTransactions={filteredTransactions}
-                            handleCategoryChange={handleCategoryChange}
-                            allCategories={allCategories}
-                            />
+                            <TransactionsTab />
                         </TabsContent>
                         <TabsContent value="insights" className="mt-4">
-                            <InsightsTab allTransactions={allTransactions} budgets={activeBudgets} isMockData={isUsingMockData} />
+                            <InsightsTab budgets={activeBudgets} />
                         </TabsContent>
                         <TabsContent value="budgeting" className="mt-4">
                             <BudgetingTab
@@ -369,5 +211,3 @@ export default function DashboardPage() {
         </DndContext>
     );
 }
-
-    

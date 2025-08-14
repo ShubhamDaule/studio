@@ -1,9 +1,10 @@
 
 import type { icons } from "lucide-react";
-import type { BankName as ExtractorBankName, StatementType as ExtractorStatementType, StatementPeriod } from "@/ai/flows/extract-transactions";
+import type { BankName as ExtractorBankName, StatementType as ExtractorStatementType, StatementPeriod as ExtractorStatementPeriod } from "@/ai/flows/extract-transactions";
 
 export type BankName = ExtractorBankName;
 export type StatementType = ExtractorStatementType;
+export type StatementPeriod = ExtractorStatementPeriod;
 
 export type Category = {
   name: string;

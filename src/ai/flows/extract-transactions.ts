@@ -200,21 +200,14 @@ Return a clean JSON array of transactions.
 // ************************************************************************************
 // STEP 3: Main AI Flow
 // ************************************************************************************
-export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null, transactions: ExtractedTransaction[] }> {
+export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null, transactions: ExtractedTransaction[], rawText: string }> {
     const { pdfText } = input;
 
     // Step 1: Detect bank, type, and period
     const bankInfo = detectBankAndStatementType(pdfText);
-    console.log('======== BANK DETECTION ========');
-    console.log(`Detected Bank: ${bankInfo.bankName}, Type: ${bankInfo.statementType}, Period: ${JSON.stringify(bankInfo.statementPeriod)}`);
-    console.log('==============================\n');
-
-
+    
     // Step 2: Pre-process text and get tailored prompt
     const { processedText, prompt } = getBankPreProcessing(bankInfo, pdfText);
-    console.log('======== PRE-PROCESSED TEXT FOR AI ========');
-    console.log(processedText.substring(0, 500) + '...'); // Log first 500 chars
-    console.log('=========================================\n');
     
     // Step 3: Call AI with the processed text and tailored prompt
     const llmResponse = await ai.generate({
@@ -232,15 +225,12 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     });
     
     const extractedData = llmResponse.output || [];
-    console.log('======== AI EXTRACTION OUTPUT ========');
-    console.log(JSON.stringify(extractedData, null, 2));
-    console.log('====================================\n');
-
 
     return { 
         bankName: bankInfo.bankName, 
         statementType: bankInfo.statementType, 
         statementPeriod: bankInfo.statementPeriod,
-        transactions: extractedData 
+        transactions: extractedData,
+        rawText: pdfText,
     };
 }
