@@ -59,6 +59,7 @@ export function TransactionTable({
   };
 
   const sortedTransactions = React.useMemo(() => {
+    if (!transactions) return [];
     return [...transactions].sort((a, b) => {
       let comparison = 0;
       if (sortColumn === 'date') {
