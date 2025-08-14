@@ -12,32 +12,25 @@ import { useBudgets } from "@/hooks/useBudgets";
 import { useDashboardContext } from "@/context/dashboard-context";
 
 type Props = {
-    activeBudgets: Budget[]; // These are the prorated budgets from the hook
-    onMultipleBudgetChange: (budgets: Budget[]) => void;
-    transactions: Transaction[];
-    onSetBudgetOverride: (override: BudgetOverride) => void;
-    allCategories: Category[];
-    setAllCategories: React.Dispatch<React.SetStateAction<Category[]>>;
-    budgetOverrides: BudgetOverride[];
-    onDeleteBudgetOverride: (month: string, category: Category['name']) => void;
     onAddBudget: (budget: Budget) => void;
     onDeleteBudget: (categoryName: Category['name']) => void;
-    onDeleteCategory: (categoryName: Category['name']) => void;
+    allCategories: Category[];
+    setAllCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
 export function BudgetingTab({
-    transactions,
     setAllCategories,
     onAddBudget,
     allCategories,
     onDeleteBudget,
 }: Props) {
     const {value: isManageDialogOpen, setTrue: openManageDialog, setFalse: closeManageDialog} = useBoolean(false);
-    const { dateRange } = useDashboardContext();
+    const { dateRange, filteredTransactions: transactions } = useDashboardContext();
 
     const { budgets, handleMultipleBudgetChange: handleBaseBudgetChange } = useBudgets({ allCategories, dateRange, transactions });
 
     const spendingByCategory = React.useMemo(() => {
+        if (!transactions) return {};
         return transactions.reduce((acc, t) => {
             if (t.amount > 0) {
                 acc[t.category] = (acc[t.category] || 0) + t.amount;
