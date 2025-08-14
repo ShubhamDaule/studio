@@ -4,6 +4,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Landmark } from "lucide-react";
 
 export function CurrentBalanceCard({ balance }: { balance: number }) {
+  // Add a check to ensure balance is a valid number before rendering
+  if (typeof balance !== 'number') {
+    return null; 
+  }
+
   return (
     <Card className="card-interactive group">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
