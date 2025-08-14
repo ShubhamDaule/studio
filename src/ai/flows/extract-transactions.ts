@@ -200,7 +200,7 @@ Return a clean JSON array of transactions.
 // ************************************************************************************
 // STEP 3: Main AI Flow
 // ************************************************************************************
-export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null, transactions: ExtractedTransaction[], rawText: string }> {
+export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null, transactions: ExtractedTransaction[], rawText: string, processedText: string }> {
     const { pdfText } = input;
 
     // Step 1: Detect bank, type, and period
@@ -232,5 +232,6 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
         statementPeriod: bankInfo.statementPeriod,
         transactions: extractedData,
         rawText: pdfText,
+        processedText,
     };
 }

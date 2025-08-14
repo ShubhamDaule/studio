@@ -47,17 +47,17 @@ export async function getAIInsights(transactions: Transaction[]) {
     }
 }
 
-export async function preAnalyzeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; statementPeriod?: StatementPeriod | null; error?: string, usage?: TokenUsage, rawText: string }> {
+export async function preAnalyzeTransactions(pdfText: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; statementPeriod?: StatementPeriod | null; error?: string, usage?: TokenUsage, rawText: string, processedText: string }> {
     if (!pdfText) {
-        return { error: "No text from PDF to process.", rawText: "" };
+        return { error: "No text from PDF to process.", rawText: "", processedText: "" };
     }
 
     try {
         const input = { pdfText };
-        const { bankName, statementType, statementPeriod, transactions, rawText } = await extractTransactions(input);
+        const { bankName, statementType, statementPeriod, transactions, rawText, processedText } = await extractTransactions(input);
 
         if (!transactions) {
-            return { data: [], bankName, statementType, statementPeriod, rawText };
+            return { data: [], bankName, statementType, statementPeriod, rawText, processedText };
         }
 
         const inputTokens = estimateTokens(JSON.stringify(input));
@@ -70,10 +70,10 @@ export async function preAnalyzeTransactions(pdfText: string): Promise<{ data?: 
         
         const dataWithBankName = transactions.map(txn => ({ ...txn, bankName }));
 
-        return { data: dataWithBankName, bankName, statementType, statementPeriod, usage, rawText };
+        return { data: dataWithBankName, bankName, statementType, statementPeriod, usage, rawText, processedText };
     } catch (e: any) {
         console.error("Error pre-analyzing transactions from PDF:", e);
-        return { error: getFriendlyErrorMessage(e), rawText: pdfText };
+        return { error: getFriendlyErrorMessage(e), rawText: pdfText, processedText: pdfText };
     }
 }
 

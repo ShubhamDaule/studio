@@ -40,6 +40,7 @@ type PendingUpload = {
   statementType: StatementType;
   statementPeriod: StatementPeriod | null;
   rawText: string;
+  processedText: string;
   usage: { totalTokens: number };
 };
 
@@ -229,6 +230,7 @@ const DashboardNav = () => {
                     statementPeriod: result.statementPeriod,
                     usage: result.usage,
                     rawText: result.rawText,
+                    processedText: result.processedText,
                 });
             } catch (error: any) {
                 console.error(`Error during pre-analysis for ${file.name}:`, error);
@@ -319,6 +321,7 @@ const DashboardNav = () => {
                 onConfirm={handleConfirmUpload}
                 jsonData={pendingUploads.flatMap(p => p.data)}
                 rawText={pendingUploads.map(p => `--- ${p.fileName} ---\n${p.rawText}`).join('\n\n')}
+                processedText={pendingUploads.map(p => `--- ${p.fileName} ---\n${p.processedText}`).join('\n\n')}
             />
         )}
        </>
