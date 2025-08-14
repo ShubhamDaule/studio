@@ -16,9 +16,10 @@ type InsightsTabProps = {
 };
 
 export function InsightsTab({ allTransactions, budgets, isMockData }: InsightsTabProps) {
-    const spendingTransactions = React.useMemo(() => 
-        allTransactions.filter(t => t.amount > 0 && t.category !== "Payment" && t.category !== "Investment"),
-    [allTransactions]);
+    const spendingTransactions = React.useMemo(() => {
+        if (!allTransactions) return [];
+        return allTransactions.filter(t => t.amount > 0 && t.category !== "Payment" && t.category !== "Investment")
+    }, [allTransactions]);
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-start">
