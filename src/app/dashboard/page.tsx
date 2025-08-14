@@ -43,6 +43,12 @@ export default function DashboardPage() {
         setTransactionFiles,
         isUsingMockData,
         handleCategoryChange,
+        totalSpending,
+        filterDescription,
+        transactionCount,
+        highestTransaction,
+        currentBalance,
+        highestDay,
     } = useDashboardContext();
     
     const { toast } = useToast();
@@ -135,27 +141,36 @@ export default function DashboardPage() {
                             </TabsTrigger>
                         </TabsList>
                         <TabsContent value="overview" className="mt-4">
-                            <OverviewTab openDialog={openDialog} />
+                            <OverviewTab 
+                                openDialog={openDialog}
+                                totalSpending={totalSpending}
+                                filterDescription={filterDescription}
+                                transactionCount={transactionCount}
+                                highestTransaction={highestTransaction}
+                                currentBalance={currentBalance}
+                                highestDay={highestDay}
+                                filteredTransactions={filteredTransactions}
+                                allTransactions={allTransactions}
+                                activeBudgets={activeBudgets}
+                                allCategories={allCategories}
+                            />
                         </TabsContent>
                         <TabsContent value="transactions" className="mt-4">
-                            <TransactionsTab />
+                            <TransactionsTab
+                                filteredTransactions={filteredTransactions}
+                                handleCategoryChange={handleCategoryChange}
+                                allCategories={allCategories}
+                            />
                         </TabsContent>
                         <TabsContent value="insights" className="mt-4">
-                            <InsightsTab budgets={activeBudgets} />
+                            <InsightsTab allTransactions={allTransactions} budgets={activeBudgets} isMockData={isUsingMockData} />
                         </TabsContent>
                         <TabsContent value="budgeting" className="mt-4">
                             <BudgetingTab
-                                activeBudgets={activeBudgets}
-                                onMultipleBudgetChange={handleMultipleBudgetChange}
-                                transactions={filteredTransactions}
-                                onSetBudgetOverride={handleSetBudgetOverride}
-                                allCategories={allCategories}
-                                setAllCategories={setAllCategories}
-                                budgetOverrides={budgetOverrides}
-                                onDeleteBudgetOverride={handleDeleteBudgetOverride}
                                 onAddBudget={addBudget}
                                 onDeleteBudget={deleteBudget}
-                                onDeleteCategory={handleDeleteCategory}
+                                allCategories={allCategories}
+                                setAllCategories={setAllCategories}
                             />
                         </TabsContent>
                     </Tabs>

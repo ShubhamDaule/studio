@@ -82,8 +82,8 @@ export function OverviewTab({
             </div>
             <>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', data.name)} />
-                    <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', data.merchant)} />
+                    <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
+                    <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
                 </div>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <SpendingTrendChart transactions={allTransactions} />

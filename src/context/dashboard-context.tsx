@@ -41,8 +41,7 @@ type DashboardContextType = {
   filterDescription: string;
   
   // Actions
-  onNewTransactions: NewTransactionsCallback | null;
-  addUploadedTransactions: (callback: NewTransactionsCallback) => void;
+  addUploadedTransactions: NewTransactionsCallback;
 };
 
 const DashboardContext = React.createContext<DashboardContextType | undefined>(undefined);
@@ -67,19 +66,18 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     const [isUsingMockData, setIsUsingMockData] = React.useState<boolean>(true);
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
     const [selectedSourceFilter, setSelectedSourceFilter] = React.useState<string>("all");
-    const [onNewTransactions, setOnNewTransactions] = React.useState<NewTransactionsCallback | null>(null);
     
     // Initialize with Mock Data
     React.useEffect(() => {
-        if (isUsingMockData && allTransactions.length === 0) {
+        if (isUsingMockData) {
             setAllTransactions(mockTransactions);
             setTransactionFiles([
-                { fileName: 'statement-q1.pdf', bankName: 'Amex', type: 'Credit Card', statementPeriod: { startDate: '2023-10-01', endDate: '2023-10-31' } },
-                { fileName: 'statement-q2.pdf', bankName: 'Amex', type: 'Credit Card', statementPeriod: { startDate: '2023-11-01', endDate: '2023-11-30' } },
-                { fileName: 'statement-q3.csv', bankName: 'Discover', type: 'Credit Card', statementPeriod: { startDate: '2023-11-01', endDate: '2023-11-30' } },
+                { fileName: 'statement-q1.pdf', bankName: 'Amex', statementType: 'Credit Card', statementPeriod: { startDate: '2023-10-01', endDate: '2023-10-31' } },
+                { fileName: 'statement-q2.pdf', bankName: 'Amex', statementType: 'Credit Card', statementPeriod: { startDate: '2023-11-01', endDate: '2023-11-30' } },
+                { fileName: 'statement-q3.csv', bankName: 'Discover', statementType: 'Credit Card', statementPeriod: { startDate: '2023-11-01', endDate: '2023-11-30' } },
             ]);
         }
-    }, [isUsingMockData, allTransactions.length]);
+    }, [isUsingMockData]);
 
 
     const { minDate, maxDate } = React.useMemo(() => {
@@ -91,61 +89,56 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     }, [isDashboard, allTransactions]);
     
     React.useEffect(() => {
-        setDateRange({ from: minDate, to: maxDate });
-    }, [minDate, maxDate]);
+        if (!dateRange && minDate && maxDate) {
+            setDateRange({ from: minDate, to: maxDate });
+        }
+    }, [minDate, maxDate, dateRange]);
 
-    // Handle incoming transaction uploads
-    const addUploadedTransactions = React.useCallback((callback: NewTransactionsCallback) => {
-        setOnNewTransactions(() => callback);
-    }, []);
 
-    React.useEffect(() => {
-        if (onNewTransactions) {
-            onNewTransactions((uploads) => {
-                 const allNewTransactions = uploads.flatMap(upload => 
-                    upload.data.map(t => ({
-                        ...t,
-                        id: crypto.randomUUID(),
-                        fileSource: upload.fileName,
-                    }))
-                );
-    
-                const newFiles: TransactionFile[] = uploads.map(upload => ({
-                    fileName: upload.fileName,
-                    bankName: upload.bankName,
-                    statementType: upload.statementType,
-                    statementPeriod: upload.statementPeriod,
-                }));
-    
-                if (isUsingMockData) {
-                    setAllTransactions(allNewTransactions);
-                    setTransactionFiles(newFiles);
-                    setIsUsingMockData(false);
-                } else {
-                    setAllTransactions(prev => [...prev, ...allNewTransactions]);
-                    setTransactionFiles(prev => [...prev, ...newFiles]);
+    const addUploadedTransactions = (uploads: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null }[]) => {
+        const allNewTransactions = uploads.flatMap(upload => 
+            upload.data.map(t => ({
+                ...t,
+                id: crypto.randomUUID(),
+                fileSource: upload.fileName,
+            }))
+        );
+
+        const newFiles: TransactionFile[] = uploads.map(upload => ({
+            fileName: upload.fileName,
+            bankName: upload.bankName,
+            statementType: upload.statementType,
+            statementPeriod: upload.statementPeriod,
+        }));
+
+        if (isUsingMockData) {
+            setAllTransactions(allNewTransactions);
+            setTransactionFiles(newFiles);
+            setIsUsingMockData(false);
+        } else {
+            setAllTransactions(prev => [...prev, ...allNewTransactions]);
+            setTransactionFiles(prev => [...prev, ...newFiles]);
+        }
+        
+        // Set date range based on the first uploaded file with a valid period
+        if (uploads[0]?.statementPeriod) {
+            try {
+                const from = parseISO(uploads[0].statementPeriod.startDate);
+                const to = parseISO(uploads[0].statementPeriod.endDate);
+                if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
+                    setDateRange({ from, to });
                 }
-                
-                // Set date range based on the first uploaded file with a valid period
-                if (uploads[0]?.statementPeriod) {
-                    try {
-                        const from = parseISO(uploads[0].statementPeriod.startDate);
-                        const to = parseISO(uploads[0].statementPeriod.endDate);
-                        if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
-                            setDateRange({ from, to });
-                        }
-                    } catch {}
-                }
-    
-                if (uploads.length > 0) {
-                     toast({
-                        title: "Uploads Successful!",
-                        description: `${allNewTransactions.length} transaction(s) from ${uploads.length} file(s) have been added.`,
-                    });
-                }
+            } catch {}
+        }
+
+        if (uploads.length > 0) {
+             toast({
+                title: "Uploads Successful!",
+                description: `${allNewTransactions.length} transaction(s) from ${uploads.length} file(s) have been added.`,
             });
         }
-    }, [onNewTransactions, toast, isUsingMockData, setIsUsingMockData, setAllTransactions, setTransactionFiles, setDateRange]);
+    };
+    
 
     const handleCategoryChange = React.useCallback((transactionId: string, newCategory: Category['name']) => {
         setAllTransactions(prev => 
@@ -176,16 +169,20 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         if (!allTransactions || allTransactions.length === 0) return [];
         
         return allTransactions.filter((t) => {
-            const transactionDate = parseISO(t.date);
-            if (isNaN(transactionDate.getTime())) return false;
-    
-            const rangeFrom = dateRange?.from ? startOfDay(dateRange.from) : null;
-            const rangeTo = dateRange?.to ? endOfDay(dateRange.to) : null;
+            try {
+                 const transactionDate = parseISO(t.date);
+                if (isNaN(transactionDate.getTime())) return false;
         
-            const isInDateRange = (!rangeFrom || transactionDate >= rangeFrom) && (!rangeTo || transactionDate <= rangeTo);
-            const matchesSource = selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter || t.bankName === selectedSourceFilter;
-        
-            return isInDateRange && matchesSource;
+                const rangeFrom = dateRange?.from ? startOfDay(dateRange.from) : null;
+                const rangeTo = dateRange?.to ? endOfDay(dateRange.to) : null;
+            
+                const isInDateRange = (!rangeFrom || transactionDate >= rangeFrom) && (!rangeTo || transactionDate <= rangeTo);
+                const matchesSource = selectedSourceFilter === "all" || t.fileSource === selectedSourceFilter || t.bankName === selectedSourceFilter;
+            
+                return isInDateRange && matchesSource;
+            } catch (e) {
+                return false;
+            }
         });
     }, [allTransactions, dateRange, selectedSourceFilter]);
 
@@ -222,10 +219,13 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     }, [spendingByDay]);
 
     const currentBalance = React.useMemo(() => {
-        if (selectedSourceFilter === 'all') return null; // Can't calculate balance for all sources
+        if (selectedSourceFilter === 'all') return null;
+        const sourceFile = transactionFiles.find(f => f.bankName === selectedSourceFilter || f.fileName === selectedSourceFilter);
+        if(sourceFile?.statementType !== 'Bank Account') return null;
+
         const sourceTransactions = allTransactions.filter(t => t.bankName === selectedSourceFilter);
         return sourceTransactions.reduce((acc, t) => acc - t.amount, 0);
-    }, [allTransactions, selectedSourceFilter]);
+    }, [allTransactions, selectedSourceFilter, transactionFiles]);
     
     const filterDescription = React.useMemo(() => {
         if (selectedSourceFilter !== "all") {
@@ -258,7 +258,6 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     highestDay,
     currentBalance,
     filterDescription,
-    onNewTransactions,
     addUploadedTransactions,
   };
 
