@@ -25,16 +25,6 @@ const nextConfig: NextConfig = {
         "https://*.firebase.studio",
     ]
   },
-  webpack: (config) => {
-    config.watchOptions = {
-        ...config.watchOptions,
-        ignored: [
-            ...config.watchOptions.ignored as string[],
-            '**/src/ai/**'
-        ]
-    }
-    return config;
-  }
 };
 
 export default nextConfig;
