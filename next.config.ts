@@ -39,10 +39,8 @@ const nextConfig: NextConfig = {
         "https://*.firebase.studio",
     ]
   },
-  // Replaced deprecated experimental.turbo and webpack configs with the stable turbopack config
   turbopack: {
     resolveAlias: {
-      // This is needed to make pdf.js work with turbopack
       canvas: 'false',
     },
   },
