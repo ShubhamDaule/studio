@@ -7,7 +7,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/googleai';
 import { categoryTriggers } from '@/lib/category-triggers';
-import { format } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 
 const ExtractedTransactionSchema = z.object({
   date: z.string().describe("Transaction date in 'YYYY-MM-DD' format."),
@@ -87,17 +87,35 @@ function detectBankAndStatementType(text: string): StatementInfo {
   // Statement Period Detection
   let statementPeriod: StatementPeriod | null = null;
   const datePatterns = [
-      /activity period:?\s*(\w+\s\d{1,2})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i,
-      /statement period:?\s*(\w+\s\d{1,2},\s*\d{4})\s*to\s*(\w+\s\d{1,2},\s*\d{4})/i,
-      /(\w+\s\d{1,2},\s*\d{4})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i,
-      /period from\s*(\d{2}\/\d{2}\/\d{4})\s*to\s*(\d{2}\/\d{2}\/\d{4})/i,
+      // Handles formats like: "activity period: Jan 1 - Jan 31, 2024"
+      { pattern: /activity period:?\s*(\w+\s\d{1,2})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
+      // Handles formats like: "statement period: January 1, 2024 to January 31, 2024"
+      { pattern: /statement period:?\s*(\w+\s\d{1,2},\s*\d{4})\s*to\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
+      // Handles formats like: "January 1, 2024 - January 31, 2024"
+      { pattern: /(\w+\s\d{1,2},\s*\d{4})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
+      // Handles formats like: "period from 01/01/2024 to 01/31/2024"
+      { pattern: /period from\s*(\d{2}\/\d{2}\/\d{4})\s*to\s*(\d{2}\/\d{2}\/\d{4})/i, type: 'start-end' },
+      // Handles Amex format like: "Closing Date 04/06/25"
+      { pattern: /closing date\s*(\d{2}\/\d{2}\/\d{2,4})/i, type: 'closing' },
   ];
 
-  for (const pattern of datePatterns) {
+  for (const { pattern, type } of datePatterns) {
       const match = text.match(pattern);
-      if (match && match.length >= 3) {
-          try {
-              // Handle cases where the year might be missing from the start date
+      if (!match) continue;
+
+      try {
+          if (type === 'closing' && match[1]) {
+              const endDate = new Date(match[1]);
+              if (!isNaN(endDate.getTime())) {
+                  const startDate = subMonths(endDate, 1);
+                  statementPeriod = {
+                      startDate: format(startDate, 'yyyy-MM-dd'),
+                      endDate: format(endDate, 'yyyy-MM-dd'),
+                  };
+                  break;
+              }
+          } else if (type === 'start-end' && match.length >= 3) {
+               // Handle cases where the year might be missing from the start date
               let startStr = match[1];
               const endStr = match[2];
               const endYear = new Date(endStr).getFullYear();
@@ -115,11 +133,12 @@ function detectBankAndStatementType(text: string): StatementInfo {
                   };
                   break; 
               }
-          } catch (e) {
-              console.warn(`Could not parse date from match: ${match[0]}`);
           }
+      } catch (e) {
+          console.warn(`Could not parse date from match: ${match[0]}`);
       }
   }
+
 
   return { bankName, statementType, statementPeriod };
 }
