@@ -37,7 +37,6 @@ interface TransactionTableProps {
 
 type SortableColumn = 'merchant' | 'date' | 'amount';
 
-const FREE_TIER_LIMIT = 15;
 
 export function TransactionTable({
   transactions,
@@ -47,7 +46,6 @@ export function TransactionTable({
 }: TransactionTableProps) {
   const [sortColumn, setSortColumn] = React.useState<SortableColumn>('date');
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc');
-  const { setIsPro } = useTiers();
 
   const handleSort = (column: SortableColumn) => {
     if (sortColumn === column) {
@@ -137,10 +135,6 @@ export function TransactionTable({
     </TableHead>
   );
 
-  const transactionsToShow = isPro ? sortedTransactions : sortedTransactions.slice(0, FREE_TIER_LIMIT);
-  const hasMoreTransactions = !isPro && sortedTransactions.length > FREE_TIER_LIMIT;
-
-
   return (
     <Card className="card-interactive group">
       <CardHeader className="flex flex-row justify-between items-center">
@@ -172,8 +166,8 @@ export function TransactionTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactionsToShow.length > 0 ? (
-                transactionsToShow.map((transaction) => (
+              {sortedTransactions.length > 0 ? (
+                sortedTransactions.map((transaction) => (
                   <TableRow key={transaction.id}>
                     <TableCell className="font-medium">
                       {transaction.merchant}
@@ -236,26 +230,7 @@ export function TransactionTable({
               )}
             </TableBody>
           </Table>
-
-          {hasMoreTransactions && (
-            <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-          )}
         </div>
-        {hasMoreTransactions && (
-            <div className="relative text-center p-8 border-t border-dashed rounded-b-lg -mt-px">
-                <div className="flex flex-col items-center gap-2">
-                    <Sparkles className="w-10 h-10 text-primary" />
-                    <p className="font-semibold text-lg">Unlock All Transactions</p>
-                    <p className="text-sm text-muted-foreground max-w-md">
-                        You're viewing the latest {FREE_TIER_LIMIT} transactions. Upgrade to Pro to see your complete financial history.
-                    </p>
-                     <Button onClick={() => setIsPro(true)} className="mt-4">
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Upgrade to Pro
-                    </Button>
-                </div>
-            </div>
-        )}
       </CardContent>
     </Card>
   );
