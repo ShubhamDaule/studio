@@ -10,7 +10,7 @@ import { Footer } from '../layout/footer';
 
 export function AppBody({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const noHeaderFooter = ['/auth', '/pricing'].includes(pathname);
+    const noHeaderFooter = ['/auth', '/pricing'].includes(pathname) || !pathname;
 
     return (
         <AuthProvider>
