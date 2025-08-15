@@ -27,7 +27,7 @@ export function DashboardSkeleton() {
               <Skeleton className="h-7 w-1/2" />
               <Skeleton className="mt-2 h-3 w-full" />
             </CardContent>
-          </Card>>
+          </Card>
         ))}
       </div>
 
