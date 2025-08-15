@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NEXT_WATCHER_INGORE_CHANGES=true next dev --turbopack",
+    "dev": "NEXT_WATCHER_IGNORE_CHANGES=true next dev --turbopack",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "next build",
