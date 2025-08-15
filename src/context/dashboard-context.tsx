@@ -81,12 +81,38 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
 
     const { minDate, maxDate } = React.useMemo(() => {
-        if (!isDashboard || allTransactions.length === 0) return { minDate: undefined, maxDate: undefined };
-        const dates = allTransactions.map(t => new Date(t.date));
-        const min = new Date(Math.min.apply(null, dates.map(d => d.getTime())));
-        const max = new Date(Math.max.apply(null, dates.map(d => d.getTime())));
+        if (!isDashboard || allTransactions.length === 0) {
+            return { minDate: undefined, maxDate: undefined };
+        }
+
+        // If there are uploaded files with statement periods, use those for the "All time" range
+        if (transactionFiles.length > 0) {
+            const periodDates: Date[] = [];
+            transactionFiles.forEach(file => {
+                if (file.statementPeriod?.startDate && file.statementPeriod?.endDate) {
+                    try {
+                        periodDates.push(parseISO(file.statementPeriod.startDate));
+                        periodDates.push(parseISO(file.statementPeriod.endDate));
+                    } catch (e) {
+                        console.error("Invalid statement period date found:", file.statementPeriod);
+                    }
+                }
+            });
+
+            if (periodDates.length > 0) {
+                const min = new Date(Math.min.apply(null, periodDates.map(d => d.getTime())));
+                const max = new Date(Math.max.apply(null, periodDates.map(d => d.getTime())));
+                return { minDate: startOfDay(min), maxDate: endOfDay(max) };
+            }
+        }
+        
+        // Fallback for mock data or if no statement periods are found
+        const transactionDates = allTransactions.map(t => new Date(t.date));
+        const min = new Date(Math.min.apply(null, transactionDates.map(d => d.getTime())));
+        const max = new Date(Math.max.apply(null, transactionDates.map(d => d.getTime())));
         return { minDate: startOfDay(min), maxDate: endOfDay(max) };
-    }, [isDashboard, allTransactions]);
+
+    }, [isDashboard, allTransactions, transactionFiles]);
     
     React.useEffect(() => {
         if (minDate && maxDate && !dateRange) {
@@ -148,10 +174,27 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
         // If multiple files are uploaded or no specific range could be determined, set to all time
         if (!newDateRange) {
-            const allDates = updatedTransactions.map(t => new Date(t.date));
-            const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
-            const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
-            newDateRange = { from: startOfDay(newMinDate), to: endOfDay(newMaxDate) };
+            const allValidFiles = [...updatedFiles];
+            const allPeriodDates: Date[] = [];
+            allValidFiles.forEach(file => {
+                 if (file.statementPeriod?.startDate && file.statementPeriod?.endDate) {
+                    try {
+                        allPeriodDates.push(parseISO(file.statementPeriod.startDate));
+                        allPeriodDates.push(parseISO(file.statementPeriod.endDate));
+                    } catch {}
+                }
+            });
+            
+            if (allPeriodDates.length > 0) {
+                const newMinDate = new Date(Math.min.apply(null, allPeriodDates.map(d => d.getTime())));
+                const newMaxDate = new Date(Math.max.apply(null, allPeriodDates.map(d => d.getTime())));
+                newDateRange = { from: startOfDay(newMinDate), to: endOfDay(newMaxDate) };
+            } else {
+                const allDates = updatedTransactions.map(t => new Date(t.date));
+                const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
+                const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
+                newDateRange = { from: startOfDay(newMinDate), to: endOfDay(newMaxDate) };
+            }
         }
         
         setDateRange(newDateRange);
@@ -199,8 +242,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
                  const transactionDate = parseISO(t.date);
                 if (isNaN(transactionDate.getTime())) return false;
         
-                const rangeFrom = startOfDay(dateRange.from);
-                const rangeTo = endOfDay(dateRange.to);
+                const rangeFrom = startOfDay(dateRange.from!);
+                const rangeTo = endOfDay(dateRange.to!);
             
                 const isInDateRange = transactionDate >= rangeFrom && transactionDate <= rangeTo;
                 const matchesSource = selectedSourceFilter === "all" || t.bankName === selectedSourceFilter;
