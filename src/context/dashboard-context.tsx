@@ -95,7 +95,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     }, [minDate, maxDate, dateRange]);
 
 
-    const addUploadedTransactions = (uploads: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null }[]) => {
+    const addUploadedTransactions: NewTransactionsCallback = (uploads) => {
         const allNewTransactions: Transaction[] = uploads.flatMap(upload => 
             upload.data.map(t => ({
                 ...t,
@@ -110,35 +110,22 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
             statementPeriod: upload.statementPeriod,
         }));
         
-        let newDateRange: DateRange | undefined = undefined;
-        if (isUsingMockData || !dateRange) {
-            const firstValidUpload = uploads.find(u => u.statementPeriod);
-            if (firstValidUpload && firstValidUpload.statementPeriod) {
-                try {
-                    const from = parseISO(firstValidUpload.statementPeriod.startDate);
-                    const to = parseISO(firstValidUpload.statementPeriod.endDate);
-                    if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
-                        newDateRange = { from: startOfDay(from), to: endOfDay(to) };
-                    }
-                } catch {}
-            }
-        }
-
+        const updatedTransactions = isUsingMockData ? allNewTransactions : [...allTransactions, ...allNewTransactions];
+        const updatedFiles = isUsingMockData ? newFiles : [...transactionFiles, ...newFiles];
 
         if (isUsingMockData) {
-            setAllTransactions(allNewTransactions);
-            setTransactionFiles(newFiles);
             setIsUsingMockData(false);
-            if (newDateRange) {
-                setDateRange(newDateRange);
-            }
-        } else {
-            setAllTransactions(prev => [...prev, ...allNewTransactions]);
-            setTransactionFiles(prev => [...prev, ...newFiles]);
-             if (newDateRange) {
-                setDateRange(newDateRange);
-            }
         }
+
+        setAllTransactions(updatedTransactions);
+        setTransactionFiles(updatedFiles);
+
+        // Reset date range to encompass all transactions (old and new)
+        const allDates = updatedTransactions.map(t => new Date(t.date));
+        const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
+        const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
+        setDateRange({ from: startOfDay(newMinDate), to: endOfDay(newMaxDate) });
+
 
         if (uploads.length > 0) {
              toast({
