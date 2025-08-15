@@ -182,6 +182,7 @@ Extract transactions from the provided statement text. For each transaction, pro
 - merchant: The merchant name, cleaned of unnecessary details. If a location provides essential context for an ambiguous merchant, add it in brackets. For example: "Starbucks (New York, NY)".
 - amount: The transaction amount. Follow the specific rules below for assigning positive or negative values.
 - category: Assign a category to each transaction based on the rules below.
+- DO NOT pay attention to the running balance column if it exists.
 
 ${categoryPromptSection}
 
@@ -191,6 +192,7 @@ Return a clean JSON array of transactions.
 
 const creditCardPrompt = ai.definePrompt({
     name: 'creditCardTransactionExtractor',
+    model: googleAI.model('gemini-2.0-flash'),
     input: { schema: z.object({ processedText: z.string() }) },
     output: { schema: ExtractedDataSchema },
     prompt: `You are extracting transactions from a credit card statement.
@@ -210,6 +212,7 @@ Statement Text:
 
 const bankAccountPrompt = ai.definePrompt({
     name: 'bankAccountTransactionExtractor',
+    model: googleAI.model('gemini-2.0-flash'),
     input: { schema: z.object({ processedText: z.string() }) },
     output: { schema: ExtractedDataSchema },
     prompt: `You are extracting transactions from a bank account statement.
@@ -217,8 +220,8 @@ ${sharedPrompt}
 
 **CRITICAL RULE for Transaction Amount:**
 - Debits (withdrawals, purchases, payments MADE FROM the account) MUST be POSITIVE numbers.
-- Credits (deposits, payroll, refunds RECEIVED) MUST be NEGATIVE numbers.
-- For example, a transaction described as "Direct Deposit from WORK" should have a negative amount. A transaction for "Payment to Con Edison" should have a positive amount.
+- Credits (deposits, payroll, refunds RECEIVED) MUST be POSITIVE numbers.
+- For example, a transaction described as "Direct Deposit from WORK" should have a POSITIVE amount. A transaction for "Payment to Con Edison" should have a POSITIVE amount.
 
 Statement Text:
 ---
