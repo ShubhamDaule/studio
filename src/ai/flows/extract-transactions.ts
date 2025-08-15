@@ -134,17 +134,26 @@ function getBankPreProcessing(bankInfo: StatementInfo, rawText: string) {
 
     // Define amount instructions based on statement type
     const amountInstruction = bankInfo.statementType === 'Bank Account'
-        ? "Bank account debits (withdrawals/purchases) should be POSITIVE numbers. Bank account credits (deposits) should be NEGATIVE numbers. Reverse the sign if necessary."
-        : "Purchases are POSITIVE numbers. Payments and credits are NEGATIVE numbers.";
+      ? `Bank Account Rules:
+  - Debits (withdrawals, purchases, payments MADE FROM the account) MUST be POSITIVE numbers.
+  - Credits (deposits, payroll, refunds RECEIVED) MUST be NEGATIVE numbers.
+  - For example, a transaction described as "Direct Deposit from WORK" should have a negative amount. A transaction for "Payment to Con Edison" should have a positive amount.`
+      : `Credit Card Rules:
+  - Purchases are POSITIVE numbers.
+  - Payments to the credit card and refunds/credits are NEGATIVE numbers.`;
+
 
     const basePrompt = `
 Extract transactions from the provided statement text. For each transaction, provide the following fields:
 - date: 'YYYY-MM-DD'
 - merchant: The merchant name, cleaned of unnecessary details. If a location provides essential context for an ambiguous merchant, add it in brackets. For example: "Starbucks (New York, NY)".
-- amount: ${amountInstruction}
+- amount: The transaction amount. Follow the specific rules below for assigning positive or negative values.
 - category: Assign a category to each transaction based on the rules below.
 
-**CRITICAL RULE:** Use the following keyword-based rules to determine the category. The merchant name is the primary signal. If a merchant matches keywords from multiple categories, choose the most specific one. If no keywords match, you MUST assign the category "Miscellaneous".
+**CRITICAL RULE for Transaction Amount:**
+${amountInstruction}
+
+**CRITICAL RULE for Categorization:** Use the following keyword-based rules to determine the category. The merchant name is the primary signal. If a merchant matches keywords from multiple categories, choose the most specific one. If no keywords match, you MUST assign the category "Miscellaneous".
 
 **Category Rules (Keywords are case-insensitive):**
 ${categoryTriggers.map(c => `- **${c.category}**: Keywords -> [${c.keywords.join(', ')}]`).join('\n')}
