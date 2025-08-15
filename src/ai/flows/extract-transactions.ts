@@ -91,6 +91,8 @@ function detectBankAndStatementType(text: string): StatementInfo {
       { pattern: /activity period:?\s*(\w+\s\d{1,2})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
       // Handles formats like: "statement period: January 1, 2024 to January 31, 2024"
       { pattern: /statement period:?\s*(\w+\s\d{1,2},\s*\d{4})\s*to\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
+       // Handles Chase format like: "April 24, 2025throughMay 23, 2025"
+      { pattern: /(\w+\s\d{1,2},\s*\d{4})\s*through\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
       // Handles formats like: "January 1, 2024 - January 31, 2024"
       { pattern: /(\w+\s\d{1,2},\s*\d{4})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
       // Handles formats like: "period from 01/01/2024 to 01/31/2024"
