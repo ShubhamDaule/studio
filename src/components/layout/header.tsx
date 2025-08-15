@@ -185,18 +185,19 @@ const DashboardNav = () => {
         selectedSourceFilter,
         setSelectedSourceFilter,
         addUploadedTransactions,
+        isUploading,
+        setIsUploading
     } = useDashboardContext();
     const { toast } = useToast();
     const { consumeTokens } = useTiers();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const [isLoading, setIsLoading] = React.useState(false);
     const [pendingUploads, setPendingUploads] = React.useState<PendingUpload[]>([]);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
-        setIsLoading(true);
+        setIsUploading(true);
         const allPendingUploads: PendingUpload[] = [];
 
         for (const file of Array.from(files)) {
@@ -246,7 +247,7 @@ const DashboardNav = () => {
             setPendingUploads(allPendingUploads);
         }
 
-        setIsLoading(false);
+        setIsUploading(false);
         if(fileInputRef.current) fileInputRef.current.value = "";
     };
     
@@ -298,10 +299,10 @@ const DashboardNav = () => {
                 <Button 
                     size="sm" 
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isLoading}
+                    disabled={isUploading}
                     className="btn-gradient-base btn-hover-fade"
                 >
-                    {isLoading ? (
+                    {isUploading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                         <Upload className="mr-2 h-4 w-4" />

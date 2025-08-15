@@ -31,6 +31,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 
 export default function DashboardPage() {
     const { 
@@ -49,6 +50,7 @@ export default function DashboardPage() {
         highestTransaction,
         currentBalance,
         highestDay,
+        isUploading,
     } = useDashboardContext();
     
     const { toast } = useToast();
@@ -103,6 +105,14 @@ export default function DashboardPage() {
         })
         setFileToDelete(null);
     };
+
+    if (isUploading) {
+        return (
+             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+                <DashboardSkeleton />
+             </main>
+        )
+    }
 
     return (
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

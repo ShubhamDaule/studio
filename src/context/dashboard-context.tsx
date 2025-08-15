@@ -18,6 +18,7 @@ type DashboardContextType = {
   dateRange: DateRange | undefined;
   selectedSourceFilter: string;
   isUsingMockData: boolean;
+  isUploading: boolean;
   
   // Setters
   setAllTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
@@ -26,6 +27,7 @@ type DashboardContextType = {
   setDateRange: (date: DateRange | undefined) => void;
   setSelectedSourceFilter: (source: string) => void;
   setIsUsingMockData: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsUploading: React.Dispatch<React.SetStateAction<boolean>>;
   handleCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
 
   // Derived State
@@ -66,6 +68,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     const [isUsingMockData, setIsUsingMockData] = React.useState<boolean>(true);
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
     const [selectedSourceFilter, setSelectedSourceFilter] = React.useState<string>("all");
+    const [isUploading, setIsUploading] = React.useState<boolean>(false);
     
     // Initialize with Mock Data
     React.useEffect(() => {
@@ -316,6 +319,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     setSelectedSourceFilter,
     isUsingMockData,
     setIsUsingMockData,
+    isUploading,
+    setIsUploading,
     handleCategoryChange,
     minDate,
     maxDate,
