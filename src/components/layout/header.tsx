@@ -322,6 +322,9 @@ const DashboardNav = () => {
                 jsonData={pendingUploads.flatMap(p => p.data)}
                 rawText={pendingUploads.map(p => `--- ${p.fileName} ---\n${p.rawText}`).join('\n\n')}
                 processedText={pendingUploads.map(p => `--- ${p.fileName} ---\n${p.processedText}`).join('\n\n')}
+                bankName={pendingUploads[0]?.bankName}
+                statementType={pendingUploads[0]?.statementType}
+                statementPeriod={pendingUploads[0]?.statementPeriod}
             />
         )}
        </>
