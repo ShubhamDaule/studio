@@ -96,7 +96,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
 
     const addUploadedTransactions = (uploads: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null }[]) => {
-        const allNewTransactions = uploads.flatMap(upload => 
+        const allNewTransactions: Transaction[] = uploads.flatMap(upload => 
             upload.data.map(t => ({
                 ...t,
                 id: crypto.randomUUID(),
@@ -111,15 +111,17 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         }));
         
         let newDateRange: DateRange | undefined = undefined;
-        const firstValidUpload = uploads.find(u => u.statementPeriod);
-        if (firstValidUpload && firstValidUpload.statementPeriod) {
-            try {
-                const from = parseISO(firstValidUpload.statementPeriod.startDate);
-                const to = parseISO(firstValidUpload.statementPeriod.endDate);
-                if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
-                    newDateRange = { from: startOfDay(from), to: endOfDay(to) };
-                }
-            } catch {}
+        if (isUsingMockData || !dateRange) {
+            const firstValidUpload = uploads.find(u => u.statementPeriod);
+            if (firstValidUpload && firstValidUpload.statementPeriod) {
+                try {
+                    const from = parseISO(firstValidUpload.statementPeriod.startDate);
+                    const to = parseISO(firstValidUpload.statementPeriod.endDate);
+                    if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
+                        newDateRange = { from: startOfDay(from), to: endOfDay(to) };
+                    }
+                } catch {}
+            }
         }
 
 
