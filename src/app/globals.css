@@ -57,6 +57,10 @@ body {
     --glow-color: 142.1 76.2% 50%;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   .dark {
     --background: 220 10% 10%;
     --foreground: 0 0% 98%;

@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,32 @@ import {
 import Image from "next/image";
 
 export default function LandingPage() {
+
+   useEffect(() => {
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = e.target as HTMLAnchorElement;
+      const href = target.getAttribute('href');
+      if (href && href.startsWith('#')) {
+        e.preventDefault();
+        const element = document.getElementById(href.substring(1));
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    };
+
+    // Find all links that start with #
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', handleAnchorClick as EventListener);
+    });
+
+    return () => {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.removeEventListener('click', handleAnchorClick as EventListener);
+      });
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
