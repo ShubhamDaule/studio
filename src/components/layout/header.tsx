@@ -211,7 +211,7 @@ const DashboardNav = () => {
                     fullText += "\\n" + pageText;
                 }
 
-                const result = await preAnalyzeTransactions(fullText);
+                const result = await preAnalyzeTransactions(fullText, file.name);
 
                 if (result.error || !result.data || !result.bankName || !result.statementType || !result.usage) {
                     toast({

@@ -82,6 +82,7 @@ export type ExtractedTransaction = {
     amount: number;
     category: Category['name'];
     bankName: BankName;
+    fileSource: string;
 };
 
 export type RawTransaction = Omit<ExtractedTransaction, 'category' | 'bankName'>;
