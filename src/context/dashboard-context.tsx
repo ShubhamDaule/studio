@@ -120,11 +120,41 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         setAllTransactions(updatedTransactions);
         setTransactionFiles(updatedFiles);
 
-        // Reset date range to encompass all transactions (old and new)
-        const allDates = updatedTransactions.map(t => new Date(t.date));
-        const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
-        const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
-        setDateRange({ from: startOfDay(newMinDate), to: endOfDay(newMaxDate) });
+        // Date range logic
+        let newDateRange: DateRange | undefined = undefined;
+
+        if (uploads.length === 1) {
+            const singleUpload = uploads[0];
+            // Prioritize statement period
+            if (singleUpload.statementPeriod?.startDate && singleUpload.statementPeriod?.endDate) {
+                try {
+                    newDateRange = {
+                        from: startOfDay(parseISO(singleUpload.statementPeriod.startDate)),
+                        to: endOfDay(parseISO(singleUpload.statementPeriod.endDate))
+                    };
+                } catch (e) {
+                    console.error("Could not parse statement period dates:", e);
+                }
+            }
+            
+            // Fallback to transaction dates if statement period is not available or invalid
+            if (!newDateRange && singleUpload.data.length > 0) {
+                const dates = singleUpload.data.map(t => parseISO(t.date));
+                const min = new Date(Math.min.apply(null, dates.map(d => d.getTime())));
+                const max = new Date(Math.max.apply(null, dates.map(d => d.getTime())));
+                newDateRange = { from: startOfDay(min), to: endOfDay(max) };
+            }
+        }
+
+        // If multiple files are uploaded or no specific range could be determined, set to all time
+        if (!newDateRange) {
+            const allDates = updatedTransactions.map(t => new Date(t.date));
+            const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
+            const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
+            newDateRange = { from: startOfDay(newMinDate), to: endOfDay(newMaxDate) };
+        }
+        
+        setDateRange(newDateRange);
 
 
         if (uploads.length > 0) {
