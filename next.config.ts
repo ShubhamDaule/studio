@@ -25,11 +25,6 @@ const nextConfig: NextConfig = {
         "https://*.firebase.studio",
     ]
   },
-  turbopack: {
-    resolveAlias: {
-      canvas: 'false',
-    },
-  },
 };
 
 export default nextConfig;
