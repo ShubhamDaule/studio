@@ -18,8 +18,6 @@ import { CategoryIcon } from "../../icons";
 import { detectAnomalies } from "@/lib/analytics";
 import { AnomalyDetective } from "../../characters/anomaly-detective";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
-import { estimateTokens } from "@/lib/tokens";
 
 interface AnomaliesCardProps {
   transactions: Transaction[];
@@ -53,7 +51,6 @@ const AnomalyItem = ({ anomaly, transaction }: { anomaly: Anomaly; transaction: 
 
 export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
   const { toast } = useToast();
-  const { consumeTokens, tokenBalance } = useTiers();
   const [anomalies, setAnomalies] = React.useState<Anomaly[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -62,33 +59,14 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
     setAnomalies([]);
   }, [transactions]);
   
-  const estimatedTokens = React.useMemo(() => {
-    const apiTokens = estimateTokens(JSON.stringify(transactions));
-    return calculateAppTokens(apiTokens);
-  }, [transactions]);
-
   const handleScan = async () => {
-    if (tokenBalance < estimatedTokens) {
-        toast({
-            variant: "destructive",
-            title: "Insufficient Tokens",
-            description: `You need at least ${estimatedTokens.toFixed(1)} token(s) to use the Anomaly Detective.`,
-        });
-        return;
-    }
     setIsLoading(true);
     toast({
       title: "Scanning for Anomalies",
       description: "The detective is on the case, analyzing your transactions...",
     });
 
-    // This is a client-side "action", so token consumption is handled here.
-    const apiTokens = estimateTokens(JSON.stringify(transactions));
-    if(!consumeTokens(apiTokens)) {
-        setIsLoading(false);
-        return;
-    }
-
+    // This is a client-side statistical analysis, not an AI call.
     const result = await detectAnomalies(transactions);
 
     if (result.error || !result.anomalies) {
@@ -122,7 +100,7 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
             <div>
                 <CardTitle className="text-xl group-hover:text-primary transition-colors">Anomaly Detective</CardTitle>
                 <CardDescription>
-                Use AI-powered statistical analysis to find unusual spending.
+                Use statistical analysis to find unusual spending patterns.
                 </CardDescription>
             </div>
         </div>
@@ -171,7 +149,7 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Analyzing..." : `Ask the Detective (${estimatedTokens.toFixed(1)} Token${estimatedTokens > 1 ? 's' : ''})`}
+          {isLoading ? "Analyzing..." : "Ask the Detective"}
         </Button>
       </CardFooter>
     </Card>
