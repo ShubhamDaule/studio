@@ -128,45 +128,12 @@ function detectBankAndStatementType(text: string): StatementInfo {
 // ************************************************************************************
 // STEP 2: Pre-processing & Prompt Generation
 // ************************************************************************************
-function getBankPreProcessing(bankInfo: StatementInfo, rawText: string) {
+function preProcessStatementText(bankName: BankName, rawText: string) {
     let text = rawText;
-    let prompt;
-
-    // Define amount instructions based on statement type
-    const amountInstruction = bankInfo.statementType === 'Bank Account'
-      ? `Bank Account Rules:
-  - Debits (withdrawals, purchases, payments MADE FROM the account) MUST be POSITIVE numbers.
-  - Credits (deposits, payroll, refunds RECEIVED) MUST be NEGATIVE numbers.
-  - For example, a transaction described as "Direct Deposit from WORK" should have a negative amount. A transaction for "Payment to Con Edison" should have a positive amount.`
-      : `Credit Card Rules:
-  - Purchases are POSITIVE numbers.
-  - Payments to the credit card and refunds/credits are NEGATIVE numbers.`;
-
-
-    const basePrompt = `
-Extract transactions from the provided statement text. For each transaction, provide the following fields:
-- date: 'YYYY-MM-DD'
-- merchant: The merchant name, cleaned of unnecessary details. If a location provides essential context for an ambiguous merchant, add it in brackets. For example: "Starbucks (New York, NY)".
-- amount: The transaction amount. Follow the specific rules below for assigning positive or negative values.
-- category: Assign a category to each transaction based on the rules below.
-
-**CRITICAL RULE for Transaction Amount:**
-${amountInstruction}
-
-**CRITICAL RULE for Categorization:** Use the following keyword-based rules to determine the category. The merchant name is the primary signal. If a merchant matches keywords from multiple categories, choose the most specific one. If no keywords match, you MUST assign the category "Miscellaneous".
-
-**Category Rules (Keywords are case-insensitive):**
-${categoryTriggers.map(c => `- **${c.category}**: Keywords -> [${c.keywords.join(', ')}]`).join('\n')}
-
-**Special Rules:**
-- If a merchant contains 'AMAZON' and 'PRIME', categorize it as 'Subscriptions'.
-
-Return a clean JSON array of transactions.
-`;
     let preProcessingFailed = false;
 
     try {
-        if (bankInfo.bankName === 'Amex' && bankInfo.statementType === 'Credit Card') {
+        if (bankName === 'Amex') {
             let startIndex = text.indexOf("Payments and Credits");
             if(startIndex !== -1) text = text.substring(startIndex);
             else preProcessingFailed = true;
@@ -175,8 +142,7 @@ Return a clean JSON array of transactions.
             if(endIndex !== -1) text = text.substring(0, endIndex);
             else preProcessingFailed = true;
 
-            prompt = `Source: American Express Credit Card Statement. ${basePrompt}`;
-        } else if (bankInfo.bankName === 'Discover' && bankInfo.statementType === 'Credit Card') {
+        } else if (bankName === 'Discover') {
             let startIndex = text.indexOf("Transactions");
             if(startIndex !== -1) text = text.substring(startIndex);
              else preProcessingFailed = true;
@@ -184,13 +150,6 @@ Return a clean JSON array of transactions.
             let endIndex = text.indexOf("Statement Balance is the total");
             if(endIndex !== -1) text = text.substring(0, endIndex);
              else preProcessingFailed = true;
-
-            prompt = `Source: Discover Credit Card Statement. ${basePrompt}`;
-        } else if (bankInfo.statementType === 'Bank Account') {
-             prompt = `Source: Bank Account Statement. ${basePrompt}`;
-        } else {
-            // Default prompt for unknown banks or types
-            prompt = `Source: Bank Statement. ${basePrompt}`;
         }
     } catch(e) {
         console.error("Error during pre-processing:", e);
@@ -199,12 +158,76 @@ Return a clean JSON array of transactions.
     
     if (preProcessingFailed) {
         console.warn('Bank-specific pre-processing failed. Falling back to default extraction.');
-        return { processedText: rawText, prompt: `Source: ${bankInfo.bankName} Statement. ${basePrompt}` };
+        return rawText;
     }
 
-
-    return { processedText: text, prompt };
+    return text;
 }
+
+
+const categoryPromptSection = `
+**CRITICAL RULE for Categorization:** Use the following keyword-based rules to determine the category. The merchant name is the primary signal. If a merchant matches keywords from multiple categories, choose the most specific one. If no keywords match, you MUST assign the category "Miscellaneous".
+
+**Category Rules (Keywords are case-insensitive):**
+${categoryTriggers.map(c => `- **${c.category}**: Keywords -> [${c.keywords.join(', ')}]`).join('\n')}
+
+**Special Rules:**
+- If a merchant contains 'AMAZON' and 'PRIME', categorize it as 'Subscriptions'.
+`;
+
+
+const sharedPrompt = `
+Extract transactions from the provided statement text. For each transaction, provide the following fields:
+- date: 'YYYY-MM-DD'
+- merchant: The merchant name, cleaned of unnecessary details. If a location provides essential context for an ambiguous merchant, add it in brackets. For example: "Starbucks (New York, NY)".
+- amount: The transaction amount. Follow the specific rules below for assigning positive or negative values.
+- category: Assign a category to each transaction based on the rules below.
+
+${categoryPromptSection}
+
+Return a clean JSON array of transactions.
+`;
+
+
+const creditCardPrompt = ai.definePrompt({
+    name: 'creditCardTransactionExtractor',
+    input: { schema: z.object({ processedText: z.string() }) },
+    output: { schema: ExtractedDataSchema },
+    prompt: `You are extracting transactions from a credit card statement.
+${sharedPrompt}
+
+**CRITICAL RULE for Transaction Amount:**
+- Purchases are POSITIVE numbers.
+- Payments to the credit card and refunds/credits are NEGATIVE numbers.
+
+Statement Text:
+---
+{{{processedText}}}
+---
+`
+});
+
+
+const bankAccountPrompt = ai.definePrompt({
+    name: 'bankAccountTransactionExtractor',
+    input: { schema: z.object({ processedText: z.string() }) },
+    output: { schema: ExtractedDataSchema },
+    prompt: `You are extracting transactions from a bank account statement.
+${sharedPrompt}
+
+**CRITICAL RULE for Transaction Amount:**
+- Debits (withdrawals, purchases, payments MADE FROM the account) MUST be POSITIVE numbers.
+- Credits (deposits, payroll, refunds RECEIVED) MUST be NEGATIVE numbers.
+- For example, a transaction described as "Direct Deposit from WORK" should have a negative amount. A transaction for "Payment to Con Edison" should have a positive amount.
+
+Statement Text:
+---
+{{{processedText}}}
+---
+`
+});
+
+
 
 // ************************************************************************************
 // STEP 3: Main AI Flow
@@ -215,23 +238,17 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     // Step 1: Detect bank, type, and period
     const bankInfo = detectBankAndStatementType(pdfText);
     
-    // Step 2: Pre-process text and get tailored prompt
-    const { processedText, prompt } = getBankPreProcessing(bankInfo, pdfText);
+    // Step 2: Pre-process text to remove headers/footers
+    const processedText = preProcessStatementText(bankInfo.bankName, pdfText);
     
-    // Step 3: Call AI with the processed text and tailored prompt
-    const llmResponse = await ai.generate({
-        model: googleAI.model('gemini-1.5-flash'),
-        prompt: `${prompt}
-        
-        Statement Text:
-        ---
-        ${processedText}
-        ---
-        `,
-        output: {
-            schema: ExtractedDataSchema,
-        },
-    });
+    // Step 3: Call the appropriate AI model based on statement type
+    let llmResponse;
+    if (bankInfo.statementType === 'Bank Account') {
+        llmResponse = await bankAccountPrompt({ processedText });
+    } else {
+        // Default to credit card for 'Credit Card' or 'Unknown'
+        llmResponse = await creditCardPrompt({ processedText });
+    }
     
     const extractedData = llmResponse.output || [];
 
