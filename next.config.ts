@@ -25,10 +25,8 @@ const nextConfig: NextConfig = {
         "https://*.firebase.studio",
     ]
   },
-  experimental: {
-    serverActions: {
-      allowedOrigins: ["*.cloudworkstations.dev", "*.firebase.studio"]
-    }
+  serverActions: {
+    allowedOrigins: ["*.cloudworkstations.dev", "*.firebase.studio"]
   },
   turbopack: {
     resolveAlias: {
