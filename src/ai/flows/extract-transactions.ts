@@ -28,7 +28,7 @@ const ExtractTransactionsInputSchema = z.object({
 
 export type ExtractTransactionsInput = z.infer<typeof ExtractTransactionsInputSchema>;
 
-export type BankName = 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Unknown';
+export type BankName = 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Capital One' | 'Unknown';
 export type StatementType = 'Credit Card' | 'Bank Account' | 'Unknown';
 
 export type StatementPeriod = {
@@ -55,6 +55,7 @@ function detectBankAndStatementType(text: string): StatementInfo {
     'Bank of America': ['bank of america'],
     'Wells Fargo': ['wells fargo'],
     'Citi': ['citi'],
+    'Capital One': ['capital one'],
     'Unknown': [],
   };
 
@@ -93,7 +94,7 @@ function detectBankAndStatementType(text: string): StatementInfo {
       { pattern: /statement period:?\s*(\w+\s\d{1,2},\s*\d{4})\s*to\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
        // Handles Chase format like: "April 24, 2025throughMay 23, 2025"
       { pattern: /(\w+\s\d{1,2},\s*\d{4})\s*through\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
-      // Handles formats like: "January 1, 2024 - January 31, 2024"
+      // Handles formats like: "January 1, 2024 - January 31, 2024" or "Jun 09, 2025 - Jul 09, 2025"
       { pattern: /(\w+\s\d{1,2},\s*\d{4})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
       // Handles formats like: "period from 01/01/2024 to 01/31/2024"
       { pattern: /period from\s*(\d{2}\/\d{2}\/\d{4})\s*to\s*(\d{2}\/\d{2}\/\d{4})/i, type: 'start-end' },
