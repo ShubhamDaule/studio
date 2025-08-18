@@ -7,12 +7,13 @@ import { getAuth } from "firebase/auth";
 // Your web app's Firebase configuration
 // IMPORTANT: Replace this with your actual Firebase project configuration.
 const firebaseConfig = {
-  "projectId": "spendwise-analyzer",
-  "appId": "1:691206124939:web:3553259275e771a3e147b1",
-  "storageBucket": "spendwise-analyzer.appspot.com",
-  "apiKey": "AIzaSyA_3iEKv_Y-7v_0hC5dYfEaF-gB6-Y2-iE",
-  "authDomain": "spendwise-analyzer.firebaseapp.com",
-  "messagingSenderId": "691206124939"
+  "projectId": "spendwise-analyzer-oy5ij",
+  "appId": "1:434014565988:web:e7a0443a4ed9c3f339d171",
+  "storageBucket": "spendwise-analyzer-oy5ij.firebasestorage.app",
+  "apiKey": "AIzaSyBVtwwOLKyhakEqzv6IIjOnyIl6aqp02TE",
+  "authDomain": "spendwise-analyzer-oy5ij.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "434014565988"
 };
 
 // Initialize Firebase for SSR
