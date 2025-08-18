@@ -240,9 +240,8 @@ const bankAccountPrompt = ai.definePrompt({
 ${sharedPrompt}
 
 **CRITICAL RULE for Transaction Amount:**
-- Debits (withdrawals, purchases, payments MADE FROM the account) MUST be POSITIVE numbers.
-- Credits (deposits, payroll, refunds RECEIVED) MUST be POSITIVE numbers.
-- For example, a transaction described as "Direct Deposit from WORK" should have a POSITIVE amount. A transaction for "Payment to Con Edison" should have a POSITIVE amount.
+- **Debits** (withdrawals, purchases, payments MADE FROM the account, e.g., "Zelle Payment") MUST be **POSITIVE** numbers.
+- **Credits** (deposits, payroll, refunds RECEIVED, e.g., "Direct Deposit") MUST be **NEGATIVE** numbers.
 
 Statement Text:
 ---
