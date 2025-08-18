@@ -5,7 +5,6 @@ import { getAuth } from "firebase/auth";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// IMPORTANT: Replace this with your actual Firebase project configuration.
 const firebaseConfig = {
   "projectId": "spendwise-analyzer-oy5ij",
   "appId": "1:434014565988:web:e7a0443a4ed9c3f339d171",
@@ -16,14 +15,8 @@ const firebaseConfig = {
   "messagingSenderId": "434014565988"
 };
 
-// Initialize Firebase for SSR
-let app: FirebaseApp;
-if (getApps().length === 0) {
-    app = initializeApp(firebaseConfig);
-} else {
-    app = getApp();
-}
-
+// Initialize Firebase
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 export { app, auth };
