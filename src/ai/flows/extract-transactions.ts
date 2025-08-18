@@ -97,6 +97,8 @@ function detectBankAndStatementType(text: string): StatementInfo {
       { pattern: /(\w+\s\d{1,2},\s*\d{4})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
       // Handles formats like: "period from 01/01/2024 to 01/31/2024"
       { pattern: /period from\s*(\d{2}\/\d{2}\/\d{4})\s*to\s*(\d{2}\/\d{2}\/\d{4})/i, type: 'start-end' },
+      // Handles formats like: "Billing Period: 06/17/25-07/15/25"
+      { pattern: /Billing Period:?\s*(\d{2}\/\d{2}\/\d{2,4})\s*-\s*(\d{2}\/\d{2}\/\d{2,4})/i, type: 'start-end' },
       // Handles Amex format like: "Closing Date 04/06/25"
       { pattern: /closing date\s*(\d{2}\/\d{2}\/\d{2,4})/i, type: 'closing' },
   ];
@@ -120,9 +122,14 @@ function detectBankAndStatementType(text: string): StatementInfo {
                // Handle cases where the year might be missing from the start date
               let startStr = match[1];
               const endStr = match[2];
-              const endYear = new Date(endStr).getFullYear();
-              if (!/\d{4}/.test(startStr)) {
-                  startStr += `, ${endYear}`;
+              
+              // If the format is MM/DD/YY, it will be parsed correctly.
+              // If the format is verbose (Jan 1), we need to ensure the year is present.
+              if (/\w+\s\d{1,2},?\s*$/.test(endStr) && !/\d{4}/.test(startStr)) {
+                   const endYear = new Date(endStr).getFullYear();
+                   if (!isNaN(endYear)) {
+                       startStr += `, ${endYear}`;
+                   }
               }
 
               const startDate = new Date(startStr);
