@@ -28,7 +28,7 @@ const ExtractTransactionsInputSchema = z.object({
 
 export type ExtractTransactionsInput = z.infer<typeof ExtractTransactionsInputSchema>;
 
-export type BankName = 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Capital One' | 'Unknown';
+export type BankName = 'Discover' | 'Amex' | 'Chase' | 'Bank of America' | 'Wells Fargo' | 'Citi' | 'Capital One' | 'U.S. Bank' | 'PNC Bank' | 'TD Bank' | 'Unknown';
 export type StatementType = 'Credit Card' | 'Bank Account' | 'Unknown';
 
 export type StatementPeriod = {
@@ -56,6 +56,9 @@ function detectBankAndStatementType(text: string): StatementInfo {
     'Wells Fargo': ['wells fargo'],
     'Citi': ['citi'],
     'Capital One': ['capital one'],
+    'U.S. Bank': ['u.s. bank', 'us bank'],
+    'PNC Bank': ['pnc bank', 'pnc'],
+    'TD Bank': ['td bank'],
     'Unknown': [],
   };
 
