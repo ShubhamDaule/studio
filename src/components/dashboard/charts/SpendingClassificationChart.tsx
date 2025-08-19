@@ -19,7 +19,7 @@ import type { Transaction } from '@/lib/types';
 import { Target } from 'lucide-react';
 
 // Define the classification of each category
-const categoryClassification: { [key: string]: 'Needs' | 'Wants' | 'Savings & Other' } = {
+export const categoryClassification: { [key: string]: 'Needs' | 'Wants' | 'Savings & Other' } = {
     'Groceries': 'Needs',
     'Housing & Rent': 'Needs',
     'Utilities': 'Needs',
@@ -84,7 +84,7 @@ const renderActiveShape = (props: any) => {
 };
 
 
-export function SpendingClassificationChart({ transactions }: { transactions: Transaction[] }) {
+export function SpendingClassificationChart({ transactions, onClick }: { transactions: Transaction[], onClick: (data: any) => void }) {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(0);
 
   const aggregatedData = React.useMemo(() => {
@@ -122,7 +122,7 @@ export function SpendingClassificationChart({ transactions }: { transactions: Tr
           <Target className="h-6 w-6" />
           Needs vs. Wants
         </CardTitle>
-        <CardDescription>How your spending is classified.</CardDescription>
+        <CardDescription>How your spending is classified. Click a slice for details.</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -144,6 +144,8 @@ export function SpendingClassificationChart({ transactions }: { transactions: Tr
               strokeWidth={2}
               onMouseEnter={onPieEnter}
               onMouseLeave={onPieLeave}
+              onClick={(data) => onClick({ classification: data.name })}
+              className="cursor-pointer"
             >
                 {aggregatedData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} />

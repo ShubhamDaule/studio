@@ -4,8 +4,9 @@
 import { useState, useMemo, useCallback } from 'react';
 import type { Transaction, Category } from '@/lib/types';
 import { useTiers } from './use-tiers';
+import { categoryClassification } from '@/components/dashboard/charts/SpendingClassificationChart';
 
-type DialogType = 'category' | 'day' | 'source' | 'merchant' | 'transactionDetail';
+type DialogType = 'category' | 'day' | 'source' | 'merchant' | 'transactionDetail' | 'classification';
 
 type DialogState = {
   [key in DialogType]: boolean;
@@ -17,6 +18,7 @@ type DialogData = {
     source?: string;
     merchant?: string;
     transaction?: Transaction | null;
+    classification?: 'Needs' | 'Wants' | 'Savings & Other';
     transactions: Transaction[];
     allCategories: Category[];
     onCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
@@ -39,6 +41,7 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
     source: false,
     merchant: false,
     transactionDetail: false,
+    classification: false,
   });
   
   const [activeDialogKey, setActiveDialogKey] = useState<any | null>(null);
@@ -92,6 +95,12 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
     
     if (dialogState.source && typeof activeDialogKey === 'string') {
        return { ...baseData, source: activeDialogKey, transactions: allTransactions.filter(t => t.bankName === activeDialogKey) };
+    }
+
+    if (dialogState.classification && typeof activeDialogKey === 'object' && 'classification' in activeDialogKey) {
+        const { classification } = activeDialogKey;
+        const txns = transactions.filter(t => categoryClassification[t.category] === classification && t.amount > 0);
+        return { ...baseData, classification, transactions: txns };
     }
 
     return baseData;

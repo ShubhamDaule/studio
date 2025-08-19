@@ -17,7 +17,7 @@ import { useDashboardContext } from "@/context/dashboard-context";
 import { useBudgets } from "@/hooks/useBudgets";
 
 type OverviewTabProps = {
-    openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant', data: any) => void;
+    openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant' | 'classification', data: any) => void;
 };
 
 export function OverviewTab({ openDialog }: OverviewTabProps) {
@@ -81,8 +81,8 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                     <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
                 </div>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <SpendingClassificationChart transactions={filteredTransactions} />
                     <SpendingTrendChart transactions={allTransactions} />
+                    <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
                 </div>
             </>
         </div>

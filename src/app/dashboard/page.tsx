@@ -29,6 +29,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { ClassificationTransactionsDialog } from "@/components/dialogs/classification-transactions-dialog";
 
 export default function DashboardPage() {
     const { 
@@ -147,6 +148,11 @@ export default function DashboardPage() {
             <MerchantTransactionsDialog
                 isOpen={dialogState.merchant}
                 onClose={() => closeDialog('merchant')}
+                {...dialogData}
+            />
+             <ClassificationTransactionsDialog
+                isOpen={dialogState.classification}
+                onClose={() => closeDialog('classification')}
                 {...dialogData}
             />
             <TransactionDetailDialog
