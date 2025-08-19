@@ -16,7 +16,7 @@ import { InsightsTab } from "@/app/dashboard/tabs/insights-tab";
 import { useDashboardContext } from "@/context/dashboard-context";
 import type { TransactionFile } from "@/lib/types";
 import { LayoutGrid, List, Sparkles, Target, Trash } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { FilePill } from "@/components/dashboard/file-pill";
 import {
   AlertDialog,
