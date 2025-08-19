@@ -36,7 +36,6 @@ export default function DashboardPage() {
         allTransactions,
         setAllTransactions,
         allCategories,
-        setAllCategories,
         transactionFiles,
         setTransactionFiles,
         isUsingMockData,
