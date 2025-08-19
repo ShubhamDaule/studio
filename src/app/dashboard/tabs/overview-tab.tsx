@@ -9,38 +9,45 @@ import { SpendingBySourceChart } from "@/components/charts/spending-by-source-ch
 import { TopMerchantsChart } from "@/components/charts/top-merchants-chart";
 import { SpendingClassificationChart } from "@/components/charts/SpendingClassificationChart";
 import { SpendingTrendChart } from "@/components/charts/spending-trend-chart";
+import type { Budget, Category, Transaction } from "@/lib/types";
 import StatsCard from "@/components/dashboard/cards/stats-card";
 import { HighestTransactionCard } from "@/components/dashboard/cards/highest-transaction-card";
 import { HighestDayCard } from "@/components/dashboard/cards/highest-day-card";
 import { CurrentBalanceCard } from "@/components/dashboard/cards/current-balance-card";
-import { useDashboardContext } from "@/context/dashboard-context";
-import { useBudgets } from "@/hooks/useBudgets";
 
 type OverviewTabProps = {
+    totalSpending: number;
+    filterDescription: string;
+    transactionCount: number;
+    highestTransaction: Transaction | null;
     openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant', data: any) => void;
+    currentBalance: number | null;
+    highestDay: { date: string; total: number } | null;
+    filteredTransactions: Transaction[];
+    allTransactions: Transaction[];
+    activeBudgets: Budget[];
+    allCategories: Category[];
 };
 
-export function OverviewTab({ openDialog }: OverviewTabProps) {
-    const { 
-        filteredTransactions,
-        allTransactions,
-        allCategories,
-        totalSpending,
-        filterDescription,
-        transactionCount,
-        highestTransaction,
-        currentBalance,
-        highestDay,
-    } = useDashboardContext();
-
-    const { activeBudgets } = useBudgets({allCategories, transactions: filteredTransactions});
-
+export function OverviewTab({
+    totalSpending,
+    filterDescription,
+    transactionCount,
+    highestTransaction,
+    openDialog,
+    currentBalance,
+    highestDay,
+    filteredTransactions,
+    allTransactions,
+    activeBudgets,
+    allCategories,
+}: OverviewTabProps) {
     return (
         <div className="grid gap-8">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatsCard 
                     title="Total Spending"
-                    value={totalSpending.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                    value={(totalSpending ?? 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}
                     icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
                     description={filterDescription}
                     onClick={() => openDialog('category', { category: 'all' })}
@@ -75,8 +82,8 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             </div>
             <>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', data)} />
-                    <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', data)} />
+                    <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
+                    <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
                 </div>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <SpendingTrendChart transactions={allTransactions} />

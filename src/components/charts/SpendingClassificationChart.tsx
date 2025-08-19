@@ -97,7 +97,7 @@ export function SpendingClassificationChart({ transactions }: { transactions: Tr
       }, {} as Record<string, number>);
 
     return Object.entries(spending)
-        .map(([name, value]) => ({ name, value, fill: `var(--color-${name})` }))
+        .map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/ & /g, "-")})` }))
         .sort((a,b) => b.value - a.value);
   }, [transactions]);
 
@@ -145,8 +145,8 @@ export function SpendingClassificationChart({ transactions }: { transactions: Tr
               onMouseEnter={onPieEnter}
               onMouseLeave={onPieLeave}
             >
-                {aggregatedData.map((entry) => (
-                  <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                {aggregatedData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}
             </Pie>
           </PieChart>
