@@ -6,10 +6,13 @@ import { AnomaliesCard } from "@/components/dashboard/cards/anomalies-card";
 import { FinancialCoachCard } from "@/components/dashboard/cards/financial-coach-card";
 import { AskAiCard } from "@/components/dashboard/cards/ask-ai-card";
 import { useDashboardContext } from "@/context/dashboard-context";
+import { useBudgets } from "@/hooks/useBudgets";
 
 
 export function InsightsTab() {
-    const { allTransactions, activeBudgets } = useDashboardContext();
+    const { allTransactions, allCategories, filteredTransactions: transactions, dateRange } = useDashboardContext();
+    const { activeBudgets } = useBudgets({allCategories, transactions, dateRange});
+    
     const spendingTransactions = React.useMemo(() => 
         allTransactions.filter(t => t.amount > 0 && t.category !== "Payment" && t.category !== "Investment"),
     [allTransactions]);

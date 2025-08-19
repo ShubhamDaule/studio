@@ -72,7 +72,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     
     // Initialize with Mock Data
     React.useEffect(() => {
-        if (isUsingMockData && allTransactions.length === 0) {
+        if (isDashboard && isUsingMockData && allTransactions.length === 0) {
             setAllTransactions(mockTransactions);
             setTransactionFiles([
                 { fileName: 'statement-q1.pdf', bankName: 'Amex', statementType: 'Credit Card', statementPeriod: { startDate: '2023-10-01', endDate: '2023-10-31' } },
@@ -80,7 +80,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
                 { fileName: 'statement-q3.csv', bankName: 'Discover', statementType: 'Credit Card', statementPeriod: { startDate: '2023-11-01', endDate: '2023-11-30' } },
             ]);
         }
-    }, [isUsingMockData, allTransactions]);
+    }, [isDashboard, isUsingMockData, allTransactions]);
 
 
     const { minDate, maxDate } = React.useMemo(() => {

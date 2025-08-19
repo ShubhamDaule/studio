@@ -14,6 +14,7 @@ import { HighestTransactionCard } from "@/components/dashboard/cards/highest-tra
 import { HighestDayCard } from "@/components/dashboard/cards/highest-day-card";
 import { CurrentBalanceCard } from "@/components/dashboard/cards/current-balance-card";
 import { useDashboardContext } from "@/context/dashboard-context";
+import { useBudgets } from "@/hooks/useBudgets";
 
 type OverviewTabProps = {
     openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant', data: any) => void;
@@ -29,9 +30,12 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
         highestDay,
         filteredTransactions,
         allTransactions,
-        activeBudgets,
         allCategories,
+        dateRange,
     } = useDashboardContext();
+
+    const { activeBudgets } = useBudgets({ allCategories, transactions: filteredTransactions, dateRange });
+
 
     return (
         <div className="grid gap-8">

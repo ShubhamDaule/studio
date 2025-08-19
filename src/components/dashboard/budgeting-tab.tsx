@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { Budget, BudgetOverride, Category, Transaction } from "@/lib/types";
+import type { Budget, Category } from "@/lib/types";
 import { Settings2 } from "lucide-react";
 import { useBoolean } from "@/hooks/use-boolean";
 import { ManageCategoriesDialog } from "../dialogs/manage-categories-dialog";
@@ -11,23 +11,11 @@ import { BudgetingTable } from "./budgeting-table";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useDashboardContext } from "@/context/dashboard-context";
 
-type Props = {
-    onAddBudget: (budget: Budget) => void;
-    onDeleteBudget: (categoryName: Category['name']) => void;
-    allCategories: Category[];
-    setAllCategories: React.Dispatch<React.SetStateAction<Category[]>>;
-};
-
-export function BudgetingTab({
-    setAllCategories,
-    onAddBudget,
-    allCategories,
-    onDeleteBudget,
-}: Props) {
+export function BudgetingTab() {
     const {value: isManageDialogOpen, setTrue: openManageDialog, setFalse: closeManageDialog} = useBoolean(false);
-    const { dateRange, filteredTransactions: transactions } = useDashboardContext();
+    const { dateRange, filteredTransactions: transactions, allCategories, setAllCategories } = useDashboardContext();
 
-    const { budgets, handleMultipleBudgetChange: handleBaseBudgetChange } = useBudgets({ allCategories, dateRange, transactions });
+    const { budgets, handleMultipleBudgetChange, addBudget, deleteBudget } = useBudgets({ allCategories, dateRange, transactions });
 
     const spendingByCategory = React.useMemo(() => {
         if (!transactions) return {};
@@ -75,7 +63,7 @@ export function BudgetingTab({
                 <CardContent>
                    <BudgetingTable 
                     data={tableData}
-                    onBudgetChange={handleBaseBudgetChange}
+                    onBudgetChange={handleMultipleBudgetChange}
                    />
                 </CardContent>
             </Card>
@@ -85,8 +73,8 @@ export function BudgetingTab({
                 onClose={closeManageDialog}
                 allCategories={allCategories}
                 activeBudgets={budgets} // Pass base budgets
-                onAddBudget={onAddBudget}
-                onDeleteBudget={onDeleteBudget}
+                onAddBudget={addBudget}
+                onDeleteBudget={deleteBudget}
                 transactions={transactions}
                 onAddCustomCategory={() => { closeManageDialog(); /* TODO: Implement add custom category flow */ }}
             />
