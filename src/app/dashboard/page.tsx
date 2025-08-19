@@ -8,11 +8,11 @@ import { DayTransactionsDialog } from "@/components/dialogs/day-transactions-dia
 import { SourceTransactionsDialog } from "@/components/dialogs/source-transactions-dialog";
 import { MerchantTransactionsDialog } from "@/components/dialogs/merchant-transactions-dialog";
 import { TransactionDetailDialog } from "@/components/dialogs/transaction-detail-dialog";
-import { BudgetingTab } from "@/components/dashboard/tabs/budgeting-tab";
+import { BudgetingTab } from "@/components/dashboard/budgeting-tab";
 import { useDialogs } from "@/hooks/useDialogs";
-import { OverviewTab } from "@/components/dashboard/tabs/overview-tab";
-import { TransactionsTab } from "@/components/dashboard/tabs/transactions-tab";
-import { InsightsTab } from "@/components/dashboard/tabs/insights-tab";
+import { OverviewTab } from "@/app/dashboard/tabs/overview-tab";
+import { TransactionsTab } from "@/app/dashboard/tabs/transactions-tab";
+import { InsightsTab } from "@/app/dashboard/tabs/insights-tab";
 import { useDashboardContext } from "@/context/dashboard-context";
 import type { TransactionFile } from "@/lib/types";
 import { LayoutGrid, List, Sparkles, Target, Trash } from "lucide-react";
