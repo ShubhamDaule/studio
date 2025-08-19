@@ -7,7 +7,7 @@ import { SpendingChart } from "@/components/charts/spending-chart";
 import { SpendingByDayChart } from "@/components/charts/spending-by-day-chart";
 import { SpendingBySourceChart } from "@/components/charts/spending-by-source-chart";
 import { TopMerchantsChart } from "@/components/charts/top-merchants-chart";
-import { BudgetSpendingChart } from "@/components/charts/budget-spending-chart";
+import { SpendingClassificationChart } from "@/components/charts/SpendingClassificationChart";
 import { SpendingTrendChart } from "@/components/charts/spending-trend-chart";
 import StatsCard from "@/components/dashboard/cards/stats-card";
 import { HighestTransactionCard } from "@/components/dashboard/cards/highest-transaction-card";
@@ -80,7 +80,7 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                 </div>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <SpendingTrendChart transactions={allTransactions} />
-                    <BudgetSpendingChart transactions={filteredTransactions} budgets={activeBudgets} allCategories={allCategories} />
+                    <SpendingClassificationChart transactions={filteredTransactions} />
                 </div>
             </>
         </div>
