@@ -81,8 +81,8 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                     <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
                 </div>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <SpendingTrendChart transactions={allTransactions} />
                     <SpendingClassificationChart transactions={filteredTransactions} />
+                    <SpendingTrendChart transactions={allTransactions} />
                 </div>
             </>
         </div>
