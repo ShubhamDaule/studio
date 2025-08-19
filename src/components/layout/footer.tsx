@@ -12,9 +12,9 @@ export function Footer() {
                 <Logo />
                 
                 <div className="flex space-x-6 text-sm text-muted-foreground mt-4 md:mt-0">
-                <Link href="#" className="hover:text-primary transition-smooth">Privacy Policy</Link>
-                <Link href="#" className="hover:text-primary transition-smooth">Terms of Service</Link>
-                <Link href="#" className="hover:text-primary transition-smooth">Contact</Link>
+                <Link href="/privacy" className="hover:text-primary transition-smooth">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-primary transition-smooth">Terms of Service</Link>
+                <Link href="/contact" className="hover:text-primary transition-smooth">Contact</Link>
                 </div>
             </div>
             
