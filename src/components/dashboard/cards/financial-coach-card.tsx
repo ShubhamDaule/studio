@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Transaction } from "@/lib/types";
-import { Sparkles, Bot, Loader2, type LucideIcon, RefreshCcw, BrainCircuit, icons } from "lucide-react";
+import { Sparkles, Bot, Loader2, type LucideIcon, RefreshCcw, icons } from "lucide-react";
 import { FinancialCoach } from "../../characters/financial-coach";
 import { getAIInsights } from "@/lib/actions";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -133,7 +133,7 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
         <Button
           onClick={handleGenerateInsights}
           disabled={isLoading || transactions.length === 0}
-          className="w-full"
+          className="w-full btn-gradient-base btn-hover-fade"
         >
           {isLoading ? (
              <Loader2 className="mr-2 h-4 w-4 animate-spin" />

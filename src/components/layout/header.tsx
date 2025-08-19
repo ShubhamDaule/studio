@@ -123,8 +123,8 @@ const UserNav = () => {
 
 const LandingNavLinks = ({ className }: { className?: string }) => (
     <div className={cn("flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-1", className)}>
-        <Button variant="subtle" asChild><Link href="/landing#why-spendwise">Why SpendWise</Link></Button>
-        <Button variant="subtle" asChild><Link href="/pricing">Pricing</Link></Button>
+        <Button variant="link" asChild><Link href="/landing#why-spendwise">Why SpendWise</Link></Button>
+        <Button variant="link" asChild><Link href="/pricing">Pricing</Link></Button>
     </div>
 );
 
@@ -142,7 +142,7 @@ const LandingNav = () => {
                 ) : isLandingPage ? (
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" asChild><Link href="/auth">Login</Link></Button>
-                        <Button className="btn-gradient-base btn-hover-fade btn-md" asChild>
+                        <Button className="btn-gradient-base btn-hover-fade" asChild>
                             <Link href="/auth?mode=signup">Get Started</Link>
                         </Button>
                     </div>
@@ -161,7 +161,7 @@ const LandingNav = () => {
                                 <LandingNavLinks />
                                  <div className="flex flex-col gap-4">
                                     <Button variant="outline" asChild><Link href="/auth">Login</Link></Button>
-                                    <Button className="btn-gradient-base btn-hover-fade btn-md" asChild>
+                                    <Button className="btn-gradient-base btn-hover-fade" asChild>
                                       <Link href="/auth?mode=signup">Get Started</Link>
                                     </Button>
                                 </div>
@@ -345,9 +345,9 @@ const NavContent = () => {
 
 export function Header() {
     return (
-        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
+        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b">
           <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8 gap-4">
-            <Link href="/landing">
+            <Link href="/">
               <Logo />
             </Link>
             <div className="flex-1 flex justify-end">

@@ -153,27 +153,13 @@ export default function DashboardPage() {
                         <TabsContent value="overview" className="mt-4">
                             <OverviewTab 
                                 openDialog={openDialog}
-                                totalSpending={totalSpending}
-                                filterDescription={filterDescription}
-                                transactionCount={transactionCount}
-                                highestTransaction={highestTransaction}
-                                currentBalance={currentBalance}
-                                highestDay={highestDay}
-                                filteredTransactions={filteredTransactions}
-                                allTransactions={allTransactions}
-                                activeBudgets={activeBudgets}
-                                allCategories={allCategories}
                             />
                         </TabsContent>
                         <TabsContent value="transactions" className="mt-4">
-                            <TransactionsTab
-                                filteredTransactions={filteredTransactions}
-                                handleCategoryChange={handleCategoryChange}
-                                allCategories={allCategories}
-                            />
+                            <TransactionsTab />
                         </TabsContent>
                         <TabsContent value="insights" className="mt-4">
-                            <InsightsTab allTransactions={allTransactions} budgets={activeBudgets} isMockData={isUsingMockData} />
+                            <InsightsTab />
                         </TabsContent>
                         <TabsContent value="budgeting" className="mt-4">
                             <BudgetingTab

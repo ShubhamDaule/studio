@@ -142,7 +142,7 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
         <Button
           onClick={handleScan}
           disabled={isLoading || transactions.length === 0}
-          className="w-full"
+          className="w-full btn-gradient-base btn-hover-fade"
         >
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

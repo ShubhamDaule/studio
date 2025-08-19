@@ -17,7 +17,7 @@ import type { Transaction, QueryResult, Budget } from "@/lib/types";
 import { Sparkles, Loader2, BrainCircuit } from "lucide-react";
 import { AskAiCharacter } from "../../characters/ask-ai-character";
 import { getAiQueryResponse } from "@/lib/actions";
-import { DynamicChart } from "../charts/dynamic-chart";
+import { DynamicChart } from "@/components/dashboard/charts/dynamic-chart";
 import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
 import { estimateTokens } from "@/lib/tokens";
 
@@ -134,7 +134,7 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
         <Button
           onClick={handleQuery}
           disabled={isLoading || !query || transactions.length === 0}
-          className="w-full"
+          className="w-full btn-gradient-base btn-hover-fade"
         >
           {isLoading ? (
              <Loader2 className="mr-2 h-4 w-4 animate-spin" />

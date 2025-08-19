@@ -4,7 +4,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import type { Transaction, Category } from '@/lib/types';
 import { useTiers } from './use-tiers';
-import { useDashboardContext } from '@/context/dashboard-context';
 
 type DialogType = 'category' | 'day' | 'source' | 'merchant' | 'transactionDetail';
 
