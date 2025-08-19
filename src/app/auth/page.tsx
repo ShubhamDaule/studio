@@ -7,7 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { GoogleIcon, AppleIcon } from "@/components/icons";
 import { Separator } from "@/components/ui/separator";
@@ -52,8 +52,14 @@ const AuthForm = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex flex-col justify-center items-center p-4">
-            <div className="absolute top-8 left-8">
+            <div className="absolute top-8 left-8 flex items-center gap-8">
                 <Logo />
+                 <Button asChild variant="link" className="text-muted-foreground">
+                    <Link href="/">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Home
+                    </Link>
+                </Button>
             </div>
 
             <main className="w-full max-w-md mx-auto">

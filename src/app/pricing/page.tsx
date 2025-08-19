@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, ArrowRight, Shield, Zap } from "lucide-react";
+import { CheckCircle, ArrowRight, Shield, Zap, ArrowLeft } from "lucide-react";
 import { useTiers } from "@/hooks/use-tiers";
+import { Logo } from "@/components/layout/logo";
 
 const plans = [
   {
@@ -78,8 +79,16 @@ export default function Pricing() {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Button variant="link" asChild><Link href="/" className="text-sm text-muted-foreground">← Back to Home</Link></Button>
-          <Button asChild size="sm" className="btn-gradient-base btn-hover-fade"><Link href="/auth">Sign in</Link></Button>
+          <Logo />
+          <div className="flex items-center gap-4">
+            <Button asChild variant="link" className="text-muted-foreground">
+                <Link href="/">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Home
+                </Link>
+            </Button>
+            <Button asChild size="sm" className="btn-gradient-base btn-hover-fade"><Link href="/auth">Sign in</Link></Button>
+          </div>
         </div>
       </header>
 
