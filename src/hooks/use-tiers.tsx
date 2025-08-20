@@ -7,8 +7,8 @@ const TOKENS_PER_APP_TOKEN = 2000;
 
 export const calculateAppTokens = (apiTokens: number): number => {
   if (apiTokens <= 0) return 0;
-  // Calculate proportional tokens, but ensure it's at least 1.
-  return Math.max(1, apiTokens / TOKENS_PER_APP_TOKEN);
+  // Calculate proportional tokens, but ensure it's at least 2.
+  return Math.max(2, apiTokens / TOKENS_PER_APP_TOKEN);
 }
 
 const TIER_CONFIG = {
