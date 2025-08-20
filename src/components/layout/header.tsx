@@ -208,9 +208,12 @@ const DashboardNav = () => {
     const { toast } = useToast();
     const { consumeTokens } = useTiers();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const [highCostUpload, setHighCostUpload] = React.useState<HighCostUpload | null>(null);
+    const [largeFilesQueue, setLargeFilesQueue] = React.useState<HighCostUpload[]>([]);
 
-    const processAndUploadFiles = async (filesToProcess: FileWithText[]) => {
+    const currentHighCostUpload = largeFilesQueue[0] || null;
+
+    const processFiles = async (filesToProcess: FileWithText[]) => {
+        setIsUploading(true);
         const allFinalUploads: PendingUpload[] = [];
         let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
@@ -239,6 +242,7 @@ const DashboardNav = () => {
                 addUploadedTransactions(allFinalUploads);
             }
         }
+        setIsUploading(false);
     }
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,8 +250,8 @@ const DashboardNav = () => {
         if (!files || files.length === 0) return;
 
         setIsUploading(true);
-        const smallFiles: FileWithText[] = [];
-        const largeFilesQueue: HighCostUpload[] = [];
+        const smallFilesBuffer: FileWithText[] = [];
+        const largeFilesBuffer: HighCostUpload[] = [];
 
         for (const file of Array.from(files)) {
             try {
@@ -274,13 +278,13 @@ const DashboardNav = () => {
                 const appTokensForFile = calculateAppTokens(preAnalysisResult.usage.totalTokens);
                 
                 if (appTokensForFile > 2.0) {
-                    largeFilesQueue.push({
+                    largeFilesBuffer.push({
                         file: { text: fullText, fileName: file.name },
                         cost: appTokensForFile,
                         usage: preAnalysisResult.usage,
                     });
                 } else {
-                    smallFiles.push({ text: fullText, fileName: file.name });
+                    smallFilesBuffer.push({ text: fullText, fileName: file.name });
                 }
 
             } catch (error: any) {
@@ -293,15 +297,12 @@ const DashboardNav = () => {
             }
         }
         
-        // Immediately process small files
-        if (smallFiles.length > 0) {
-            await processAndUploadFiles(smallFiles);
+        if (smallFilesBuffer.length > 0) {
+            await processFiles(smallFilesBuffer);
         }
 
-        // Handle large files one by one
-        if (largeFilesQueue.length > 0) {
-            setHighCostUpload(largeFilesQueue[0]);
-            // The rest will be handled as the user confirms each dialog
+        if (largeFilesBuffer.length > 0) {
+            setLargeFilesQueue(largeFilesBuffer);
         } else {
              setIsUploading(false);
         }
@@ -309,21 +310,26 @@ const DashboardNav = () => {
         if(fileInputRef.current) fileInputRef.current.value = "";
     };
     
+    const advanceQueue = () => {
+        setLargeFilesQueue(prev => prev.slice(1));
+        if (largeFilesQueue.length <= 1) {
+            setIsUploading(false);
+        }
+    };
+
     const handleConfirmHighCostUpload = async () => {
-        if (!highCostUpload) return;
-        setIsUploading(true);
-        await processAndUploadFiles([highCostUpload.file]);
-        setHighCostUpload(null);
-        setIsUploading(false);
+        if (!currentHighCostUpload) return;
+        await processFiles([currentHighCostUpload.file]);
+        advanceQueue();
     };
 
     const cancelHighCostUpload = () => {
-        setHighCostUpload(null);
+        if (!currentHighCostUpload) return;
         toast({
             title: "Upload Canceled",
-            description: `The file "${highCostUpload?.file.fileName}" was not uploaded.`,
+            description: `The file "${currentHighCostUpload.file.fileName}" was not uploaded.`,
         });
-        setIsUploading(false);
+        advanceQueue();
     };
 
     return (
@@ -368,14 +374,14 @@ const DashboardNav = () => {
             </div>
         </div>
         
-        {highCostUpload && (
-            <AlertDialog open={!!highCostUpload} onOpenChange={(open) => !open && cancelHighCostUpload()}>
+        {currentHighCostUpload && (
+            <AlertDialog open={!!currentHighCostUpload} onOpenChange={(open) => !open && cancelHighCostUpload()}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                     <AlertDialogTitle>High Token Usage Alert</AlertDialogTitle>
                     <AlertDialogDescription>
-                        The file <strong>{highCostUpload.file.fileName}</strong> is large and will consume approximately{' '}
-                        <strong>{highCostUpload.cost.toFixed(1)} tokens</strong>.
+                        The file <strong>{currentHighCostUpload.file.fileName}</strong> is large and will consume approximately{' '}
+                        <strong>{currentHighCostUpload.cost.toFixed(1)} tokens</strong>.
                         <br /><br />
                         Do you wish to proceed? You can re-upload a smaller file, or remove unwanted pages, to save tokens.
                     </AlertDialogDescription>
