@@ -47,20 +47,26 @@ export async function getAIInsights(transactions: Transaction[]) {
     }
 }
 
-export async function preAnalyzeTransactions(pdfText: string, fileName: string): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; statementPeriod?: StatementPeriod | null; error?: string, usage?: TokenUsage, rawText: string, processedText: string }> {
+export async function preAnalyzeTransactions(pdfText: string, fileName: string, skipAi: boolean = false): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; statementPeriod?: StatementPeriod | null; error?: string, usage?: TokenUsage }> {
     if (!pdfText) {
-        return { error: "No text from PDF to process.", rawText: "", processedText: "" };
+        return { error: "No text from PDF to process." };
     }
 
     try {
         const input = { pdfText };
-        const { bankName, statementType, statementPeriod, transactions, rawText, processedText } = await extractTransactions(input);
+        const inputTokens = estimateTokens(JSON.stringify(input));
 
+        if (skipAi) {
+            // Just return the estimated input token cost without calling the AI
+            return { usage: { inputTokens, outputTokens: 0, totalTokens: inputTokens } };
+        }
+        
+        const { bankName, statementType, statementPeriod, transactions } = await extractTransactions(input);
+        
         if (!transactions) {
-            return { data: [], bankName, statementType, statementPeriod, rawText, processedText };
+             return { data: [], bankName, statementType, statementPeriod };
         }
 
-        const inputTokens = estimateTokens(JSON.stringify(input));
         const outputTokens = estimateTokens(JSON.stringify(transactions));
         const usage: TokenUsage = {
             inputTokens,
@@ -68,17 +74,16 @@ export async function preAnalyzeTransactions(pdfText: string, fileName: string):
             totalTokens: inputTokens + outputTokens,
         };
         
-        // Add bankName AND fileSource to each transaction
         const dataWithMetadata = transactions.map(txn => ({ 
             ...txn, 
             bankName,
             fileSource: fileName 
         }));
 
-        return { data: dataWithMetadata, bankName, statementType, statementPeriod, usage, rawText, processedText };
+        return { data: dataWithMetadata, bankName, statementType, statementPeriod, usage };
     } catch (e: any) {
         console.error("Error pre-analyzing transactions from PDF:", e);
-        return { error: getFriendlyErrorMessage(e), rawText: pdfText, processedText: pdfText };
+        return { error: getFriendlyErrorMessage(e) };
     }
 }
 

@@ -47,9 +47,6 @@ type PendingUpload = {
   bankName: BankName;
   statementType: StatementType;
   statementPeriod: StatementPeriod | null;
-  rawText: string;
-  processedText: string;
-  usage: { totalTokens: number };
 };
 
 const UserNav = () => {
@@ -199,16 +196,15 @@ const DashboardNav = () => {
     const { toast } = useToast();
     const { consumeTokens } = useTiers();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const [pendingUploads, setPendingUploads] = React.useState<PendingUpload[]>([]);
-    const [highCostUpload, setHighCostUpload] = React.useState<{uploads: PendingUpload[], cost: number} | null>(null);
+    const [highCostUpload, setHighCostUpload] = React.useState<{ text: string, fileName: string, cost: number } | null>(null);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
         setIsUploading(true);
-        const allPendingUploads: PendingUpload[] = [];
-        let totalAppTokens = 0;
+
+        const allUploads: PendingUpload[] = [];
 
         for (const file of Array.from(files)) {
             try {
@@ -221,79 +217,105 @@ const DashboardNav = () => {
                     const pageText = content.items.map(item => (item as any).str).join(" ");
                     fullText += "\\n" + pageText;
                 }
+                
+                // Now call the server action with skipAi=true to get the token cost
+                const preAnalysisResult = await preAnalyzeTransactions(fullText, file.name, true);
 
-                const result = await preAnalyzeTransactions(fullText, file.name);
+                if (preAnalysisResult.error || !preAnalysisResult.usage) {
+                     toast({
+                        variant: "destructive",
+                        title: `Analysis Failed: ${file.name}`,
+                        description: preAnalysisResult.error || "Could not pre-process this file.",
+                    });
+                    continue;
+                }
+                
+                const appTokens = calculateAppTokens(preAnalysisResult.usage.totalTokens);
+                
+                if (appTokens > 2.0) {
+                    // Stop further processing if one file is too large, and show the dialog
+                    setHighCostUpload({ text: fullText, fileName: file.name, cost: appTokens });
+                    setIsUploading(false);
+                    if(fileInputRef.current) fileInputRef.current.value = "";
+                    return; // Exit the loop and function
+                }
 
-                if (result.error || !result.data || !result.bankName || !result.statementType || !result.usage) {
+                // If not too costly, proceed with the actual AI analysis
+                const finalResult = await preAnalyzeTransactions(fullText, file.name, false);
+
+                 if (finalResult.error || !finalResult.data || !finalResult.bankName || !finalResult.statementType || !finalResult.usage) {
                     toast({
                         variant: "destructive",
                         title: `Upload Failed: ${file.name}`,
-                        description: result.error || "Could not process this PDF file.",
+                        description: finalResult.error || "Could not process this PDF file.",
                     });
                     continue; 
                 }
-                
-                totalAppTokens += calculateAppTokens(result.usage.totalTokens);
-                allPendingUploads.push({
-                    data: result.data,
-                    fileName: file.name,
-                    bankName: result.bankName,
-                    statementType: result.statementType,
-                    statementPeriod: result.statementPeriod,
-                    usage: result.usage,
-                    rawText: result.rawText,
-                    processedText: result.processedText,
-                });
+
+                if (consumeTokens(finalResult.usage.totalTokens)) {
+                    allUploads.push({
+                        data: finalResult.data,
+                        fileName: file.name,
+                        bankName: finalResult.bankName,
+                        statementType: finalResult.statementType,
+                        statementPeriod: finalResult.statementPeriod,
+                    });
+                }
+
 
             } catch (error: any) {
-                console.error(`Error during pre-analysis for ${file.name}:`, error);
+                console.error(`Error processing ${file.name}:`, error);
                 toast({
                     variant: "destructive",
                     title: `Upload Failed: ${file.name}`,
-                    description: error.message || "Could not process this PDF file.",
+                    description: error.message || "Could not read this PDF file.",
                 });
             }
         }
         
-        if (allPendingUploads.length > 0) {
-            if (totalAppTokens > 2.0) {
-                setHighCostUpload({ uploads: allPendingUploads, cost: totalAppTokens });
-            } else {
-                handleConfirmUpload(allPendingUploads);
-            }
+        if (allUploads.length > 0) {
+            addUploadedTransactions(allUploads);
         }
-
+        
         setIsUploading(false);
         if(fileInputRef.current) fileInputRef.current.value = "";
     };
     
-    const handleConfirmUpload = (uploadsToProcess: PendingUpload[]) => {
-        let totalAppTokensToConsume = 0;
+    const handleConfirmHighCostUpload = async () => {
+        if (!highCostUpload) return;
         
-        uploadsToProcess.forEach(upload => {
-            const appTokensForFile = calculateAppTokens(upload.usage.totalTokens);
-            totalAppTokensToConsume += appTokensForFile;
-        });
+        setIsUploading(true);
+        const { text, fileName } = highCostUpload;
 
-        if (consumeTokens(totalAppTokensToConsume, true)) {
-            if (addUploadedTransactions) {
-                addUploadedTransactions(uploadsToProcess.map(p => ({
-                    data: p.data,
-                    fileName: p.fileName,
-                    bankName: p.bankName,
-                    statementType: p.statementType,
-                    statementPeriod: p.statementPeriod,
-                })));
+        const finalResult = await preAnalyzeTransactions(text, fileName, false);
+        
+        if (finalResult.error || !finalResult.data || !finalResult.bankName || !finalResult.statementType || !finalResult.usage) {
+            toast({
+                variant: "destructive",
+                title: `Upload Failed: ${fileName}`,
+                description: finalResult.error || "Could not process this PDF file.",
+            });
+        } else {
+             if (consumeTokens(finalResult.usage.totalTokens)) {
+                addUploadedTransactions([{
+                    data: finalResult.data,
+                    fileName: fileName,
+                    bankName: finalResult.bankName,
+                    statementType: finalResult.statementType,
+                    statementPeriod: finalResult.statementPeriod,
+                }]);
             }
         }
+        
         setHighCostUpload(null);
+        setIsUploading(false);
     };
 
     const cancelHighCostUpload = () => {
         setHighCostUpload(null);
         toast({
             title: "Upload Canceled",
-            description: "The file upload was canceled due to high token cost.",
+            description: "The file upload was canceled.",
         });
     };
 
@@ -345,16 +367,16 @@ const DashboardNav = () => {
                     <AlertDialogHeader>
                     <AlertDialogTitle>High Token Usage Alert</AlertDialogTitle>
                     <AlertDialogDescription>
-                        The selected file(s) are large and will consume approximately{' '}
+                        The selected file is large and will consume approximately{' '}
                         <strong>{highCostUpload.cost.toFixed(1)} tokens</strong>. This is more than the typical 2.0 tokens.
                         <br /><br />
-                        Do you wish to proceed with the upload?
+                        Do you wish to proceed? You can re-upload a smaller version of the file to save tokens.
                     </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                     <AlertDialogCancel onClick={cancelHighCostUpload}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleConfirmUpload(highCostUpload.uploads)}>
-                        Continue
+                    <AlertDialogAction onClick={handleConfirmHighCostUpload}>
+                        Continue Upload
                     </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
