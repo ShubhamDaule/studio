@@ -97,4 +97,5 @@ export type UploadFile = {
   text: string;
   fileName: string;
   cost: number;
+  arrayBuffer: ArrayBuffer;
 };

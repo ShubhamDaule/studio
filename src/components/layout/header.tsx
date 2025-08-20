@@ -222,6 +222,7 @@ const DashboardNav = () => {
                     text: fullText,
                     fileName: file.name,
                     cost: calculateAppTokens(preAnalysisResult.usage.totalTokens),
+                    arrayBuffer,
                 });
 
             } catch (error: any) {
