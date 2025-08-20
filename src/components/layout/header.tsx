@@ -295,7 +295,6 @@ const DashboardNav = () => {
             }
         }
         
-        // Await small files processing before queuing large ones
         if (smallFilesBuffer.length > 0) {
             await processFiles(smallFilesBuffer);
         }
@@ -303,24 +302,27 @@ const DashboardNav = () => {
         if (largeFilesBuffer.length > 0) {
             setLargeFilesQueue(largeFilesBuffer);
         } else {
-             setIsUploading(false); // Only set to false if no large files are queued
+             setIsUploading(false);
         }
         
         if(fileInputRef.current) fileInputRef.current.value = "";
     };
     
     const advanceQueue = React.useCallback(() => {
-        const newQueue = largeFilesQueue.slice(1);
-        setLargeFilesQueue(newQueue);
-        if (newQueue.length === 0) {
-            setIsUploading(false); // All files (small and large) are processed
-        }
-    }, [largeFilesQueue, setIsUploading]);
+        setLargeFilesQueue(prev => {
+            const newQueue = prev.slice(1);
+            if (newQueue.length === 0) {
+                setIsUploading(false);
+            }
+            return newQueue;
+        });
+    }, [setIsUploading]);
 
     const handleConfirmHighCostUpload = React.useCallback(async () => {
         if (!currentHighCostUpload) return;
         await processFiles([currentHighCostUpload.file]);
-    }, [currentHighCostUpload]);
+        advanceQueue();
+    }, [currentHighCostUpload, advanceQueue]);
 
     const handleCancelHighCostUpload = React.useCallback(() => {
         if (!currentHighCostUpload) return;
@@ -328,7 +330,8 @@ const DashboardNav = () => {
             title: "Upload Canceled",
             description: `The file "${currentHighCostUpload.file.fileName}" was not uploaded.`,
         });
-    }, [currentHighCostUpload, toast]);
+        advanceQueue();
+    }, [currentHighCostUpload, toast, advanceQueue]);
 
     return (
        <>
@@ -373,7 +376,7 @@ const DashboardNav = () => {
         </div>
         
         {currentHighCostUpload && (
-            <AlertDialog open={!!currentHighCostUpload} onOpenChange={(open) => !open && advanceQueue()}>
+            <AlertDialog open={!!currentHighCostUpload}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                     <AlertDialogTitle>High Token Usage Alert</AlertDialogTitle>
@@ -422,4 +425,3 @@ export function Header() {
         </header>
     );
 }
-
