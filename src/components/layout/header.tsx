@@ -28,8 +28,16 @@ import { Logo } from "./logo";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
 import { Progress } from "@/components/ui/progress";
-import { RawJsonDialog } from "../dialogs/raw-json-dialog";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
@@ -192,6 +200,7 @@ const DashboardNav = () => {
     const { consumeTokens } = useTiers();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [pendingUploads, setPendingUploads] = React.useState<PendingUpload[]>([]);
+    const [highCostUpload, setHighCostUpload] = React.useState<{uploads: PendingUpload[], cost: number} | null>(null);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -199,6 +208,7 @@ const DashboardNav = () => {
 
         setIsUploading(true);
         const allPendingUploads: PendingUpload[] = [];
+        let totalAppTokens = 0;
 
         for (const file of Array.from(files)) {
             try {
@@ -222,7 +232,8 @@ const DashboardNav = () => {
                     });
                     continue; 
                 }
-
+                
+                totalAppTokens += calculateAppTokens(result.usage.totalTokens);
                 allPendingUploads.push({
                     data: result.data,
                     fileName: file.name,
@@ -233,6 +244,7 @@ const DashboardNav = () => {
                     rawText: result.rawText,
                     processedText: result.processedText,
                 });
+
             } catch (error: any) {
                 console.error(`Error during pre-analysis for ${file.name}:`, error);
                 toast({
@@ -244,24 +256,28 @@ const DashboardNav = () => {
         }
         
         if (allPendingUploads.length > 0) {
-            setPendingUploads(allPendingUploads);
+            if (totalAppTokens > 2.0) {
+                setHighCostUpload({ uploads: allPendingUploads, cost: totalAppTokens });
+            } else {
+                handleConfirmUpload(allPendingUploads);
+            }
         }
 
         setIsUploading(false);
         if(fileInputRef.current) fileInputRef.current.value = "";
     };
     
-    const handleConfirmUpload = () => {
+    const handleConfirmUpload = (uploadsToProcess: PendingUpload[]) => {
         let totalAppTokensToConsume = 0;
         
-        pendingUploads.forEach(upload => {
+        uploadsToProcess.forEach(upload => {
             const appTokensForFile = calculateAppTokens(upload.usage.totalTokens);
             totalAppTokensToConsume += appTokensForFile;
         });
 
         if (consumeTokens(totalAppTokensToConsume, true)) {
             if (addUploadedTransactions) {
-                addUploadedTransactions(pendingUploads.map(p => ({
+                addUploadedTransactions(uploadsToProcess.map(p => ({
                     data: p.data,
                     fileName: p.fileName,
                     bankName: p.bankName,
@@ -270,7 +286,15 @@ const DashboardNav = () => {
                 })));
             }
         }
-        setPendingUploads([]);
+        setHighCostUpload(null);
+    };
+
+    const cancelHighCostUpload = () => {
+        setHighCostUpload(null);
+        toast({
+            title: "Upload Canceled",
+            description: "The file upload was canceled due to high token cost.",
+        });
     };
 
     return (
@@ -315,18 +339,26 @@ const DashboardNav = () => {
             </div>
         </div>
         
-        {pendingUploads.length > 0 && (
-            <RawJsonDialog 
-                isOpen={pendingUploads.length > 0}
-                onClose={() => setPendingUploads([])}
-                onConfirm={handleConfirmUpload}
-                jsonData={pendingUploads.flatMap(p => p.data)}
-                rawText={pendingUploads.map(p => `--- ${p.fileName} ---\n${p.rawText}`).join('\n\n')}
-                processedText={pendingUploads.map(p => `--- ${p.fileName} ---\n${p.processedText}`).join('\n\n')}
-                bankName={pendingUploads[0]?.bankName}
-                statementType={pendingUploads[0]?.statementType}
-                statementPeriod={pendingUploads[0]?.statementPeriod}
-            />
+        {highCostUpload && (
+            <AlertDialog open={!!highCostUpload} onOpenChange={(open) => !open && cancelHighCostUpload()}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>High Token Usage Alert</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        The selected file(s) are large and will consume approximately{' '}
+                        <strong>{highCostUpload.cost.toFixed(1)} tokens</strong>. This is more than the typical 2.0 tokens.
+                        <br /><br />
+                        Do you wish to proceed with the upload?
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel onClick={cancelHighCostUpload}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleConfirmUpload(highCostUpload.uploads)}>
+                        Continue
+                    </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         )}
        </>
     )
