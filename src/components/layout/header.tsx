@@ -52,6 +52,7 @@ type PendingUpload = {
 type HighCostUpload = {
     uploads: { text: string; fileName: string }[];
     cost: number;
+    usage: TokenUsage;
 };
 
 
@@ -211,6 +212,8 @@ const DashboardNav = () => {
         setIsUploading(true);
         const uploadsWithText: { text: string, fileName: string }[] = [];
         let totalAppTokens = 0;
+        let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+
 
         for (const file of Array.from(files)) {
             try {
@@ -233,8 +236,15 @@ const DashboardNav = () => {
                     });
                     continue;
                 }
-                totalAppTokens += calculateAppTokens(preAnalysisResult.usage.totalTokens);
+                
+                const appTokensForFile = calculateAppTokens(preAnalysisResult.usage.totalTokens);
+                totalAppTokens += appTokensForFile;
+                totalUsage.inputTokens += preAnalysisResult.usage.inputTokens;
+                totalUsage.outputTokens += preAnalysisResult.usage.outputTokens;
+                totalUsage.totalTokens += preAnalysisResult.usage.totalTokens;
+                
                 uploadsWithText.push({ text: fullText, fileName: file.name });
+
             } catch (error: any) {
                 console.error(`Error processing ${file.name}:`, error);
                 toast({
@@ -247,7 +257,7 @@ const DashboardNav = () => {
         
         if (uploadsWithText.length > 0) {
             if (totalAppTokens > 2.0) {
-                setHighCostUpload({ uploads: uploadsWithText, cost: totalAppTokens });
+                setHighCostUpload({ uploads: uploadsWithText, cost: totalAppTokens, usage: totalUsage });
             } else {
                 await processAndUploadFiles(uploadsWithText);
             }
@@ -352,10 +362,15 @@ const DashboardNav = () => {
                     <AlertDialogHeader>
                     <AlertDialogTitle>High Token Usage Alert</AlertDialogTitle>
                     <AlertDialogDescription>
-                        The selected file(s) are large and will consume approximately{' '}
-                        <strong>{highCostUpload.cost.toFixed(1)} tokens</strong>. This is more than the typical 2.0 tokens.
+                        The selected file(s) are large. This will consume approximately{' '}
+                        <strong>{highCostUpload.cost.toFixed(1)} tokens</strong> in total.
                         <br /><br />
-                        Do you wish to proceed? You can re-upload a smaller version of the file to save tokens.
+                        <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
+                            <li>Input (Upload): {calculateAppTokens(highCostUpload.usage.inputTokens).toFixed(1)} tokens</li>
+                            <li>AI Analysis (Output): {calculateAppTokens(highCostUpload.usage.outputTokens).toFixed(1)} tokens</li>
+                        </ul>
+                        <br />
+                        Do you wish to proceed? You can re-upload a smaller file to save tokens.
                     </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
