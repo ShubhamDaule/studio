@@ -92,3 +92,9 @@ export type TokenUsage = {
     outputTokens: number;
     totalTokens: number;
 }
+
+export type UploadFile = {
+  text: string;
+  fileName: string;
+  cost: number;
+};

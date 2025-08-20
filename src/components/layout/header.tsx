@@ -23,21 +23,13 @@ import { cn } from "@/lib/utils";
 import { preAnalyzeTransactions } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
-import type { ExtractedTransaction, BankName, StatementType, StatementPeriod, TokenUsage } from "@/lib/types";
+import type { ExtractedTransaction, BankName, StatementType, StatementPeriod, TokenUsage, UploadFile } from "@/lib/types";
 import { Logo } from "./logo";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
 import { Progress } from "@/components/ui/progress";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { UploadConfirmationDialog } from "../dialogs/upload-confirmation-dialog";
+
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
@@ -48,18 +40,6 @@ type PendingUpload = {
   statementType: StatementType;
   statementPeriod: StatementPeriod | null;
 };
-
-type FileWithText = {
-    text: string;
-    fileName: string;
-};
-
-type HighCostUpload = {
-    file: FileWithText;
-    cost: number;
-    usage: TokenUsage;
-};
-
 
 const UserNav = () => {
   const { user, signOut } = useAuth();
@@ -208,53 +188,16 @@ const DashboardNav = () => {
     const { toast } = useToast();
     const { consumeTokens } = useTiers();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const [largeFilesQueue, setLargeFilesQueue] = React.useState<HighCostUpload[]>([]);
-    const [isClient, setIsClient] = React.useState(false);
 
-    React.useEffect(() => {
-        setIsClient(true);
-    }, []);
-
-    const currentHighCostUpload = largeFilesQueue[0] || null;
-
-    const processFiles = React.useCallback(async (filesToProcess: FileWithText[]) => {
-        const allFinalUploads: PendingUpload[] = [];
-        let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
-
-        for (const upload of filesToProcess) {
-            const finalResult = await preAnalyzeTransactions(upload.text, upload.fileName, false);
-            if (finalResult.error || !finalResult.data || !finalResult.bankName || !finalResult.statementType || !finalResult.usage) {
-                toast({
-                    variant: "destructive",
-                    title: `Upload Failed: ${upload.fileName}`,
-                    description: finalResult.error || "Could not process this PDF file.",
-                });
-                continue;
-            }
-            totalUsage.totalTokens += finalResult.usage.totalTokens;
-            allFinalUploads.push({
-                data: finalResult.data,
-                fileName: upload.fileName,
-                bankName: finalResult.bankName,
-                statementType: finalResult.statementType,
-                statementPeriod: finalResult.statementPeriod,
-            });
-        }
-        
-        if (allFinalUploads.length > 0) {
-            if (consumeTokens(totalUsage.totalTokens)) {
-                addUploadedTransactions(allFinalUploads);
-            }
-        }
-    }, [toast, consumeTokens, addUploadedTransactions]);
+    const [filesToConfirm, setFilesToConfirm] = React.useState<UploadFile[]>([]);
+    const [isConfirming, setIsConfirming] = React.useState(false);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
         setIsUploading(true);
-        const smallFilesBuffer: FileWithText[] = [];
-        const largeFilesBuffer: HighCostUpload[] = [];
+        const preppedFiles: UploadFile[] = [];
 
         for (const file of Array.from(files)) {
             try {
@@ -269,76 +212,67 @@ const DashboardNav = () => {
                 }
                 
                 const preAnalysisResult = await preAnalyzeTransactions(fullText, file.name, true);
+
                 if (preAnalysisResult.error || !preAnalysisResult.usage) {
-                     toast({
-                        variant: "destructive",
-                        title: `Analysis Failed: ${file.name}`,
-                        description: preAnalysisResult.error || "Could not pre-process this file.",
-                    });
+                     toast({ variant: "destructive", title: `Analysis Failed: ${file.name}`, description: preAnalysisResult.error });
                     continue;
                 }
                 
-                const appTokensForFile = calculateAppTokens(preAnalysisResult.usage.totalTokens);
-                
-                if (appTokensForFile > 2.0) {
-                    largeFilesBuffer.push({
-                        file: { text: fullText, fileName: file.name },
-                        cost: appTokensForFile,
-                        usage: preAnalysisResult.usage,
-                    });
-                } else {
-                    smallFilesBuffer.push({ text: fullText, fileName: file.name });
-                }
+                preppedFiles.push({
+                    text: fullText,
+                    fileName: file.name,
+                    cost: calculateAppTokens(preAnalysisResult.usage.totalTokens),
+                });
 
             } catch (error: any) {
-                console.error(`Error processing ${file.name}:`, error);
-                toast({
-                    variant: "destructive",
-                    title: `Upload Failed: ${file.name}`,
-                    description: error.message || "Could not read this PDF file.",
-                });
+                toast({ variant: "destructive", title: `Upload Failed: ${file.name}`, description: error.message });
             }
         }
         
-        if (smallFilesBuffer.length > 0) {
-            await processFiles(smallFilesBuffer);
-        }
-
-        if (largeFilesBuffer.length > 0) {
-            setLargeFilesQueue(largeFilesBuffer);
+        if (preppedFiles.length > 0) {
+            setFilesToConfirm(preppedFiles);
+            setIsConfirming(true);
         } else {
              setIsUploading(false);
         }
         
         if(fileInputRef.current) fileInputRef.current.value = "";
     };
-    
-    const advanceQueue = React.useCallback(() => {
-        setLargeFilesQueue(prev => prev.slice(1));
-    }, []);
 
-    React.useEffect(() => {
-        if (largeFilesQueue.length === 0 && isUploading) {
-            const timer = setTimeout(() => setIsUploading(false), 500);
-            return () => clearTimeout(timer);
+    const handleConfirmUpload = async (confirmedFiles: UploadFile[]) => {
+        setIsConfirming(false);
+        if (confirmedFiles.length === 0) {
+            setIsUploading(false);
+            return;
         }
-    }, [largeFilesQueue, isUploading, setIsUploading]);
 
-    const handleConfirmHighCostUpload = React.useCallback(async () => {
-        if (!currentHighCostUpload) return;
-        await processFiles([currentHighCostUpload.file]);
-        advanceQueue();
-    }, [currentHighCostUpload, advanceQueue, processFiles]);
+        const allFinalUploads: PendingUpload[] = [];
+        let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
-    const handleCancelHighCostUpload = React.useCallback(() => {
-        if (!currentHighCostUpload) return;
-        toast({
-            title: "Upload Canceled",
-            description: `The file "${currentHighCostUpload.file.fileName}" was not uploaded.`,
-        });
-        advanceQueue();
-    }, [currentHighCostUpload, toast, advanceQueue]);
-
+        for (const file of confirmedFiles) {
+            const finalResult = await preAnalyzeTransactions(file.text, file.fileName, false);
+            if (finalResult.error || !finalResult.data || !finalResult.bankName || !finalResult.statementType || !finalResult.usage) {
+                toast({ variant: "destructive", title: `Upload Failed: ${file.fileName}`, description: finalResult.error });
+                continue;
+            }
+            totalUsage.totalTokens += finalResult.usage.totalTokens;
+            allFinalUploads.push({
+                data: finalResult.data,
+                fileName: file.fileName,
+                bankName: finalResult.bankName,
+                statementType: finalResult.statementType,
+                statementPeriod: finalResult.statementPeriod,
+            });
+        }
+        
+        if (allFinalUploads.length > 0) {
+            if (consumeTokens(totalUsage.totalTokens)) {
+                addUploadedTransactions(allFinalUploads);
+            }
+        }
+        setIsUploading(false);
+    }
+    
     return (
        <>
         <div className="flex w-full items-center justify-end gap-2">
@@ -380,28 +314,16 @@ const DashboardNav = () => {
                 <UserNav />
             </div>
         </div>
-        
-        {isClient && currentHighCostUpload && (
-            <AlertDialog open={!!currentHighCostUpload}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>High Token Usage Alert</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        The file <strong>{currentHighCostUpload.file.fileName}</strong> is large and will consume approximately{' '}
-                        <strong>{currentHighCostUpload.cost.toFixed(1)} tokens</strong>.
-                        <br /><br />
-                        Do you wish to proceed? You can re-upload a smaller file, or remove unwanted pages, to save tokens.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel onClick={handleCancelHighCostUpload}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirmHighCostUpload}>
-                        Continue Upload
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        )}
+
+        <UploadConfirmationDialog
+            isOpen={isConfirming}
+            onClose={() => {
+                setIsConfirming(false);
+                setIsUploading(false);
+            }}
+            onConfirm={handleConfirmUpload}
+            filesToConfirm={filesToConfirm}
+        />
        </>
     )
 }
