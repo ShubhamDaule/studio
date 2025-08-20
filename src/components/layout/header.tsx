@@ -49,8 +49,13 @@ type PendingUpload = {
   statementPeriod: StatementPeriod | null;
 };
 
+type FileWithText = {
+    text: string;
+    fileName: string;
+};
+
 type HighCostUpload = {
-    uploads: { text: string; fileName: string }[];
+    file: FileWithText;
     cost: number;
     usage: TokenUsage;
 };
@@ -205,73 +210,11 @@ const DashboardNav = () => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [highCostUpload, setHighCostUpload] = React.useState<HighCostUpload | null>(null);
 
-    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files;
-        if (!files || files.length === 0) return;
-
-        setIsUploading(true);
-        const uploadsWithText: { text: string, fileName: string }[] = [];
-        let totalAppTokens = 0;
-        let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
-
-
-        for (const file of Array.from(files)) {
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                let fullText = "";
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const content = await page.getTextContent();
-                    const pageText = content.items.map(item => (item as any).str).join(" ");
-                    fullText += "\\n" + pageText;
-                }
-                
-                const preAnalysisResult = await preAnalyzeTransactions(fullText, file.name, true);
-                if (preAnalysisResult.error || !preAnalysisResult.usage) {
-                     toast({
-                        variant: "destructive",
-                        title: `Analysis Failed: ${file.name}`,
-                        description: preAnalysisResult.error || "Could not pre-process this file.",
-                    });
-                    continue;
-                }
-                
-                const appTokensForFile = calculateAppTokens(preAnalysisResult.usage.totalTokens);
-                totalAppTokens += appTokensForFile;
-                totalUsage.inputTokens += preAnalysisResult.usage.inputTokens;
-                totalUsage.outputTokens += preAnalysisResult.usage.outputTokens;
-                totalUsage.totalTokens += preAnalysisResult.usage.totalTokens;
-                
-                uploadsWithText.push({ text: fullText, fileName: file.name });
-
-            } catch (error: any) {
-                console.error(`Error processing ${file.name}:`, error);
-                toast({
-                    variant: "destructive",
-                    title: `Upload Failed: ${file.name}`,
-                    description: error.message || "Could not read this PDF file.",
-                });
-            }
-        }
-        
-        if (uploadsWithText.length > 0) {
-            if (totalAppTokens > 2.0) {
-                setHighCostUpload({ uploads: uploadsWithText, cost: totalAppTokens, usage: totalUsage });
-            } else {
-                await processAndUploadFiles(uploadsWithText);
-            }
-        }
-
-        setIsUploading(false);
-        if(fileInputRef.current) fileInputRef.current.value = "";
-    };
-
-    const processAndUploadFiles = async (uploadsToProcess: { text: string, fileName: string }[]) => {
+    const processAndUploadFiles = async (filesToProcess: FileWithText[]) => {
         const allFinalUploads: PendingUpload[] = [];
         let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
-        for (const upload of uploadsToProcess) {
+        for (const upload of filesToProcess) {
             const finalResult = await preAnalyzeTransactions(upload.text, upload.fileName, false);
             if (finalResult.error || !finalResult.data || !finalResult.bankName || !finalResult.statementType || !finalResult.usage) {
                 toast({
@@ -297,11 +240,79 @@ const DashboardNav = () => {
             }
         }
     }
+
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        setIsUploading(true);
+        const smallFiles: FileWithText[] = [];
+        const largeFilesQueue: HighCostUpload[] = [];
+
+        for (const file of Array.from(files)) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let fullText = "";
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const pageText = content.items.map(item => (item as any).str).join(" ");
+                    fullText += "\\n" + pageText;
+                }
+                
+                const preAnalysisResult = await preAnalyzeTransactions(fullText, file.name, true);
+                if (preAnalysisResult.error || !preAnalysisResult.usage) {
+                     toast({
+                        variant: "destructive",
+                        title: `Analysis Failed: ${file.name}`,
+                        description: preAnalysisResult.error || "Could not pre-process this file.",
+                    });
+                    continue;
+                }
+                
+                const appTokensForFile = calculateAppTokens(preAnalysisResult.usage.totalTokens);
+                
+                if (appTokensForFile > 2.0) {
+                    largeFilesQueue.push({
+                        file: { text: fullText, fileName: file.name },
+                        cost: appTokensForFile,
+                        usage: preAnalysisResult.usage,
+                    });
+                } else {
+                    smallFiles.push({ text: fullText, fileName: file.name });
+                }
+
+            } catch (error: any) {
+                console.error(`Error processing ${file.name}:`, error);
+                toast({
+                    variant: "destructive",
+                    title: `Upload Failed: ${file.name}`,
+                    description: error.message || "Could not read this PDF file.",
+                });
+            }
+        }
+        
+        // Immediately process small files
+        if (smallFiles.length > 0) {
+            await processAndUploadFiles(smallFiles);
+        }
+
+        // Handle large files one by one
+        if (largeFilesQueue.length > 0) {
+            setHighCostUpload(largeFilesQueue[0]);
+            // The rest will be handled as the user confirms each dialog
+        } else {
+             setIsUploading(false);
+        }
+        
+        if(fileInputRef.current) fileInputRef.current.value = "";
+    };
     
     const handleConfirmHighCostUpload = async () => {
         if (!highCostUpload) return;
         setIsUploading(true);
-        await processAndUploadFiles(highCostUpload.uploads);
+        await processAndUploadFiles([highCostUpload.file]);
         setHighCostUpload(null);
         setIsUploading(false);
     };
@@ -310,8 +321,9 @@ const DashboardNav = () => {
         setHighCostUpload(null);
         toast({
             title: "Upload Canceled",
-            description: "The file upload was canceled.",
+            description: `The file "${highCostUpload?.file.fileName}" was not uploaded.`,
         });
+        setIsUploading(false);
     };
 
     return (
@@ -362,7 +374,7 @@ const DashboardNav = () => {
                     <AlertDialogHeader>
                     <AlertDialogTitle>High Token Usage Alert</AlertDialogTitle>
                     <AlertDialogDescription>
-                        The selected file(s) are large and will consume approximately{' '}
+                        The file <strong>{highCostUpload.file.fileName}</strong> is large and will consume approximately{' '}
                         <strong>{highCostUpload.cost.toFixed(1)} tokens</strong>.
                         <br /><br />
                         Do you wish to proceed? You can re-upload a smaller file, or remove unwanted pages, to save tokens.
