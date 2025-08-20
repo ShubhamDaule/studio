@@ -209,10 +209,15 @@ const DashboardNav = () => {
     const { consumeTokens } = useTiers();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [largeFilesQueue, setLargeFilesQueue] = React.useState<HighCostUpload[]>([]);
+    const [isClient, setIsClient] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const currentHighCostUpload = largeFilesQueue[0] || null;
 
-    const processFiles = async (filesToProcess: FileWithText[]) => {
+    const processFiles = React.useCallback(async (filesToProcess: FileWithText[]) => {
         const allFinalUploads: PendingUpload[] = [];
         let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
@@ -241,7 +246,7 @@ const DashboardNav = () => {
                 addUploadedTransactions(allFinalUploads);
             }
         }
-    }
+    }, [toast, consumeTokens, addUploadedTransactions]);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -313,11 +318,9 @@ const DashboardNav = () => {
     }, []);
 
     React.useEffect(() => {
-        if (!isUploading && largeFilesQueue.length === 0) {
-            // This is just a fallback in case the state gets out of sync
-        } else if (isUploading && largeFilesQueue.length === 0) {
-            // All files processed, turn off loading
-            setIsUploading(false);
+        if (largeFilesQueue.length === 0 && isUploading) {
+            const timer = setTimeout(() => setIsUploading(false), 500);
+            return () => clearTimeout(timer);
         }
     }, [largeFilesQueue, isUploading, setIsUploading]);
 
@@ -325,7 +328,7 @@ const DashboardNav = () => {
         if (!currentHighCostUpload) return;
         await processFiles([currentHighCostUpload.file]);
         advanceQueue();
-    }, [currentHighCostUpload, advanceQueue]);
+    }, [currentHighCostUpload, advanceQueue, processFiles]);
 
     const handleCancelHighCostUpload = React.useCallback(() => {
         if (!currentHighCostUpload) return;
@@ -378,7 +381,7 @@ const DashboardNav = () => {
             </div>
         </div>
         
-        {currentHighCostUpload && (
+        {isClient && currentHighCostUpload && (
             <AlertDialog open={!!currentHighCostUpload}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
