@@ -45,7 +45,8 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
     const generateThumbnails = async () => {
       setIsLoading(true);
       try {
-        const pdf = await pdfjsLib.getDocument({ data: file.arrayBuffer }).promise;
+        const bufferCopy = file.arrayBuffer.slice(0);
+        const pdf = await pdfjsLib.getDocument({ data: bufferCopy }).promise;
         const pageThumbnails: Page[] = [];
         const initialSelected = new Set<number>();
 
@@ -103,7 +104,8 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const handleSaveChanges = async () => {
     setIsLoading(true);
     try {
-        const pdf = await pdfjsLib.getDocument({ data: file.arrayBuffer }).promise;
+        const bufferCopy = file.arrayBuffer.slice(0);
+        const pdf = await pdfjsLib.getDocument({ data: bufferCopy }).promise;
         let newText = "";
         const sortedSelected = Array.from(selectedPages).sort((a,b) => a - b);
         for (const pageNum of sortedSelected) {
