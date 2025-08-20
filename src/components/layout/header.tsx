@@ -362,15 +362,10 @@ const DashboardNav = () => {
                     <AlertDialogHeader>
                     <AlertDialogTitle>High Token Usage Alert</AlertDialogTitle>
                     <AlertDialogDescription>
-                        The selected file(s) are large. This will consume approximately{' '}
-                        <strong>{highCostUpload.cost.toFixed(1)} tokens</strong> in total.
+                        The selected file(s) are large and will consume approximately{' '}
+                        <strong>{highCostUpload.cost.toFixed(1)} tokens</strong>.
                         <br /><br />
-                        <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
-                            <li>Input (Upload): {calculateAppTokens(highCostUpload.usage.inputTokens).toFixed(1)} tokens</li>
-                            <li>AI Analysis (Output): {calculateAppTokens(highCostUpload.usage.outputTokens).toFixed(1)} tokens</li>
-                        </ul>
-                        <br />
-                        Do you wish to proceed? You can re-upload a smaller file to save tokens.
+                        Do you wish to proceed? You can re-upload a smaller file, or remove unwanted pages, to save tokens.
                     </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
