@@ -125,29 +125,56 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
 
     const addUploadedTransactions: NewTransactionsCallback = (uploads) => {
-        const allNewTransactions: Transaction[] = uploads.flatMap(upload => 
-            upload.data.map(t => ({
+        let currentFiles = isUsingMockData ? [] : [...transactionFiles];
+        let currentTransactions = isUsingMockData ? [] : [...allTransactions];
+        let totalNewTransactions = 0;
+
+        const getUniqueFileName = (fileName: string, existingFiles: TransactionFile[]): string => {
+            const existingFileNames = new Set(existingFiles.map(f => f.fileName));
+            if (!existingFileNames.has(fileName)) {
+                return fileName;
+            }
+
+            const dotIndex = fileName.lastIndexOf('.');
+            const baseName = dotIndex > -1 ? fileName.substring(0, dotIndex) : fileName;
+            const extension = dotIndex > -1 ? fileName.substring(dotIndex) : '';
+            
+            let count = 1;
+            let newFileName = `${baseName} (${count})${extension}`;
+            while (existingFileNames.has(newFileName)) {
+                count++;
+                newFileName = `${baseName} (${count})${extension}`;
+            }
+            return newFileName;
+        }
+
+        uploads.forEach(upload => {
+            const uniqueFileName = getUniqueFileName(upload.fileName, currentFiles);
+
+            const newTransactionsForFile: Transaction[] = upload.data.map(t => ({
                 ...t,
                 id: crypto.randomUUID(),
-            }))
-        );
+                fileSource: uniqueFileName // Use the unique name
+            }));
 
-        const newFiles: TransactionFile[] = uploads.map(upload => ({
-            fileName: upload.fileName,
-            bankName: upload.bankName,
-            statementType: upload.statementType,
-            statementPeriod: upload.statementPeriod,
-        }));
-        
-        const updatedTransactions = isUsingMockData ? allNewTransactions : [...allTransactions, ...allNewTransactions];
-        const updatedFiles = isUsingMockData ? newFiles : [...transactionFiles, ...newFiles];
+            currentTransactions.push(...newTransactionsForFile);
+            totalNewTransactions += newTransactionsForFile.length;
+
+            currentFiles.push({
+                fileName: uniqueFileName,
+                bankName: upload.bankName,
+                statementType: upload.statementType,
+                statementPeriod: upload.statementPeriod,
+            });
+        });
 
         if (isUsingMockData) {
             setIsUsingMockData(false);
         }
 
-        setAllTransactions(updatedTransactions);
-        setTransactionFiles(updatedFiles);
+        setAllTransactions(currentTransactions);
+        setTransactionFiles(currentFiles);
+
 
         // Date range logic
         let newDateRange: DateRange | undefined = undefined;
@@ -177,7 +204,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
         // If multiple files are uploaded or no specific range could be determined, set to all time
         if (!newDateRange) {
-            const allValidFiles = [...updatedFiles];
+            const allValidFiles = [...currentFiles];
             const allPeriodDates: Date[] = [];
             allValidFiles.forEach(file => {
                  if (file.statementPeriod?.startDate && file.statementPeriod?.endDate) {
@@ -193,7 +220,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
                 const newMaxDate = new Date(Math.max.apply(null, allPeriodDates.map(d => d.getTime())));
                 newDateRange = { from: startOfDay(newMinDate), to: endOfDay(newMaxDate) };
             } else {
-                const allDates = updatedTransactions.map(t => new Date(t.date));
+                const allDates = currentTransactions.map(t => new Date(t.date));
                 const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
                 const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
                 newDateRange = { from: startOfDay(newMinDate), to: endOfDay(newMaxDate) };
@@ -206,7 +233,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         if (uploads.length > 0) {
              toast({
                 title: "Uploads Successful!",
-                description: `${allNewTransactions.length} transaction(s) from ${uploads.length} file(s) have been added.`,
+                description: `${totalNewTransactions} transaction(s) from ${uploads.length} file(s) have been added.`,
             });
         }
     };
