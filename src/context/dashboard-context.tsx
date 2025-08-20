@@ -224,10 +224,13 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
                 
                 setDateRange(newDateRange);
 
-                 toast({
-                    title: "Uploads Successful!",
-                    description: `${totalNewTransactions} transaction(s) from ${uploads.length} file(s) have been added.`,
-                });
+                setTimeout(() => {
+                    toast({
+                        title: "Uploads Successful!",
+                        description: `${totalNewTransactions} transaction(s) from ${uploads.length} file(s) have been added.`,
+                    });
+                }, 0);
+
 
                 return currentFiles;
             });
