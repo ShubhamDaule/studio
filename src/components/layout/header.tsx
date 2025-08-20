@@ -213,7 +213,6 @@ const DashboardNav = () => {
     const currentHighCostUpload = largeFilesQueue[0] || null;
 
     const processFiles = async (filesToProcess: FileWithText[]) => {
-        setIsUploading(true);
         const allFinalUploads: PendingUpload[] = [];
         let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
@@ -242,7 +241,6 @@ const DashboardNav = () => {
                 addUploadedTransactions(allFinalUploads);
             }
         }
-        setIsUploading(false);
     }
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -297,6 +295,7 @@ const DashboardNav = () => {
             }
         }
         
+        // Await small files processing before queuing large ones
         if (smallFilesBuffer.length > 0) {
             await processFiles(smallFilesBuffer);
         }
@@ -304,33 +303,32 @@ const DashboardNav = () => {
         if (largeFilesBuffer.length > 0) {
             setLargeFilesQueue(largeFilesBuffer);
         } else {
-             setIsUploading(false);
+             setIsUploading(false); // Only set to false if no large files are queued
         }
         
         if(fileInputRef.current) fileInputRef.current.value = "";
     };
     
-    const advanceQueue = () => {
-        setLargeFilesQueue(prev => prev.slice(1));
-        if (largeFilesQueue.length <= 1) {
-            setIsUploading(false);
+    const advanceQueue = React.useCallback(() => {
+        const newQueue = largeFilesQueue.slice(1);
+        setLargeFilesQueue(newQueue);
+        if (newQueue.length === 0) {
+            setIsUploading(false); // All files (small and large) are processed
         }
-    };
+    }, [largeFilesQueue, setIsUploading]);
 
-    const handleConfirmHighCostUpload = async () => {
+    const handleConfirmHighCostUpload = React.useCallback(async () => {
         if (!currentHighCostUpload) return;
         await processFiles([currentHighCostUpload.file]);
-        advanceQueue();
-    };
+    }, [currentHighCostUpload]);
 
-    const cancelHighCostUpload = () => {
+    const handleCancelHighCostUpload = React.useCallback(() => {
         if (!currentHighCostUpload) return;
         toast({
             title: "Upload Canceled",
             description: `The file "${currentHighCostUpload.file.fileName}" was not uploaded.`,
         });
-        advanceQueue();
-    };
+    }, [currentHighCostUpload, toast]);
 
     return (
        <>
@@ -375,7 +373,7 @@ const DashboardNav = () => {
         </div>
         
         {currentHighCostUpload && (
-            <AlertDialog open={!!currentHighCostUpload} onOpenChange={(open) => !open && cancelHighCostUpload()}>
+            <AlertDialog open={!!currentHighCostUpload} onOpenChange={(open) => !open && advanceQueue()}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                     <AlertDialogTitle>High Token Usage Alert</AlertDialogTitle>
@@ -387,7 +385,7 @@ const DashboardNav = () => {
                     </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                    <AlertDialogCancel onClick={cancelHighCostUpload}>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel onClick={handleCancelHighCostUpload}>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleConfirmHighCostUpload}>
                         Continue Upload
                     </AlertDialogAction>
@@ -424,3 +422,4 @@ export function Header() {
         </header>
     );
 }
+

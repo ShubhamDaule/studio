@@ -124,120 +124,117 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     }, [minDate, maxDate, dateRange]);
 
 
-    const addUploadedTransactions: NewTransactionsCallback = (uploads) => {
-        let currentFiles = isUsingMockData ? [] : [...transactionFiles];
-        let currentTransactions = isUsingMockData ? [] : [...allTransactions];
-        let totalNewTransactions = 0;
+    const addUploadedTransactions: NewTransactionsCallback = React.useCallback((uploads) => {
+        if (uploads.length === 0) return;
 
-        const getUniqueFileName = (fileName: string, existingFiles: TransactionFile[]): string => {
-            const existingFileNames = new Set(existingFiles.map(f => f.fileName));
-            if (!existingFileNames.has(fileName)) {
-                return fileName;
-            }
-
-            const dotIndex = fileName.lastIndexOf('.');
-            const baseName = dotIndex > -1 ? fileName.substring(0, dotIndex) : fileName;
-            const extension = dotIndex > -1 ? fileName.substring(dotIndex) : '';
+        setAllTransactions(prevTransactions => {
+            const currentTransactions = isUsingMockData ? [] : [...prevTransactions];
             
-            let count = 1;
-            let newFileName = `${baseName} (${count})${extension}`;
-            while (existingFileNames.has(newFileName)) {
-                count++;
-                newFileName = `${baseName} (${count})${extension}`;
-            }
-            return newFileName;
-        }
+            setTransactionFiles(prevFiles => {
+                 let currentFiles = isUsingMockData ? [] : [...prevFiles];
+                 let totalNewTransactions = 0;
 
-        uploads.forEach(upload => {
-            const uniqueFileName = getUniqueFileName(upload.fileName, currentFiles);
+                const getUniqueFileName = (fileName: string, existingFiles: TransactionFile[]): string => {
+                    const existingFileNames = new Set(existingFiles.map(f => f.fileName));
+                    if (!existingFileNames.has(fileName)) {
+                        return fileName;
+                    }
 
-            const newTransactionsForFile: Transaction[] = upload.data.map(t => ({
-                ...t,
-                id: crypto.randomUUID(),
-                fileSource: uniqueFileName // Use the unique name
-            }));
+                    const dotIndex = fileName.lastIndexOf('.');
+                    const baseName = dotIndex > -1 ? fileName.substring(0, dotIndex) : fileName;
+                    const extension = dotIndex > -1 ? fileName.substring(dotIndex) : '';
+                    
+                    let count = 1;
+                    let newFileName = `${baseName} (${count})${extension}`;
+                    while (existingFileNames.has(newFileName)) {
+                        count++;
+                        newFileName = `${baseName} (${count})${extension}`;
+                    }
+                    return newFileName;
+                }
 
-            currentTransactions.push(...newTransactionsForFile);
-            totalNewTransactions += newTransactionsForFile.length;
+                uploads.forEach(upload => {
+                    const uniqueFileName = getUniqueFileName(upload.fileName, currentFiles);
 
-            currentFiles.push({
-                fileName: uniqueFileName,
-                bankName: upload.bankName,
-                statementType: upload.statementType,
-                statementPeriod: upload.statementPeriod,
+                    const newTransactionsForFile: Transaction[] = upload.data.map(t => ({
+                        ...t,
+                        id: crypto.randomUUID(),
+                        fileSource: uniqueFileName,
+                        bankName: upload.bankName
+                    }));
+
+                    currentTransactions.push(...newTransactionsForFile);
+                    totalNewTransactions += newTransactionsForFile.length;
+
+                    currentFiles.push({
+                        fileName: uniqueFileName,
+                        bankName: upload.bankName,
+                        statementType: upload.statementType,
+                        statementPeriod: upload.statementPeriod,
+                    });
+                });
+                
+                if (isUsingMockData) {
+                    setIsUsingMockData(false);
+                }
+                
+                // Date range logic
+                let newDateRange: DateRange | undefined = undefined;
+
+                if (uploads.length === 1) {
+                    const singleUpload = uploads[0];
+                    if (singleUpload.statementPeriod?.startDate && singleUpload.statementPeriod?.endDate) {
+                        try {
+                            newDateRange = {
+                                from: startOfDay(parseISO(singleUpload.statementPeriod.startDate)),
+                                to: endOfDay(parseISO(singleUpload.statementPeriod.endDate))
+                            };
+                        } catch (e) { console.error("Could not parse statement period dates:", e); }
+                    }
+                    
+                    if (!newDateRange && singleUpload.data.length > 0) {
+                        const dates = singleUpload.data.map(t => parseISO(t.date));
+                        const min = new Date(Math.min.apply(null, dates.map(d => d.getTime())));
+                        const max = new Date(Math.max.apply(null, dates.map(d => d.getTime())));
+                        newDateRange = { from: startOfDay(min), to: endOfDay(max) };
+                    }
+                } else {
+                     const allValidFiles = [...currentFiles];
+                    const allPeriodDates: Date[] = [];
+                    allValidFiles.forEach(file => {
+                        if (file.statementPeriod?.startDate && file.statementPeriod?.endDate) {
+                            try {
+                                allPeriodDates.push(parseISO(file.statementPeriod.startDate));
+                                allPeriodDates.push(parseISO(file.statementPeriod.endDate));
+                            } catch {}
+                        }
+                    });
+                    
+                    if (allPeriodDates.length > 0) {
+                        const newMinDate = new Date(Math.min.apply(null, allPeriodDates.map(d => d.getTime())));
+                        const newMaxDate = new Date(Math.max.apply(null, allPeriodDates.map(d => d.getTime())));
+                        newDateRange = { from: startOfDay(newMinDate), to: endOfDay(newMaxDate) };
+                    } else {
+                        const allDates = currentTransactions.map(t => new Date(t.date));
+                        const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
+                        const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
+                        newDateRange = { from: startOfDay(newMinDate), to: endOfDay(newMaxDate) };
+                    }
+                }
+                
+                setDateRange(newDateRange);
+
+                 toast({
+                    title: "Uploads Successful!",
+                    description: `${totalNewTransactions} transaction(s) from ${uploads.length} file(s) have been added.`,
+                });
+
+                return currentFiles;
             });
+
+            return currentTransactions;
         });
-
-        if (isUsingMockData) {
-            setIsUsingMockData(false);
-        }
-
-        setAllTransactions(currentTransactions);
-        setTransactionFiles(currentFiles);
-
-
-        // Date range logic
-        let newDateRange: DateRange | undefined = undefined;
-
-        if (uploads.length === 1) {
-            const singleUpload = uploads[0];
-            // Prioritize statement period
-            if (singleUpload.statementPeriod?.startDate && singleUpload.statementPeriod?.endDate) {
-                try {
-                    newDateRange = {
-                        from: startOfDay(parseISO(singleUpload.statementPeriod.startDate)),
-                        to: endOfDay(parseISO(singleUpload.statementPeriod.endDate))
-                    };
-                } catch (e) {
-                    console.error("Could not parse statement period dates:", e);
-                }
-            }
-            
-            // Fallback to transaction dates if statement period is not available or invalid
-            if (!newDateRange && singleUpload.data.length > 0) {
-                const dates = singleUpload.data.map(t => parseISO(t.date));
-                const min = new Date(Math.min.apply(null, dates.map(d => d.getTime())));
-                const max = new Date(Math.max.apply(null, dates.map(d => d.getTime())));
-                newDateRange = { from: startOfDay(min), to: endOfDay(max) };
-            }
-        }
-
-        // If multiple files are uploaded or no specific range could be determined, set to all time
-        if (!newDateRange) {
-            const allValidFiles = [...currentFiles];
-            const allPeriodDates: Date[] = [];
-            allValidFiles.forEach(file => {
-                 if (file.statementPeriod?.startDate && file.statementPeriod?.endDate) {
-                    try {
-                        allPeriodDates.push(parseISO(file.statementPeriod.startDate));
-                        allPeriodDates.push(parseISO(file.statementPeriod.endDate));
-                    } catch {}
-                }
-            });
-            
-            if (allPeriodDates.length > 0) {
-                const newMinDate = new Date(Math.min.apply(null, allPeriodDates.map(d => d.getTime())));
-                const newMaxDate = new Date(Math.max.apply(null, allPeriodDates.map(d => d.getTime())));
-                newDateRange = { from: startOfDay(newMinDate), to: endOfDay(newMaxDate) };
-            } else {
-                const allDates = currentTransactions.map(t => new Date(t.date));
-                const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
-                const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
-                newDateRange = { from: startOfDay(newMinDate), to: endOfDay(newMaxDate) };
-            }
-        }
-        
-        setDateRange(newDateRange);
-
-
-        if (uploads.length > 0) {
-             toast({
-                title: "Uploads Successful!",
-                description: `${totalNewTransactions} transaction(s) from ${uploads.length} file(s) have been added.`,
-            });
-        }
-    };
-    
+    }, [isUsingMockData, toast, setIsUsingMockData]);
 
     const handleCategoryChange = React.useCallback((transactionId: string, newCategory: Category['name']) => {
         setAllTransactions(prev => 
