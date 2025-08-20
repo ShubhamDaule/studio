@@ -309,14 +309,17 @@ const DashboardNav = () => {
     };
     
     const advanceQueue = React.useCallback(() => {
-        setLargeFilesQueue(prev => {
-            const newQueue = prev.slice(1);
-            if (newQueue.length === 0) {
-                setIsUploading(false);
-            }
-            return newQueue;
-        });
-    }, [setIsUploading]);
+        setLargeFilesQueue(prev => prev.slice(1));
+    }, []);
+
+    React.useEffect(() => {
+        if (!isUploading && largeFilesQueue.length === 0) {
+            // This is just a fallback in case the state gets out of sync
+        } else if (isUploading && largeFilesQueue.length === 0) {
+            // All files processed, turn off loading
+            setIsUploading(false);
+        }
+    }, [largeFilesQueue, isUploading, setIsUploading]);
 
     const handleConfirmHighCostUpload = React.useCallback(async () => {
         if (!currentHighCostUpload) return;
