@@ -201,8 +201,11 @@ const DashboardNav = () => {
 
         for (const file of Array.from(files)) {
             try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const originalBuffer = await file.arrayBuffer();
+                const analysisBuffer = originalBuffer.slice(0); // Copy for analysis
+                const storageBuffer = originalBuffer.slice(0); // Copy for storage/editing
+
+                const pdf = await pdfjsLib.getDocument({ data: analysisBuffer }).promise;
                 let fullText = "";
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
@@ -222,7 +225,7 @@ const DashboardNav = () => {
                     text: fullText,
                     fileName: file.name,
                     cost: calculateAppTokens(preAnalysisResult.usage.totalTokens),
-                    arrayBuffer,
+                    arrayBuffer: storageBuffer,
                 });
 
             } catch (error: any) {
