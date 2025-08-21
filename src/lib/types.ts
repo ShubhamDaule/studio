@@ -98,4 +98,7 @@ export type UploadFile = {
   fileName: string;
   cost: number;
   arrayBuffer: ArrayBuffer;
+  bankName: BankName;
+  statementType: StatementType;
+  statementPeriod: StatementPeriod | null;
 };

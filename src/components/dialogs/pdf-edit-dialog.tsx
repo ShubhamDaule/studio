@@ -18,6 +18,8 @@ import { useToast } from "@/hooks/use-toast";
 import type { UploadFile } from "@/lib/types";
 import * as pdfjsLib from "pdfjs-dist";
 import { Loader2 } from "lucide-react";
+import { PDFDocument } from 'pdf-lib';
+
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
@@ -30,7 +32,7 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   file: UploadFile;
-  onSave: (fileName: string, newText: string) => void;
+  onSave: (fileName: string, newText: string, newBuffer: ArrayBuffer) => void;
 };
 
 export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
@@ -104,18 +106,34 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const handleSaveChanges = async () => {
     setIsLoading(true);
     try {
-        const bufferCopy = file.arrayBuffer.slice(0);
-        const pdf = await pdfjsLib.getDocument({ data: bufferCopy }).promise;
-        let newText = "";
+        // Step 1: Create a new PDF with only the selected pages
+        const originalPdfBytes = file.arrayBuffer.slice(0);
+        const pdfDoc = await PDFDocument.load(originalPdfBytes);
+        const newPdfDoc = await PDFDocument.create();
+        
         const sortedSelected = Array.from(selectedPages).sort((a,b) => a - b);
-        for (const pageNum of sortedSelected) {
-            const page = await pdf.getPage(pageNum);
+        const pageIndices = sortedSelected.map(p => p - 1); // pdf-lib is 0-indexed
+
+        const copiedPages = await newPdfDoc.copyPages(pdfDoc, pageIndices);
+        copiedPages.forEach(page => newPdfDoc.addPage(page));
+
+        const newPdfBytes = await newPdfDoc.save();
+        const newArrayBuffer = newPdfBytes.buffer;
+
+        // Step 2: Extract text from the new, smaller PDF
+        const newPdfForText = await pdfjsLib.getDocument({ data: newPdfBytes }).promise;
+        let newText = "";
+        for (let i = 1; i <= newPdfForText.numPages; i++) {
+            const page = await newPdfForText.getPage(i);
             const content = await page.getTextContent();
             const pageText = content.items.map(item => (item as any).str).join(" ");
             newText += "\\n" + pageText;
         }
-        onSave(file.fileName, newText);
+        
+        onSave(file.fileName, newText, newArrayBuffer);
+
     } catch(e) {
+        console.error("Error saving PDF changes:", e);
         toast({ variant: "destructive", title: "Error", description: "Could not save changes." });
     } finally {
         setIsLoading(false);
@@ -177,7 +195,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSaveChanges} disabled={isLoading || selectedPages.size === 0}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Save Changes
+            Apply Changes
           </Button>
         </DialogFooter>
       </DialogContent>

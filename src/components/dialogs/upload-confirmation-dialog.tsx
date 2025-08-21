@@ -13,11 +13,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { UploadFile } from "@/lib/types";
-import { FileText, X, Coins, Edit } from "lucide-react";
+import { FileText, X, Coins, Edit, Banknote, Calendar } from "lucide-react";
 import { PdfEditDialog } from "./pdf-edit-dialog";
 import { preAnalyzeTransactions } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { calculateAppTokens } from "@/hooks/use-tiers";
+import { format, parseISO } from "date-fns";
 
 type Props = {
   isOpen: boolean;
@@ -45,7 +46,7 @@ export function UploadConfirmationDialog({ isOpen, onClose, onConfirm, filesToCo
     onConfirm(pendingFiles);
   };
   
-  const handleSaveEdits = async (fileName: string, newText: string) => {
+  const handleSaveEdits = async (fileName: string, newText: string, newBuffer: ArrayBuffer) => {
     const preAnalysisResult = await preAnalyzeTransactions(newText, fileName, true);
     if (preAnalysisResult.error || !preAnalysisResult.usage) {
       toast({ variant: "destructive", title: `Re-analysis Failed: ${fileName}`, description: preAnalysisResult.error });
@@ -57,6 +58,7 @@ export function UploadConfirmationDialog({ isOpen, onClose, onConfirm, filesToCo
         return {
           ...f,
           text: newText,
+          arrayBuffer: newBuffer,
           cost: calculateAppTokens(preAnalysisResult.usage.totalTokens),
         }
       }
@@ -69,28 +71,43 @@ export function UploadConfirmationDialog({ isOpen, onClose, onConfirm, filesToCo
         description: `Token cost for ${fileName} has been recalculated.`,
     });
   }
+  
+  const formatStatementPeriod = (period: { startDate: string, endDate: string } | null) => {
+    if (!period) return 'N/A';
+    try {
+        const start = format(parseISO(period.startDate), 'MMM d, yyyy');
+        const end = format(parseISO(period.endDate), 'MMM d, yyyy');
+        return `${start} - ${end}`;
+    } catch {
+        return 'Invalid Date';
+    }
+  }
 
   const totalTokenCost = pendingFiles.reduce((acc, file) => acc + file.cost, 0);
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md sm:max-w-lg">
+        <DialogContent className="max-w-md sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Confirm Upload</DialogTitle>
             <DialogDescription>
-              Review the files and their estimated token cost. Edit files to remove unwanted pages.
+              Review files and token costs. Edit to remove pages and save tokens.
             </DialogDescription>
           </DialogHeader>
           <div className="my-4">
-            <ScrollArea className="h-64 pr-4">
+            <ScrollArea className="h-72 pr-4">
               <div className="space-y-3">
                 {pendingFiles.map((file) => (
                   <div key={file.fileName} className="flex items-center justify-between p-3 rounded-md border bg-muted/50">
                     <div className="flex items-center gap-3 overflow-hidden">
                       <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                      <div className="flex flex-col overflow-hidden">
+                      <div className="flex flex-col gap-1.5 overflow-hidden">
                         <span className="text-sm font-medium truncate">{file.fileName}</span>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1"><Banknote className="h-3 w-3" /> {file.bankName} ({file.statementType})</span>
+                            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {formatStatementPeriod(file.statementPeriod)}</span>
+                        </div>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Coins className="h-3 w-3" />
                           Est. {file.cost.toFixed(1)} tokens

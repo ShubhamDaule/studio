@@ -202,6 +202,7 @@ const DashboardNav = () => {
         for (const file of Array.from(files)) {
             try {
                 const originalBuffer = await file.arrayBuffer();
+                
                 const analysisBuffer = originalBuffer.slice(0); // Copy for analysis
                 const storageBuffer = originalBuffer.slice(0); // Copy for storage/editing
 
@@ -216,7 +217,7 @@ const DashboardNav = () => {
                 
                 const preAnalysisResult = await preAnalyzeTransactions(fullText, file.name, true);
 
-                if (preAnalysisResult.error || !preAnalysisResult.usage) {
+                if (preAnalysisResult.error || !preAnalysisResult.usage || !preAnalysisResult.bankName || !preAnalysisResult.statementType) {
                      toast({ variant: "destructive", title: `Analysis Failed: ${file.name}`, description: preAnalysisResult.error });
                     continue;
                 }
@@ -226,6 +227,9 @@ const DashboardNav = () => {
                     fileName: file.name,
                     cost: calculateAppTokens(preAnalysisResult.usage.totalTokens),
                     arrayBuffer: storageBuffer,
+                    bankName: preAnalysisResult.bankName,
+                    statementType: preAnalysisResult.statementType,
+                    statementPeriod: preAnalysisResult.statementPeriod ?? null,
                 });
 
             } catch (error: any) {
