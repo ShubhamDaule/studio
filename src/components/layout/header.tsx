@@ -29,6 +29,16 @@ import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
 import { Progress } from "@/components/ui/progress";
 import { UploadConfirmationDialog } from "../dialogs/upload-confirmation-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
@@ -188,9 +198,15 @@ const DashboardNav = () => {
     const { toast } = useToast();
     const { consumeTokens } = useTiers();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [isClient, setIsClient] = React.useState(false);
 
     const [filesToConfirm, setFilesToConfirm] = React.useState<UploadFile[]>([]);
     const [isConfirming, setIsConfirming] = React.useState(false);
+
+
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -203,8 +219,9 @@ const DashboardNav = () => {
             try {
                 const originalBuffer = await file.arrayBuffer();
                 
-                const analysisBuffer = originalBuffer.slice(0); // Copy for analysis
-                const storageBuffer = originalBuffer.slice(0); // Copy for storage/editing
+                // Use a copy for analysis, and another for storage/editing
+                const analysisBuffer = originalBuffer.slice(0); 
+                const storageBuffer = originalBuffer.slice(0);
 
                 const pdf = await pdfjsLib.getDocument({ data: analysisBuffer }).promise;
                 let fullText = "";
@@ -253,6 +270,9 @@ const DashboardNav = () => {
             setIsUploading(false);
             return;
         }
+        
+        // This keeps the loader active during AI processing
+        setIsUploading(true);
 
         const allFinalUploads: PendingUpload[] = [];
         let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
@@ -323,15 +343,17 @@ const DashboardNav = () => {
             </div>
         </div>
 
-        <UploadConfirmationDialog
-            isOpen={isConfirming}
-            onClose={() => {
-                setIsConfirming(false);
-                setIsUploading(false);
-            }}
-            onConfirm={handleConfirmUpload}
-            filesToConfirm={filesToConfirm}
-        />
+        {isClient && (
+            <UploadConfirmationDialog
+                isOpen={isConfirming}
+                onClose={() => {
+                    setIsConfirming(false);
+                    setIsUploading(false);
+                }}
+                onConfirm={handleConfirmUpload}
+                filesToConfirm={filesToConfirm}
+            />
+        )}
        </>
     )
 }
@@ -361,3 +383,4 @@ export function Header() {
         </header>
     );
 }
+
