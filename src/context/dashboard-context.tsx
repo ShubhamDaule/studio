@@ -87,35 +87,13 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         if (!isDashboard || allTransactions.length === 0) {
             return { minDate: undefined, maxDate: undefined };
         }
-
-        // If there are uploaded files with statement periods, use those for the "All time" range
-        if (transactionFiles.length > 0) {
-            const periodDates: Date[] = [];
-            transactionFiles.forEach(file => {
-                if (file.statementPeriod?.startDate && file.statementPeriod?.endDate) {
-                    try {
-                        periodDates.push(parseISO(file.statementPeriod.startDate));
-                        periodDates.push(parseISO(file.statementPeriod.endDate));
-                    } catch (e) {
-                        console.error("Invalid statement period date found:", file.statementPeriod);
-                    }
-                }
-            });
-
-            if (periodDates.length > 0) {
-                const min = new Date(Math.min.apply(null, periodDates.map(d => d.getTime())));
-                const max = new Date(Math.max.apply(null, periodDates.map(d => d.getTime())));
-                return { minDate: startOfDay(min), maxDate: endOfDay(max) };
-            }
-        }
         
-        // Fallback for mock data or if no statement periods are found
         const transactionDates = allTransactions.map(t => new Date(t.date));
         const min = new Date(Math.min.apply(null, transactionDates.map(d => d.getTime())));
         const max = new Date(Math.max.apply(null, transactionDates.map(d => d.getTime())));
         return { minDate: startOfDay(min), maxDate: endOfDay(max) };
 
-    }, [isDashboard, allTransactions, transactionFiles]);
+    }, [isDashboard, allTransactions]);
     
     React.useEffect(() => {
         if (minDate && maxDate && !dateRange) {
@@ -126,19 +104,14 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
     const addUploadedTransactions: NewTransactionsCallback = React.useCallback((uploads) => {
         if (uploads.length === 0) return;
-    
-        if (isUsingMockData) {
-            setIsUsingMockData(false);
-            setAllTransactions([]);
-            setTransactionFiles([]);
-        }
-    
+
+        let finalNewTransactions: Transaction[] = [];
+        let finalNewFiles: TransactionFile[] = [];
+
         const getUniqueFileName = (fileName: string, existingFiles: TransactionFile[]): string => {
             const existingFileNames = new Set(existingFiles.map(f => f.fileName));
-            if (!existingFileNames.has(fileName)) {
-                return fileName;
-            }
-    
+            if (!existingFileNames.has(fileName)) return fileName;
+
             const dotIndex = fileName.lastIndexOf('.');
             const baseName = dotIndex > -1 ? fileName.substring(0, dotIndex) : fileName;
             const extension = dotIndex > -1 ? fileName.substring(dotIndex) : '';
@@ -150,25 +123,21 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
                 newFileName = `${baseName} (${count})${extension}`;
             }
             return newFileName;
-        }
-    
-        let newTransactions: Transaction[] = [];
-        let newFiles: TransactionFile[] = [];
-    
-        setTransactionFiles(prevFiles => {
-            const updatedFiles = [...prevFiles];
+        };
+
+        // This pattern ensures we are working with the most up-to-date state
+        // to prevent race conditions and bugs with duplicate transactions.
+        setTransactionFiles(currentFiles => {
+            const updatedFiles = [...currentFiles];
             uploads.forEach(upload => {
                 const uniqueFileName = getUniqueFileName(upload.fileName, updatedFiles);
-    
                 const newTransactionsForFile: Transaction[] = upload.data.map(t => ({
                     ...t,
                     id: crypto.randomUUID(),
                     fileSource: uniqueFileName,
                     bankName: upload.bankName
                 }));
-    
-                newTransactions.push(...newTransactionsForFile);
-    
+                finalNewTransactions.push(...newTransactionsForFile);
                 updatedFiles.push({
                     fileName: uniqueFileName,
                     bankName: upload.bankName,
@@ -176,63 +145,37 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
                     statementPeriod: upload.statementPeriod,
                 });
             });
+            finalNewFiles = updatedFiles;
             return updatedFiles;
         });
-    
-        setAllTransactions(prevTransactions => [...prevTransactions, ...newTransactions]);
-    
-        // Date range logic
-        let newDateRange: DateRange | undefined = undefined;
-        if (uploads.length === 1) {
-            const singleUpload = uploads[0];
-            if (singleUpload.statementPeriod?.startDate && singleUpload.statementPeriod?.endDate) {
-                try {
-                    newDateRange = {
-                        from: startOfDay(parseISO(singleUpload.statementPeriod.startDate)),
-                        to: endOfDay(parseISO(singleUpload.statementPeriod.endDate))
-                    };
-                } catch (e) { console.error("Could not parse statement period dates:", e); }
-            }
-        }
-        
-        if (newDateRange) {
-            setDateRange(newDateRange);
-        } else {
-            // Recalculate full range if multiple files or no period data
-            setAllTransactions(currentTxs => {
-                 setTransactionFiles(currentFiles => {
-                     const allPeriodDates: Date[] = [];
-                    currentFiles.forEach(file => {
-                        if (file.statementPeriod?.startDate && file.statementPeriod?.endDate) {
-                            try {
-                                allPeriodDates.push(parseISO(file.statementPeriod.startDate));
-                                allPeriodDates.push(parseISO(file.statementPeriod.endDate));
-                            } catch {}
-                        }
-                    });
 
-                    if (allPeriodDates.length > 0) {
-                        const newMinDate = new Date(Math.min.apply(null, allPeriodDates.map(d => d.getTime())));
-                        const newMaxDate = new Date(Math.max.apply(null, allPeriodDates.map(d => d.getTime())));
-                        setDateRange({ from: startOfDay(newMinDate), to: endOfDay(newMaxDate) });
-                    } else if (currentTxs.length > 0) {
-                        const allDates = currentTxs.map(t => new Date(t.date));
-                        const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
-                        const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
-                        setDateRange({ from: startOfDay(newMinDate), to: endOfDay(newMaxDate) });
-                    }
-                    return currentFiles;
-                });
-                return currentTxs;
-            })
+        setAllTransactions(currentTransactions => {
+            const combinedTransactions = isUsingMockData
+                ? finalNewTransactions
+                : [...currentTransactions, ...finalNewTransactions];
+            
+            // Atomically update date range based on the complete new set of transactions
+            if (combinedTransactions.length > 0) {
+                const allDates = combinedTransactions.map(t => new Date(t.date));
+                const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
+                const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
+                setDateRange({ from: startOfDay(newMinDate), to: endOfDay(newMaxDate) });
+            }
+
+            return combinedTransactions;
+        });
+
+        if (isUsingMockData) {
+            setIsUsingMockData(false);
         }
-    
+
         setTimeout(() => {
             toast({
                 title: "Uploads Successful!",
-                description: `${newTransactions.length} transaction(s) from ${uploads.length} file(s) have been added.`,
+                description: `${finalNewTransactions.length} transaction(s) from ${uploads.length} file(s) have been added.`,
             });
         }, 0);
+
     }, [isUsingMockData, toast, setIsUsingMockData]);
 
     const handleCategoryChange = React.useCallback((transactionId: string, newCategory: Category['name']) => {
