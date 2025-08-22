@@ -47,7 +47,7 @@ export async function getAIInsights(transactions: Transaction[]) {
     }
 }
 
-export async function preAnalyzeTransactions(pdfText: string, fileName: string, skipAi: boolean = false): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; statementPeriod?: StatementPeriod | null; error?: string, usage?: TokenUsage }> {
+export async function preAnalyzeTransactions(pdfText: string, fileName: string, skipAi: boolean = false): Promise<{ data?: ExtractedTransaction[]; bankName?: BankName, statementType?: StatementType; statementPeriod?: StatementPeriod | null; error?: string, usage?: TokenUsage, processedText?: string }> {
     if (!pdfText) {
         return { error: "No text from PDF to process." };
     }
@@ -74,10 +74,10 @@ export async function preAnalyzeTransactions(pdfText: string, fileName: string, 
         }
         
         // Second pass: Full extraction
-        const { bankName, statementType, statementPeriod, transactions } = await extractTransactions(input);
+        const { bankName, statementType, statementPeriod, transactions, processedText } = await extractTransactions(input);
         
         if (!transactions) {
-             return { data: [], bankName, statementType, statementPeriod };
+             return { data: [], bankName, statementType, statementPeriod, processedText };
         }
         
         const inputTokens = estimateTokens(JSON.stringify(input));
@@ -94,7 +94,7 @@ export async function preAnalyzeTransactions(pdfText: string, fileName: string, 
             fileSource: fileName 
         }));
 
-        return { data: dataWithMetadata, bankName, statementType, statementPeriod, usage };
+        return { data: dataWithMetadata, bankName, statementType, statementPeriod, usage, processedText };
     } catch (e: any) {
         console.error("Error pre-analyzing transactions from PDF:", e);
         return { error: getFriendlyErrorMessage(e) };

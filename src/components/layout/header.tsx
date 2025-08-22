@@ -29,16 +29,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
 import { Progress } from "@/components/ui/progress";
 import { UploadConfirmationDialog } from "../dialogs/upload-confirmation-dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
@@ -50,6 +41,12 @@ type PendingUpload = {
   statementType: StatementType;
   statementPeriod: StatementPeriod | null;
 };
+
+type DebugInfo = {
+    processedText: string;
+    jsonOutput: string;
+    finalUploads: PendingUpload[];
+}
 
 const UserNav = () => {
   const { user, signOut } = useAuth();
@@ -202,6 +199,7 @@ const DashboardNav = () => {
 
     const [filesToConfirm, setFilesToConfirm] = React.useState<UploadFile[]>([]);
     const [isConfirming, setIsConfirming] = React.useState(false);
+    const [debugInfo, setDebugInfo] = React.useState<DebugInfo | null>(null);
 
 
     React.useEffect(() => {
@@ -276,10 +274,12 @@ const DashboardNav = () => {
 
         const allFinalUploads: PendingUpload[] = [];
         let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+        let allProcessedText = "";
+        let allJsonOutput = "";
 
         for (const file of confirmedFiles) {
             const finalResult = await preAnalyzeTransactions(file.text, file.fileName, false);
-            if (finalResult.error || !finalResult.data || !finalResult.bankName || !finalResult.statementType || !finalResult.usage) {
+            if (finalResult.error || !finalResult.data || !finalResult.bankName || !finalResult.statementType || !finalResult.usage || !finalResult.processedText) {
                 toast({ variant: "destructive", title: `Upload Failed: ${file.fileName}`, description: finalResult.error });
                 continue;
             }
@@ -291,13 +291,30 @@ const DashboardNav = () => {
                 statementType: finalResult.statementType,
                 statementPeriod: finalResult.statementPeriod,
             });
+            allProcessedText += `--- START ${file.fileName} ---\n${finalResult.processedText}\n--- END ${file.fileName} ---\n\n`;
+            allJsonOutput += `// ${file.fileName}\n${JSON.stringify(finalResult.data, null, 2)}\n\n`;
         }
         
         if (allFinalUploads.length > 0) {
             if (consumeTokens(totalUsage.totalTokens)) {
-                addUploadedTransactions(allFinalUploads);
+                setDebugInfo({
+                    processedText: allProcessedText,
+                    jsonOutput: allJsonOutput,
+                    finalUploads: allFinalUploads,
+                });
+            } else {
+                 setIsUploading(false);
             }
+        } else {
+             setIsUploading(false);
         }
+    }
+
+    const handleContinueFromDebug = () => {
+        if (debugInfo) {
+            addUploadedTransactions(debugInfo.finalUploads);
+        }
+        setDebugInfo(null);
         setIsUploading(false);
     }
     
@@ -354,6 +371,18 @@ const DashboardNav = () => {
                 filesToConfirm={filesToConfirm}
             />
         )}
+        {isClient && debugInfo && (
+            <RawJsonDialog
+                isOpen={!!debugInfo}
+                onClose={() => {
+                    setDebugInfo(null);
+                    setIsUploading(false);
+                }}
+                onContinue={handleContinueFromDebug}
+                processedText={debugInfo.processedText}
+                jsonOutput={debugInfo.jsonOutput}
+            />
+        )}
        </>
     )
 }
@@ -383,4 +412,3 @@ export function Header() {
         </header>
     );
 }
-
