@@ -130,8 +130,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         copiedPages.forEach(page => newPdfDoc.addPage(page));
 
         const newPdfBytesUint8 = await newPdfDoc.save();
-        // ** THE FIX **: Convert Uint8Array to ArrayBuffer for pdfjs-dist
-        const newPdfBytesBuffer = newPdfBytesUint8.buffer.slice(newPdfBytesUint8.byteOffset, newPdfBytesUint8.byteLength + newPdfBytesUint8.byteOffset);
+        const newPdfBytesBuffer = newPdfBytesUint8.buffer.slice(newPdfBytesUint8.byteOffset, newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength);
         
         const newPdfForText = await pdfjsLib.getDocument({ data: newPdfBytesBuffer }).promise;
         let newText = "";
