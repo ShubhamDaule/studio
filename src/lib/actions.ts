@@ -54,13 +54,17 @@ export async function preAnalyzeTransactions(pdfText: string, fileName: string, 
 
     try {
         const input = { pdfText };
-        const inputTokens = estimateTokens(JSON.stringify(input));
-        // Heuristic: Assume output JSON is about 25% the size of the input text
-        const estimatedOutputTokens = inputTokens * 0.25;
-
+        
         if (skipAi) {
-            // Just return the estimated token costs without calling the AI
-            return { 
+            // First pass: Pre-analyze to get bank info and statement period
+            const { bankName, statementType, statementPeriod } = await extractTransactions(input);
+            const inputTokens = estimateTokens(JSON.stringify(input));
+            // Rough estimation for the second call
+            const estimatedOutputTokens = inputTokens * 0.25; 
+            return {
+                bankName,
+                statementType,
+                statementPeriod,
                 usage: { 
                     inputTokens, 
                     outputTokens: estimatedOutputTokens, 
@@ -69,12 +73,14 @@ export async function preAnalyzeTransactions(pdfText: string, fileName: string, 
             };
         }
         
+        // Second pass: Full extraction
         const { bankName, statementType, statementPeriod, transactions } = await extractTransactions(input);
         
         if (!transactions) {
              return { data: [], bankName, statementType, statementPeriod };
         }
-
+        
+        const inputTokens = estimateTokens(JSON.stringify(input));
         const actualOutputTokens = estimateTokens(JSON.stringify(transactions));
         const usage: TokenUsage = {
             inputTokens,
