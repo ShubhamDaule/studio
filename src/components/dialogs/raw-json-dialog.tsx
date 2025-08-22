@@ -25,7 +25,7 @@ type Props = {
 export function RawJsonDialog({ isOpen, onClose, onContinue, processedText, jsonOutput }: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md sm:max-w-4xl h-[80vh]">
+      <DialogContent className="max-w-md sm:max-w-4xl h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>AI Extraction Details</DialogTitle>
           <DialogDescription>
@@ -33,15 +33,15 @@ export function RawJsonDialog({ isOpen, onClose, onContinue, processedText, json
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 h-full py-4 overflow-hidden">
-            <div className="flex flex-col gap-2 h-full">
+            <div className="flex flex-col gap-2 h-full overflow-hidden">
                 <h3 className="font-semibold flex items-center gap-2 text-sm"><Text className="w-4 h-4" /> Processed Text Sent to AI</h3>
-                <ScrollArea className="border rounded-md p-2 h-full bg-muted/30">
+                <ScrollArea className="border rounded-md p-2 flex-1 bg-muted/30">
                     <pre className="text-xs whitespace-pre-wrap break-words">{processedText}</pre>
                 </ScrollArea>
             </div>
-             <div className="flex flex-col gap-2 h-full">
+             <div className="flex flex-col gap-2 h-full overflow-hidden">
                 <h3 className="font-semibold flex items-center gap-2 text-sm"><FileJson className="w-4 h-4" /> Raw JSON Output from AI</h3>
-                <ScrollArea className="border rounded-md p-2 h-full bg-muted/30">
+                <ScrollArea className="border rounded-md p-2 flex-1 bg-muted/30">
                     <pre className="text-xs whitespace-pre-wrap break-words">{jsonOutput}</pre>
                 </ScrollArea>
             </div>
