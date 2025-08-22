@@ -105,8 +105,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     const addUploadedTransactions: NewTransactionsCallback = React.useCallback((uploads) => {
         if (uploads.length === 0) return;
 
-        let finalNewTransactions: Transaction[] = [];
-        let finalNewFiles: TransactionFile[] = [];
+        const newFiles: TransactionFile[] = [];
+        const newTransactions: Transaction[] = [];
 
         const getUniqueFileName = (fileName: string, existingFiles: TransactionFile[]): string => {
             const existingFileNames = new Set(existingFiles.map(f => f.fileName));
@@ -125,58 +125,53 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
             return newFileName;
         };
 
-        // This pattern ensures we are working with the most up-to-date state
-        // to prevent race conditions and bugs with duplicate transactions.
-        setTransactionFiles(currentFiles => {
-            const updatedFiles = [...currentFiles];
-            uploads.forEach(upload => {
-                const uniqueFileName = getUniqueFileName(upload.fileName, updatedFiles);
-                const newTransactionsForFile: Transaction[] = upload.data.map(t => ({
+        const baseFiles = isUsingMockData ? [] : transactionFiles;
+
+        uploads.forEach(upload => {
+            const uniqueFileName = getUniqueFileName(upload.fileName, [...baseFiles, ...newFiles]);
+            
+            newFiles.push({
+                fileName: uniqueFileName,
+                bankName: upload.bankName,
+                statementType: upload.statementType,
+                statementPeriod: upload.statementPeriod,
+            });
+
+            upload.data.forEach(t => {
+                newTransactions.push({
                     ...t,
                     id: crypto.randomUUID(),
                     fileSource: uniqueFileName,
                     bankName: upload.bankName
-                }));
-                finalNewTransactions.push(...newTransactionsForFile);
-                updatedFiles.push({
-                    fileName: uniqueFileName,
-                    bankName: upload.bankName,
-                    statementType: upload.statementType,
-                    statementPeriod: upload.statementPeriod,
                 });
             });
-            finalNewFiles = updatedFiles;
-            return updatedFiles;
         });
+        
+        const combinedTransactions = isUsingMockData ? newTransactions : [...allTransactions, ...newTransactions];
+        const combinedFiles = isUsingMockData ? newFiles : [...transactionFiles, ...newFiles];
 
-        setAllTransactions(currentTransactions => {
-            const combinedTransactions = isUsingMockData
-                ? finalNewTransactions
-                : [...currentTransactions, ...finalNewTransactions];
-            
-            // Atomically update date range based on the complete new set of transactions
-            if (combinedTransactions.length > 0) {
-                const allDates = combinedTransactions.map(t => new Date(t.date));
-                const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
-                const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
-                setDateRange({ from: startOfDay(newMinDate), to: endOfDay(newMaxDate) });
-            }
-
-            return combinedTransactions;
-        });
+        setAllTransactions(combinedTransactions);
+        setTransactionFiles(combinedFiles);
 
         if (isUsingMockData) {
             setIsUsingMockData(false);
         }
 
+        if (combinedTransactions.length > 0) {
+            const allDates = combinedTransactions.map(t => new Date(t.date));
+            const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
+            const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
+            setDateRange({ from: startOfDay(newMinDate), to: endOfDay(newMaxDate) });
+        }
+
         setTimeout(() => {
             toast({
                 title: "Uploads Successful!",
-                description: `${finalNewTransactions.length} transaction(s) from ${uploads.length} file(s) have been added.`,
+                description: `${newTransactions.length} transaction(s) from ${uploads.length} file(s) have been added.`,
             });
         }, 0);
 
-    }, [isUsingMockData, toast, setIsUsingMockData]);
+    }, [isUsingMockData, toast, setIsUsingMockData, transactionFiles, allTransactions]);
 
     const handleCategoryChange = React.useCallback((transactionId: string, newCategory: Category['name']) => {
         setAllTransactions(prev => 
