@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'SpendWise Analyzer',
+  title: 'MySpendWise Analyzer',
   description: 'AI-powered spending analysis and insights.',
 };
 

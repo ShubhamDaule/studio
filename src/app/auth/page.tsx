@@ -40,7 +40,7 @@ const AuthForm = () => {
     }, [user, router]);
     
     useEffect(() => {
-        document.title = mode === 'signin' ? "Sign In • SpendWise" : "Sign Up • SpendWise";
+        document.title = mode === 'signin' ? "Sign In • MySpendWise" : "Sign Up • MySpendWise";
     }, [mode]);
 
 

@@ -19,7 +19,7 @@ export function Footer() {
             </div>
             
             <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-                © {new Date().getFullYear()} SpendWise Analyzer. All rights reserved.
+                © {new Date().getFullYear()} MySpendWise Analyzer. All rights reserved.
             </div>
             </div>
         </footer>

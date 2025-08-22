@@ -10,7 +10,7 @@ export function Logo() {
                 <BarChart3 className="w-5 h-5 text-white" />
             </div>
             <span className="hidden sm:inline-block text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
-                SpendWise
+                MySpendWise
             </span>
         </div>
     );

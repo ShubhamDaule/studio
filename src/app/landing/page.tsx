@@ -98,15 +98,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Why SpendWise Section */}
-      <section id="why-spendwise" className="py-16 sm:py-20 bg-muted/30">
+      {/* Why MySpendWise Section */}
+      <section id="why-MySpendWise" className="py-16 sm:py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-                Why <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">SpendWise</span>?
+                Why <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">MySpendWise</span>?
                 </h2>
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-                Go beyond simple tracking. SpendWise gives you the clarity and intelligence to truly master your financial life.
+                Go beyond simple tracking. MySpendWise gives you the clarity and intelligence to truly master your financial life.
                 </p>
             </div>
 
@@ -114,7 +114,7 @@ export default function LandingPage() {
             <div className="relative">
                 <Image 
                     src="https://placehold.co/600x400.png"
-                    alt="SpendWise Dashboard Preview"
+                    alt="MySpendWise Dashboard Preview"
                     width={600}
                     height={400}
                     className="rounded-xl shadow-2xl"
@@ -165,7 +165,7 @@ export default function LandingPage() {
             Ready to Transform Your Financial Life?
           </h2>
           <p className="text-lg sm:text-xl text-white/90 mb-8">
-            Join thousands of users who have already taken control of their finances with SpendWise Analyzer.
+            Join thousands of users who have already taken control of their finances with MySpendWise Analyzer.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

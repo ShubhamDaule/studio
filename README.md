@@ -1,4 +1,4 @@
-# SpendWise AI Analyzer
+# MySpendWise AI Analyzer
 
 This is a Next.js starter project for an AI-powered financial analytics dashboard. It allows users to upload PDF bank or credit card statements, extracts transaction data using a generative AI model, and provides interactive charts and insights to help users understand their spending habits.
 

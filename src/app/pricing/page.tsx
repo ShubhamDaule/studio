@@ -58,7 +58,7 @@ export default function Pricing() {
   const { setIsPro, setIsPremium } = useTiers();
 
   useEffect(() => {
-    document.title = "Pricing – Free, Pro, Premium | SpendWise";
+    document.title = "Pricing – Free, Pro, Premium | MySpendWise";
   }, []);
 
   const choosePlan = (plan: (typeof plans)[number]) => {
