@@ -40,6 +40,13 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const [pages, setPages] = React.useState<Page[]>([]);
   const [selectedPages, setSelectedPages] = React.useState<Set<number>>(new Set());
   const [isLoading, setIsLoading] = React.useState(true);
+  const pdfLibRef = React.useRef<{ PDFDocument: typeof PDFDocument } | null>(null);
+
+  React.useEffect(() => {
+    import('pdf-lib').then(module => {
+      pdfLibRef.current = module;
+    });
+  }, []);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -104,9 +111,13 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   }
 
   const handleSaveChanges = async () => {
+    if (!pdfLibRef.current) {
+        toast({ variant: "destructive", title: "Error", description: "PDF library not loaded yet." });
+        return;
+    }
     setIsLoading(true);
     try {
-        const { PDFDocument } = await import('pdf-lib');
+        const { PDFDocument } = pdfLibRef.current;
         
         const originalPdfBytes = file.arrayBuffer.slice(0);
         const pdfDoc = await PDFDocument.load(originalPdfBytes, { ignoreEncryption: true });
@@ -121,7 +132,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         const newPdfBytes = await newPdfDoc.save();
         const newArrayBuffer = newPdfBytes.buffer;
 
-        const newPdfForText = await pdfjsLib.getDocument({ data: newPdfBytes.slice(0) }).promise;
+        const newPdfForText = await pdfjsLib.getDocument({ data: newPdfBytes }).promise;
         let newText = "";
         for (let i = 1; i <= newPdfForText.numPages; i++) {
             const page = await newPdfForText.getPage(i);
