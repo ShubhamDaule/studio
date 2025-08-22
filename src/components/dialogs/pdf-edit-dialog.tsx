@@ -106,16 +106,14 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const handleSaveChanges = async () => {
     setIsLoading(true);
     try {
-        // Dynamically import pdf-lib only on the client-side
         const { PDFDocument } = await import('pdf-lib');
         
-        // Step 1: Create a new PDF with only the selected pages
         const originalPdfBytes = file.arrayBuffer.slice(0);
-        const pdfDoc = await PDFDocument.load(originalPdfBytes);
+        const pdfDoc = await PDFDocument.load(originalPdfBytes, { ignoreEncryption: true });
         const newPdfDoc = await PDFDocument.create();
         
         const sortedSelected = Array.from(selectedPages).sort((a,b) => a - b);
-        const pageIndices = sortedSelected.map(p => p - 1); // pdf-lib is 0-indexed
+        const pageIndices = sortedSelected.map(p => p - 1);
 
         const copiedPages = await newPdfDoc.copyPages(pdfDoc, pageIndices);
         copiedPages.forEach(page => newPdfDoc.addPage(page));
@@ -123,8 +121,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         const newPdfBytes = await newPdfDoc.save();
         const newArrayBuffer = newPdfBytes.buffer;
 
-        // Step 2: Extract text from the new, smaller PDF
-        const newPdfForText = await pdfjsLib.getDocument({ data: newPdfBytes }).promise;
+        const newPdfForText = await pdfjsLib.getDocument({ data: newPdfBytes.slice(0) }).promise;
         let newText = "";
         for (let i = 1; i <= newPdfForText.numPages; i++) {
             const page = await newPdfForText.getPage(i);
