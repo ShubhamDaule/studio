@@ -129,9 +129,11 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         const copiedPages = await newPdfDoc.copyPages(pdfDoc, pageIndices);
         copiedPages.forEach(page => newPdfDoc.addPage(page));
 
-        const newPdfBytes = await newPdfDoc.save();
+        const newPdfBytesUint8 = await newPdfDoc.save();
+        // Convert Uint8Array to ArrayBuffer for pdfjs-dist
+        const newPdfBytesBuffer = newPdfBytesUint8.buffer;
         
-        const newPdfForText = await pdfjsLib.getDocument({ data: newPdfBytes }).promise;
+        const newPdfForText = await pdfjsLib.getDocument({ data: newPdfBytesBuffer.slice(0) }).promise;
         let newText = "";
         for (let i = 1; i <= newPdfForText.numPages; i++) {
             const page = await newPdfForText.getPage(i);
@@ -140,7 +142,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
             newText += "\\n" + pageText;
         }
         
-        onSave(file.fileName, newText, newPdfBytes.buffer);
+        onSave(file.fileName, newText, newPdfBytesBuffer);
 
     } catch(e) {
         console.error("Error saving PDF changes:", e);
