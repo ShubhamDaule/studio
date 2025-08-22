@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { UploadFile } from "@/lib/types";
 import * as pdfjsLib from "pdfjs-dist";
 import { Loader2 } from "lucide-react";
-import { PDFDocument } from 'pdf-lib';
+import type { PDFDocument } from 'pdf-lib';
 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
@@ -106,6 +106,9 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const handleSaveChanges = async () => {
     setIsLoading(true);
     try {
+        // Dynamically import pdf-lib only on the client-side
+        const { PDFDocument } = await import('pdf-lib');
+        
         // Step 1: Create a new PDF with only the selected pages
         const originalPdfBytes = file.arrayBuffer.slice(0);
         const pdfDoc = await PDFDocument.load(originalPdfBytes);
