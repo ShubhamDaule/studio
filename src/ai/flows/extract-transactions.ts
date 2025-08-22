@@ -275,6 +275,11 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     // Step 2: Pre-process text to remove headers/footers
     const processedText = preProcessStatementText(bankInfo.bankName, pdfText);
     
+    // DEBUG: Log the text being sent to the AI
+    console.log('============= AI INPUT (PROCESSED TEXT) =============');
+    console.log(processedText);
+    console.log('=====================================================');
+
     // Step 3: Call the appropriate AI model based on statement type
     let llmResponse;
     if (bankInfo.statementType === 'Bank Account') {
@@ -285,6 +290,11 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     }
     
     const extractedData = llmResponse.output || [];
+
+    // DEBUG: Log the raw output from the AI
+    console.log('==================== AI OUTPUT ====================');
+    console.log(JSON.stringify(extractedData, null, 2));
+    console.log('=====================================================');
 
     return { 
         bankName: bankInfo.bankName, 
