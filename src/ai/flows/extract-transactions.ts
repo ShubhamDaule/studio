@@ -296,11 +296,16 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     console.log(JSON.stringify(extractedData, null, 2));
     console.log('=====================================================');
 
+    // Step 4: Validate and filter the results
+    const validTransactions = extractedData.filter(txn => 
+        txn.date && txn.merchant && txn.category && typeof txn.amount === 'number'
+    );
+
     return { 
         bankName: bankInfo.bankName, 
         statementType: bankInfo.statementType, 
         statementPeriod: bankInfo.statementPeriod,
-        transactions: extractedData,
+        transactions: validTransactions,
         rawText: pdfText,
         processedText,
     };
