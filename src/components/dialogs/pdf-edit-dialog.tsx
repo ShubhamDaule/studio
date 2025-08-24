@@ -129,7 +129,13 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         
         const newPdfBytesUint8 = await newDoc.save(); // Uint8Array
 
-        // 3) Re-extract text from the edited PDF (pass Uint8Array directly)
+        // 3) Create the ArrayBuffer for storage FIRST, before pdf.js can detach it.
+        const newArrayBuffer = newPdfBytesUint8.buffer.slice(
+            newPdfBytesUint8.byteOffset,
+            newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
+        );
+        
+        // 4) Re-extract text from the edited PDF (pass Uint8Array directly)
         const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8 }).promise;
         let newText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
@@ -138,12 +144,6 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
             const pageText = content.items.map((it: any) => it.str).join(' ');
             newText += '\\n' + pageText;
         }
-        
-        // 4) Provide an ArrayBuffer for your UploadFile type
-        const newArrayBuffer = newPdfBytesUint8.buffer.slice(
-            newPdfBytesUint8.byteOffset,
-            newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
-        );
         
         onSave(file.fileName, newText, newArrayBuffer);
 
