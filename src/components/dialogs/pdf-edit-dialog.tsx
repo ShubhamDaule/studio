@@ -20,12 +20,10 @@ import * as pdfjsLib from "pdfjs-dist";
 import { Loader2 } from "lucide-react";
 import { PDFDocument } from 'pdf-lib';
 
-// Use a direct import for the worker to ensure it's bundled correctly.
+import { GlobalWorkerOptions } from 'pdfjs-dist';
+
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.min.mjs',
-    import.meta.url,
-  ).toString();
+  GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 }
 
 
@@ -38,7 +36,7 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   file: UploadFile;
-  onSave: (fileName: string, newText: string, newBuffer: ArrayBuffer) => void;
+  onSave: (fileName: string, newBuffer: ArrayBuffer) => void;
 };
 
 export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
@@ -112,40 +110,27 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const handleSaveChanges = async () => {
     setIsLoading(true);
     try {
-        // Step 1: Load the original PDF with pdf-lib to create a new, smaller PDF
         const originalArrayBuffer = file.arrayBuffer;
         const srcDoc = await PDFDocument.load(originalArrayBuffer, { ignoreEncryption: true });
         const newDoc = await PDFDocument.create();
 
         const selectedPageNumbers = Array.from(selectedPages).sort((a, b) => a - b);
-        const pageIndices = selectedPageNumbers.map(p => p - 1); // 0-based indices
+        const pageIndices = selectedPageNumbers.map(p => p - 1); 
 
         const copiedPages = await newDoc.copyPages(srcDoc, pageIndices);
         copiedPages.forEach(page => newDoc.addPage(page));
         
-        const newPdfBytesUint8 = await newDoc.save(); // This is a Uint8Array
-
-        // Step 2: Create the final ArrayBuffer for storage BEFORE pdf.js can detach it.
+        const newPdfBytesUint8 = await newDoc.save();
+        
         const newArrayBuffer = newPdfBytesUint8.buffer.slice(
             newPdfBytesUint8.byteOffset,
             newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
         );
         
-        // Step 3: Now, use pdfjs-dist to correctly extract text from the new PDF data.
-        // We pass the Uint8Array directly, as pdfjs-dist supports it.
-        const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8 }).promise;
-        let newText = "";
-        for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            const pageText = content.items.map((it: any) => it.str).join(' ');
-            newText += '\\n' + pageText;
-        }
-        
-        onSave(file.fileName, newText, newArrayBuffer);
+        onSave(file.fileName, newArrayBuffer);
 
     } catch (err: any) {
-        console.error("PDF re-extract failed:", err);
+        console.error("PDF re-build failed:", err);
         toast({ variant: "destructive", title: "Apply Changes failed", description: err?.message ?? "Unknown error" });
     } finally {
         setIsLoading(false);

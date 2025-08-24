@@ -31,9 +31,6 @@ import { Progress } from "@/components/ui/progress";
 import { UploadConfirmationDialog } from "../dialogs/upload-confirmation-dialog";
 import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
-
 type PendingUpload = {
   data: ExtractedTransaction[];
   fileName: string;
@@ -211,6 +208,7 @@ const DashboardNav = () => {
         if (!files || files.length === 0) return;
 
         setIsUploading(true);
+        toast({ title: "Processing files...", description: "Reading and pre-analyzing your statements." });
         const preppedFiles: UploadFile[] = [];
 
         for (const file of Array.from(files)) {
@@ -271,6 +269,7 @@ const DashboardNav = () => {
         
         // This keeps the loader active during AI processing
         setIsUploading(true);
+        toast({ title: "Sending to AI...", description: "Extracting transactions. This may take a moment." });
 
         const allFinalUploads: PendingUpload[] = [];
         let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
