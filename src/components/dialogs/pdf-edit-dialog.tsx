@@ -18,10 +18,16 @@ import { useToast } from "@/hooks/use-toast";
 import type { UploadFile } from "@/lib/types";
 import * as pdfjsLib from "pdfjs-dist";
 import { Loader2 } from "lucide-react";
-import type { PDFDocument } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
+import { GlobalWorkerOptions } from 'pdfjs-dist';
 
+// Use a direct import for the worker to ensure it's bundled correctly.
+import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
+if (typeof window !== 'undefined') {
+  GlobalWorkerOptions.workerSrc = workerSrc;
+}
+
 
 type Page = {
   pageNumber: number;
@@ -40,14 +46,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const [pages, setPages] = React.useState<Page[]>([]);
   const [selectedPages, setSelectedPages] = React.useState<Set<number>>(new Set());
   const [isLoading, setIsLoading] = React.useState(true);
-  const pdfLibRef = React.useRef<{ PDFDocument: typeof PDFDocument } | null>(null);
-
-  React.useEffect(() => {
-    import('pdf-lib').then(module => {
-      pdfLibRef.current = module;
-    });
-  }, []);
-
+  
   React.useEffect(() => {
     if (!isOpen) return;
 
@@ -111,41 +110,45 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   }
 
   const handleSaveChanges = async () => {
-    if (!pdfLibRef.current) {
-        toast({ variant: "destructive", title: "Error", description: "PDF library not loaded yet." });
-        return;
-    }
     setIsLoading(true);
     try {
-        const { PDFDocument } = pdfLibRef.current;
+        // 1) Load the original PDF bytes
+        const originalArrayBuffer = file.arrayBuffer;
+        const originalUint8 = new Uint8Array(originalArrayBuffer);
         
-        const originalPdfBytes = file.arrayBuffer.slice(0);
-        const pdfDoc = await PDFDocument.load(originalPdfBytes, { ignoreEncryption: true });
-        const newPdfDoc = await PDFDocument.create();
-        
-        const sortedSelected = Array.from(selectedPages).sort((a,b) => a - b);
-        const pageIndices = sortedSelected.map(p => p - 1);
+        // 2) Build a new PDF with only selected pages
+        const srcDoc = await PDFDocument.load(originalUint8, { ignoreEncryption: true });
+        const newDoc = await PDFDocument.create();
 
-        const copiedPages = await newPdfDoc.copyPages(pdfDoc, pageIndices);
-        copiedPages.forEach(page => newPdfDoc.addPage(page));
+        const selected = Array.from(selectedPages).sort((a,b) => a - b); // 1-based page numbers
+        const pageIndices = selected.map(p => p - 1); // convert to 0-based
 
-        const newPdfBytesUint8 = await newPdfDoc.save();
-        const newPdfBytesBuffer = newPdfBytesUint8.buffer.slice(newPdfBytesUint8.byteOffset, newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength);
+        const copied = await newDoc.copyPages(srcDoc, pageIndices);
+        copied.forEach(p => newDoc.addPage(p));
         
-        const newPdfForText = await pdfjsLib.getDocument({ data: newPdfBytesBuffer }).promise;
+        const newPdfBytes = await newDoc.save(); // Uint8Array
+
+        // 3) Re-extract text from the edited PDF (pass Uint8Array directly)
+        const pdf = await pdfjsLib.getDocument({ data: newPdfBytes }).promise;
         let newText = "";
-        for (let i = 1; i <= newPdfForText.numPages; i++) {
-            const page = await newPdfForText.getPage(i);
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
             const content = await page.getTextContent();
-            const pageText = content.items.map(item => (item as any).str).join(" ");
-            newText += "\\n" + pageText;
+            const pageText = content.items.map((it: any) => it.str).join(' ');
+            newText += '\\n' + pageText;
         }
         
-        onSave(file.fileName, newText, newPdfBytesBuffer);
+        // 4) Provide an ArrayBuffer for your UploadFile type
+        const newArrayBuffer = newPdfBytes.buffer.slice(
+            newPdfBytes.byteOffset,
+            newPdfBytes.byteOffset + newPdfBytes.byteLength
+        );
+        
+        onSave(file.fileName, newText, newArrayBuffer);
 
-    } catch(e) {
-        console.error("Error saving PDF changes:", e);
-        toast({ variant: "destructive", title: "Error", description: "Could not save changes." });
+    } catch (err: any) {
+        console.error("PDF re-extract failed:", err);
+        toast({ variant: "destructive", title: "Apply Changes failed", description: err?.message ?? "Unknown error" });
     } finally {
         setIsLoading(false);
     }
