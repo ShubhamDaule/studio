@@ -22,10 +22,11 @@ import { PDFDocument } from 'pdf-lib';
 import { GlobalWorkerOptions } from 'pdfjs-dist';
 
 // Use a direct import for the worker to ensure it's bundled correctly.
-import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs';
-
 if (typeof window !== 'undefined') {
-  GlobalWorkerOptions.workerSrc = workerSrc;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.min.mjs',
+    import.meta.url,
+  ).toString();
 }
 
 
@@ -126,10 +127,10 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         const copied = await newDoc.copyPages(srcDoc, pageIndices);
         copied.forEach(p => newDoc.addPage(p));
         
-        const newPdfBytes = await newDoc.save(); // Uint8Array
+        const newPdfBytesUint8 = await newDoc.save(); // Uint8Array
 
         // 3) Re-extract text from the edited PDF (pass Uint8Array directly)
-        const pdf = await pdfjsLib.getDocument({ data: newPdfBytes }).promise;
+        const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8 }).promise;
         let newText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
@@ -139,9 +140,9 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         }
         
         // 4) Provide an ArrayBuffer for your UploadFile type
-        const newArrayBuffer = newPdfBytes.buffer.slice(
-            newPdfBytes.byteOffset,
-            newPdfBytes.byteOffset + newPdfBytes.byteLength
+        const newArrayBuffer = newPdfBytesUint8.buffer.slice(
+            newPdfBytesUint8.byteOffset,
+            newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
         );
         
         onSave(file.fileName, newText, newArrayBuffer);
