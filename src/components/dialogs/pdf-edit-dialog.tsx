@@ -18,12 +18,8 @@ import type { UploadFile } from "@/lib/types";
 import * as pdfjsLib from "pdfjs-dist";
 import { Loader2 } from "lucide-react";
 import { PDFDocument } from 'pdf-lib';
-import { GlobalWorkerOptions } from 'pdfjs-dist';
 
-// Use a direct import for the worker to ensure it's bundled correctly by Next.js/Turbopack.
-if (typeof window !== 'undefined') {
-  GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
-}
+// The worker is now configured via patch-package and doesn't need to be set here.
 
 type Page = {
   pageNumber: number;
