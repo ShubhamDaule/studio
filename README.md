@@ -9,6 +9,44 @@ This is a Next.js starter project for an AI-powered financial analytics dashboar
 - **AI/Backend**: Genkit (with Google's Gemini models)
 - **Authentication**: Firebase Auth
 
+## Getting Started: Running Locally
+
+To run this project on your local machine, follow these steps:
+
+### 1. Prerequisites
+
+-   Node.js (v18 or later recommended)
+-   npm (or your preferred package manager)
+
+### 2. Set Up Environment Variables
+
+You'll need a Google AI API key to use the generative AI features.
+
+1.  Create a copy of the environment variable template file:
+    ```bash
+    cp .env .env.local
+    ```
+2.  Open the newly created `.env.local` file and add your Google AI API key:
+    ```
+    GEMINI_API_KEY="YOUR_API_KEY_HERE"
+    ```
+
+### 3. Install Dependencies
+
+Install the necessary project dependencies using npm:
+```bash
+npm install
+```
+
+### 4. Run the Development Server
+
+Start the Next.js development server with Turbopack:
+```bash
+npm run dev
+```
+
+The application should now be running at `http://localhost:3000`.
+
 ## Project Flow: From Upload to Dashboard
 
 The data processing pipeline is designed to be transparent and give the user control over the data sent to the AI. Here is a step-by-step breakdown of the flow:

@@ -43,7 +43,9 @@ type StatementInfo = {
 };
 
 // ************************************************************************************
-// STEP 1: Bank, Type & Statement Period Detection
+// STEP 2a: Bank, Type & Statement Period Detection (Non-AI)
+// This function runs on the server to quickly parse basic details from the raw text.
+// It uses keyword and pattern matching to identify the bank and date range without an AI call.
 // ************************************************************************************
 function detectBankAndStatementType(text: string): StatementInfo {
   const lowerText = text.toLowerCase();
@@ -161,7 +163,9 @@ function detectBankAndStatementType(text: string): StatementInfo {
 
 
 // ************************************************************************************
-// STEP 2: Pre-processing & Prompt Generation
+// STEP 4a: Pre-processing & Prompt Generation
+// This function cleans the extracted text by removing common headers and footers
+// based on the detected bank. This reduces noise and token usage for the AI call.
 // ************************************************************************************
 function preProcessStatementText(bankName: BankName, rawText: string) {
     let text = rawText;
@@ -267,39 +271,40 @@ Statement Text:
 
 
 // ************************************************************************************
-// STEP 3: Main AI Flow
+// STEP 4b: Main AI Flow Execution
+// This is the core function that orchestrates the extraction process.
 // ************************************************************************************
 export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null, transactions: ExtractedTransaction[], rawText: string, processedText: string }> {
     const { pdfText } = input;
 
-    // Step 1: Detect bank, type, and period
+    // First, detect bank, type, and period from the raw text without using AI.
     const bankInfo = detectBankAndStatementType(pdfText);
     
-    // Step 2: Pre-process text to remove headers/footers
+    // Then, pre-process the text to remove unnecessary headers/footers based on the bank.
     const processedText = preProcessStatementText(bankInfo.bankName, pdfText);
     
-    // DEBUG: Log the text being sent to the AI
+    // DEBUG: Log the cleaned text that will be sent to the AI model.
     console.log('============= AI INPUT (PROCESSED TEXT) =============');
     console.log(processedText);
     console.log('=====================================================');
 
-    // Step 3: Call the appropriate AI model based on statement type
+    // Choose the appropriate AI prompt (Credit Card vs. Bank Account) based on the detected statement type.
     let llmResponse;
     if (bankInfo.statementType === 'Bank Account') {
         llmResponse = await bankAccountPrompt({ processedText });
     } else {
-        // Default to credit card for 'Credit Card' or 'Unknown'
+        // Default to the credit card prompt for 'Credit Card' or 'Unknown' types.
         llmResponse = await creditCardPrompt({ processedText });
     }
     
     const extractedData = llmResponse.output || [];
 
-    // DEBUG: Log the raw output from the AI
+    // DEBUG: Log the raw JSON output received from the AI.
     console.log('==================== AI OUTPUT ====================');
     console.log(JSON.stringify(extractedData, null, 2));
     console.log('=====================================================');
 
-    // Step 4: Validate and filter the results
+    // Finally, validate the AI's output to ensure it's in the correct format before returning.
     const validTransactions = extractedData.filter(txn => 
         txn.date && txn.merchant && txn.category && typeof txn.amount === 'number'
     );

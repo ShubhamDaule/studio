@@ -31,7 +31,8 @@ import { Progress } from "@/components/ui/progress";
 import { UploadConfirmationDialog } from "../dialogs/upload-confirmation-dialog";
 import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
-// Set the workerSrc for pdfjs-dist
+// The worker is now configured via a postinstall script and doesn't need to be set here.
+// However, to be extra safe, we can set it here as well.
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 }
@@ -208,6 +209,7 @@ const DashboardNav = () => {
         setIsClient(true);
     }, []);
 
+    // Step 1: Handle file selection and initial client-side processing
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
@@ -218,12 +220,14 @@ const DashboardNav = () => {
 
         for (const file of Array.from(files)) {
             try {
+                // Step 1a: Read file into memory
                 const originalBuffer = await file.arrayBuffer();
                 
                 // Use a copy for analysis, and another for storage/editing
                 const analysisBuffer = originalBuffer.slice(0); 
                 const storageBuffer = originalBuffer.slice(0);
 
+                // Step 1b: Extract raw text from the entire PDF using pdfjs
                 const pdf = await pdfjsLib.getDocument({ data: analysisBuffer }).promise;
                 let fullText = "";
                 for (let i = 1; i <= pdf.numPages; i++) {
@@ -233,6 +237,7 @@ const DashboardNav = () => {
                     fullText += "\\n" + pageText;
                 }
                 
+                // Step 2: Send text to server for pre-analysis (cost estimation, bank detection)
                 const preAnalysisResult = await preAnalyzeTransactions(fullText, file.name, true);
 
                 if (preAnalysisResult.error || !preAnalysisResult.usage || !preAnalysisResult.bankName || !preAnalysisResult.statementType) {
@@ -255,6 +260,7 @@ const DashboardNav = () => {
             }
         }
         
+        // Step 3 (Implicit): If files were successfully pre-processed, open the confirmation dialog
         if (preppedFiles.length > 0) {
             setFilesToConfirm(preppedFiles);
             setIsConfirming(true);
@@ -265,6 +271,7 @@ const DashboardNav = () => {
         if(fileInputRef.current) fileInputRef.current.value = "";
     };
 
+    // Step 4: User confirms, send final text to server for full AI extraction
     const handleConfirmUpload = async (confirmedFiles: UploadFile[]) => {
         setIsConfirming(false);
         if (confirmedFiles.length === 0) {
@@ -282,6 +289,7 @@ const DashboardNav = () => {
         let allJsonOutput = "";
 
         for (const file of confirmedFiles) {
+            // The `false` flag tells the server action to perform the full AI extraction
             const finalResult = await preAnalyzeTransactions(file.text, file.fileName, false);
             if (finalResult.error || !finalResult.data || !finalResult.bankName || !finalResult.statementType || !finalResult.usage || !finalResult.processedText) {
                 toast({ variant: "destructive", title: `Upload Failed: ${file.fileName}`, description: finalResult.error });
@@ -299,6 +307,7 @@ const DashboardNav = () => {
             allJsonOutput += `// ${file.fileName}\n${JSON.stringify(finalResult.data, null, 2)}\n\n`;
         }
         
+        // Step 5 (Part 1): Show debug dialog with raw AI input/output
         if (allFinalUploads.length > 0) {
             if (consumeTokens(totalUsage.totalTokens)) {
                 setDebugInfo({
@@ -314,6 +323,7 @@ const DashboardNav = () => {
         }
     }
 
+    // Step 5 (Part 2): User clicks "Continue", add data to the dashboard
     const handleContinueFromDebug = () => {
         if (debugInfo) {
             addUploadedTransactions(debugInfo.finalUploads);
