@@ -98,7 +98,7 @@ function detectBankAndStatementType(text: string): StatementInfo {
        // Handles Chase format like: "April 24, 2025throughMay 23, 2025"
       { pattern: /(\w+\s\d{1,2},\s*\d{4})\s*through\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
       // Handles formats like: "January 1, 2024 - January 31, 2024" or "Jun 09, 2025 - Jul 09, 2025"
-      { pattern: /(\w+\s\d{1,2},\s*\d{4})\s*-\s*(\w+\s\d{1,2},\s*\d{4})/i, type: 'start-end' },
+      { pattern: /(\w+\s\d{1,2},?\s*\d{4})\s*-\s*(\w+\s\d{1,2},?\s*\d{4})/i, type: 'start-end' },
       // Handles formats like: "period from 01/01/2024 to 01/31/2024"
       { pattern: /period from\s*(\d{2}\/\d{2}\/\d{4})\s*to\s*(\d{2}\/\d{2}\/\d{4})/i, type: 'start-end' },
       // Handles formats like: "Billing Period: 06/17/25-07/15/25"
@@ -130,16 +130,19 @@ function detectBankAndStatementType(text: string): StatementInfo {
               // If the format is MM/DD/YY, it will be parsed correctly.
               // If the format is verbose (Jan 1), we need to ensure the year is present.
               if (/\w+\s\d{1,2},?\s*$/.test(endStr) && !/\d{4}/.test(startStr)) {
-                   const endYear = new Date(endStr).getFullYear();
-                   if (!isNaN(endYear)) {
-                       startStr += `, ${endYear}`;
-                   }
+                   const endYearMatch = endStr.match(/\d{4}/);
+                   const endYear = endYearMatch ? parseInt(endYearMatch[0]) : new Date().getFullYear();
+                   startStr += `, ${endYear}`;
               }
 
               const startDate = new Date(startStr);
               const endDate = new Date(endStr);
               
               if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                   // Handle cases where the start date might be parsed in the wrong year (e.g. Dec 15 - Jan 14)
+                  if (startDate > endDate) {
+                      startDate.setFullYear(startDate.getFullYear() - 1);
+                  }
                   statementPeriod = {
                       startDate: format(startDate, 'yyyy-MM-dd'),
                       endDate: format(endDate, 'yyyy-MM-dd'),

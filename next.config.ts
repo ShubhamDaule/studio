@@ -24,14 +24,7 @@ const nextConfig: NextConfig = {
         "https://*.cloudworkstations.dev",
         "https://*.firebase.studio",
     ]
-  },
-  webpack: (config) => {
-    config.module.rules.push({
-      test: /pdf\.worker\.min\.mjs/,
-      type: "asset/resource",
-    });
-    return config;
-  },
+  }
 };
 
 export default nextConfig;

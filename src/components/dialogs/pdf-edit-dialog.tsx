@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -121,16 +120,14 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         const copiedPages = await newDoc.copyPages(srcDoc, pageIndices);
         copiedPages.forEach(page => newDoc.addPage(page));
         
-        // 3. Save the new PDF to a Uint8Array
+        // 3. Save the new PDF to a Uint8Array and create a clean ArrayBuffer for app state.
         const newPdfBytesUint8 = await newDoc.save();
-        
-        // 4. IMPORTANT: Create a clean, standalone ArrayBuffer for app state.
         const newArrayBuffer = newPdfBytesUint8.buffer.slice(
             newPdfBytesUint8.byteOffset,
             newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
         );
 
-        // 5. Re-extract text from the new Uint8Array
+        // 4. Re-extract text from the new Uint8Array
         const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8 }).promise;
         let newText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
@@ -140,7 +137,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
             newText += "\\n" + pageText;
         }
         
-        // 6. Pass both the new text and the new buffer back
+        // 5. Pass both the new text and the new buffer back
         onSave(file.fileName, newText, newArrayBuffer);
 
     } catch (err: any) {
@@ -148,6 +145,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         toast({ variant: "destructive", title: "Apply Changes failed", description: err?.message ?? "Unknown error" });
     } finally {
         setIsLoading(false);
+        onClose();
     }
   };
 
