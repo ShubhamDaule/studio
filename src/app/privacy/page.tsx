@@ -4,6 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+/**
+ * Renders the Privacy Policy page.
+ * This is a static page containing legal information about data handling.
+ */
 export default function PrivacyPolicyPage() {
     return (
         <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">

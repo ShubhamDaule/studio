@@ -14,14 +14,19 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+// Schema for validating the profile form using Zod.
 const profileFormSchema = z.object({
   displayName: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50, { message: "Name cannot be longer than 50 characters." }),
 });
 
+/**
+ * Renders the settings page where users can manage their profile and account information.
+ */
 export default function SettingsPage() {
   const { user, updateUserProfile } = useAuth();
   const router = useRouter();
 
+  // Initialize react-hook-form with the validation schema and default values.
   const form = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -29,10 +34,17 @@ export default function SettingsPage() {
     },
   });
 
+  /**
+   * Handles the submission of the profile form.
+   * Calls the updateUserProfile function from the auth context.
+   * @param {object} values - The form values.
+   */
   const onSubmit = async (values: z.infer<typeof profileFormSchema>) => {
     await updateUserProfile(values.displayName);
   };
 
+  // If there's no user, don't render the component.
+  // This can happen briefly during initial load or after sign-out.
   if (!user) {
     return null; 
   }
@@ -52,6 +64,7 @@ export default function SettingsPage() {
         </Button>
       </div>
       <div className="space-y-8">
+        {/* Personal Information Card */}
         <Card>
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
@@ -82,6 +95,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Account Information Card */}
         <Card>
           <CardHeader>
             <CardTitle>Account Information</CardTitle>

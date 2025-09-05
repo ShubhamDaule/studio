@@ -10,9 +10,17 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+/**
+ * Renders the contact page with a form for users to send messages.
+ */
 export default function ContactPage() {
     const { toast } = useToast();
 
+    /**
+     * Handles the form submission.
+     * Prevents the default form action, displays a success toast, and resets the form fields.
+     * @param {React.FormEvent} e - The form submission event.
+     */
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         toast({

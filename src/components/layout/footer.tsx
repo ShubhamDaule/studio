@@ -4,6 +4,10 @@
 import Link from "next/link";
 import { Logo } from "./logo";
 
+/**
+ * Renders the global footer for the application.
+ * It includes the company logo, navigation links to legal pages, and a copyright notice.
+ */
 export function Footer() {
     return (
         <footer className="bg-muted/30 py-12">

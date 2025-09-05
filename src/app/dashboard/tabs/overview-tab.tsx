@@ -16,11 +16,17 @@ import { CurrentBalanceCard } from "@/components/dashboard/cards/current-balance
 import { useDashboardContext } from "@/context/dashboard-context";
 import { useBudgets } from "@/hooks/useBudgets";
 
+// Props for the OverviewTab component, including a function to open dialogs.
 type OverviewTabProps = {
     openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant' | 'classification', data: any) => void;
 };
 
+/**
+ * Renders the "Overview" tab in the dashboard.
+ * This tab displays a high-level summary of financial data through stats cards and charts.
+ */
 export function OverviewTab({ openDialog }: OverviewTabProps) {
+    // Destructure necessary data and functions from the dashboard context.
     const {
         totalSpending,
         filterDescription,
@@ -34,11 +40,13 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
         dateRange,
     } = useDashboardContext();
 
+    // Use the budgets hook to get budget data relevant to the current view.
     const { activeBudgets } = useBudgets({ allCategories, transactions: filteredTransactions, dateRange });
 
 
     return (
         <div className="grid gap-8">
+            {/* Section for key statistics cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatsCard 
                     title="Total Spending"
@@ -53,6 +61,7 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                     icon={<ReceiptText className="h-4 w-4 text-muted-foreground" />}
                     description={filterDescription}
                     onClick={() => {
+                        // Programmatically switch to the "Transactions" tab when this card is clicked.
                         const tabs = document.querySelector('[role="tablist"]');
                         const transactionsTab = tabs?.querySelector('[value="transactions"]');
                         (transactionsTab as HTMLElement)?.click();
@@ -62,6 +71,7 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                     transaction={highestTransaction}
                     onClick={() => openDialog('transactionDetail', highestTransaction)}
                 />
+                {/* Conditionally render either the current balance or the highest spending day card. */}
                 {currentBalance !== null ? (
                      <CurrentBalanceCard balance={currentBalance} />
                 ) : (
@@ -71,10 +81,12 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                     />
                 )}
             </div>
+            {/* Section for primary charts */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                 <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data)} budgets={activeBudgets} allCategories={allCategories} />
                 <SpendingByDayChart transactions={filteredTransactions} onBarClick={(data) => openDialog('day', data.date)} />
             </div>
+            {/* Section for secondary charts */}
             <>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />

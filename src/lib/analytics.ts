@@ -4,6 +4,12 @@
 import { mean } from 'simple-statistics';
 import type { Transaction, Anomaly } from '@/lib/types';
 
+/**
+ * Provides a user-friendly error message from a generic error object.
+ * Maps common API error codes to more understandable messages.
+ * @param {any} error - The error object caught in a try-catch block.
+ * @returns {string} A user-friendly error message.
+ */
 function getFriendlyErrorMessage(error: any): string {
     const defaultMessage = 'An unexpected error occurred. Please try again.';
     if (!error || !error.message) {
@@ -19,6 +25,12 @@ function getFriendlyErrorMessage(error: any): string {
     return errorMessage || defaultMessage;
 }
 
+/**
+ * Detects spending anomalies in a list of transactions using statistical and rule-based methods.
+ * This function does NOT use an AI model; it relies on client-side calculations.
+ * @param {Transaction[]} transactions - An array of transactions to analyze.
+ * @returns {Promise<{ anomalies?: Anomaly[]; error?: string }>} An object containing the detected anomalies or an error message.
+ */
 export async function detectAnomalies(transactions: Transaction[]): Promise<{ anomalies?: Anomaly[]; error?: string }> {
     try {
         if (!transactions || transactions.length === 0) {
@@ -49,6 +61,7 @@ export async function detectAnomalies(transactions: Transaction[]): Promise<{ an
             merchantCount.set(txn.merchant, (merchantCount.get(txn.merchant) || 0) + 1);
         }
 
+        // Iterate through each transaction to check against anomaly rules.
         for (let i = 0; i < sortedTransactions.length; i++) {
             const txn = sortedTransactions[i];
             const { id: txnId, amount, category, merchant, date: dateStr } = txn;
@@ -66,9 +79,10 @@ export async function detectAnomalies(transactions: Transaction[]): Promise<{ an
                 if (hasMatchingRefund) continue;
             }
 
-            if (amount <= 0) continue; // Only check spending for anomalies, not credits
+            // Only check spending for anomalies, not credits/payments
+            if (amount <= 0) continue; 
             
-            // Rule 1: Duplicate Detection
+            // Rule 1: Duplicate Detection - Looks for identical amounts to the same merchant within a day.
             for (let j = i + 1; j < sortedTransactions.length; j++) {
                 const otherTxn = sortedTransactions[j];
                 const txnDate = new Date(dateStr);
@@ -109,7 +123,7 @@ export async function detectAnomalies(transactions: Transaction[]): Promise<{ an
                  }
             }
 
-            // Rule 4: Large Purchase Rule (hardcoded thresholds)
+            // Rule 4: Large Purchase Rule (hardcoded thresholds for common categories)
             if (category === 'Shopping' && amount > 200) {
                 anomalies.push({ transactionId: txnId, reason: "Large 'Shopping' expense." });
                 flaggedIds.add(txnId);
@@ -131,9 +145,9 @@ export async function detectAnomalies(transactions: Transaction[]): Promise<{ an
                 continue;
             }
 
-            // Rule 5: Category Outlier Rule (statistical)
+            // Rule 5: Category Outlier Rule (statistical check against the category average)
             const peers = (categoryGroups.get(category) || []).filter(t => t.id !== txnId).map(t => t.amount);
-            if (peers.length > 5) { // Only run this check if there's enough data
+            if (peers.length > 5) { // Only run this check if there's enough data for a meaningful average.
                 const avg = mean(peers);
                 if (peers.length > 0 && avg > 0 && amount > 3 * avg) { 
                     anomalies.push({ transactionId: txnId, reason: `Significantly higher than other '${category}' expenses.` });
@@ -143,7 +157,7 @@ export async function detectAnomalies(transactions: Transaction[]): Promise<{ an
             }
         }
         
-        // Remove duplicates by transactionId before returning
+        // Remove duplicates by transactionId before returning to ensure each transaction is flagged only once.
         return { anomalies: Array.from(new Set(anomalies.map(a => a.transactionId))).map(id => anomalies.find(a => a.transactionId === id)!) };
 
     } catch (e: any) {

@@ -14,16 +14,24 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/layout/logo";
 
-
+/**
+ * Renders the authentication form for signing in or signing up.
+ * It handles UI state for the form, including password visibility and switching between modes.
+ */
 const AuthForm = () => {
+    // State to toggle between 'signin' and 'signup' modes.
     const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+    // State for password field visibility.
     const [showPassword, setShowPassword] = useState(false);
+    // State for confirm password field visibility.
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     
+    // Auth context for user state and social sign-in methods.
     const { user, signInWithGoogle, signInWithApple } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
 
+    // Effect to set the auth mode based on the 'mode' URL query parameter.
     useEffect(() => {
         const urlMode = searchParams.get('mode');
         if (urlMode === 'signup') {
@@ -33,17 +41,20 @@ const AuthForm = () => {
         }
     }, [searchParams]);
 
+    // Effect to redirect the user to the dashboard if they are already logged in.
     useEffect(() => {
         if (user) {
             router.push('/dashboard');
         }
     }, [user, router]);
     
+    // Effect to update the document title based on the current auth mode.
     useEffect(() => {
         document.title = mode === 'signin' ? "Sign In • MySpendWise" : "Sign Up • MySpendWise";
     }, [mode]);
 
 
+    // Placeholder for email/password form submission.
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         // TODO: Implement email/password auth
@@ -71,6 +82,7 @@ const AuthForm = () => {
                         </p>
                     </div>
 
+                    {/* Animated Sign In / Sign Up toggle */}
                     <div className="relative bg-muted p-1 rounded-full flex items-center mb-6">
                         <div 
                             className={cn(
@@ -165,6 +177,7 @@ const AuthForm = () => {
                             </div>
                         </div>
 
+                        {/* Social login buttons */}
                         <div className="grid grid-cols-2 gap-3">
                             <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2" /> Google</Button>
                             <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2" /> Apple</Button>
@@ -183,6 +196,10 @@ const AuthForm = () => {
     );
 };
 
+/**
+ * Wraps the AuthForm in a Suspense boundary.
+ * This is good practice for components that use hooks like `useSearchParams`.
+ */
 const AuthPageContent = () => {
     return (
          <Suspense fallback={<div>Loading...</div>}>
@@ -191,6 +208,9 @@ const AuthPageContent = () => {
     )
 }
 
+/**
+ * The main export for the authentication page.
+ */
 export default function AuthPage() {
     return <AuthPageContent />
 }

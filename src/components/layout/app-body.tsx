@@ -8,8 +8,16 @@ import { DashboardProvider } from '@/context/dashboard-context';
 import { Header } from '../layout/header';
 import { Footer } from '../layout/footer';
 
+/**
+ * AppBody is the main layout component that wraps the entire application.
+ * It sets up all the necessary context providers (Auth, Tiers, Dashboard)
+ * and conditionally renders the Header and Footer based on the current route.
+ */
 export function AppBody({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    
+    // Determine if the current page should have a header and footer.
+    // Auth and pricing pages have their own minimal layout.
     const noHeaderFooter = ['/auth', '/pricing'].includes(pathname) || !pathname;
 
     return (

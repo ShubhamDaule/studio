@@ -4,10 +4,15 @@
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+/**
+ * Renders a skeleton loading state for the dashboard.
+ * This provides a visual placeholder while data is being fetched or processed,
+ * improving the user experience by indicating that content is on its way.
+ */
 export function DashboardSkeleton() {
   return (
     <div className="space-y-8 animate-pulse">
-      {/* Tabs Skeleton */}
+      {/* Skeleton for the tab controls */}
       <div className="grid grid-cols-4 gap-2 rounded-lg bg-muted p-1">
         <Skeleton className="h-8 rounded-md bg-background/80" />
         <Skeleton className="h-8 rounded-md" />
@@ -15,7 +20,7 @@ export function DashboardSkeleton() {
         <Skeleton className="h-8 rounded-md" />
       </div>
 
-      {/* Stats Cards Skeleton */}
+      {/* Skeleton for the four main stats cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
           <Card key={i}>
@@ -31,7 +36,7 @@ export function DashboardSkeleton() {
         ))}
       </div>
 
-      {/* Charts Skeleton */}
+      {/* Skeleton for the chart section */}
       <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>

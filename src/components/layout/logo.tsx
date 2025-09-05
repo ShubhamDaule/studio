@@ -3,6 +3,10 @@
 
 import { BarChart3 } from "lucide-react";
 
+/**
+ * Renders the application's logo.
+ * It consists of an icon and the application name.
+ */
 export function Logo() {
     return (
         <div className="flex items-center gap-2 flex-shrink-0">

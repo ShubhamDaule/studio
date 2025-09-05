@@ -11,6 +11,7 @@ import { CheckCircle, ArrowRight, Shield, Zap, ArrowLeft } from "lucide-react";
 import { useTiers } from "@/hooks/use-tiers";
 import { Logo } from "@/components/layout/logo";
 
+// Defines the available subscription plans and their features.
 const plans = [
   {
     name: "Free",
@@ -53,14 +54,23 @@ const plans = [
   },
 ] as const;
 
+/**
+ * Renders the pricing page, allowing users to view and select a subscription plan.
+ */
 export default function Pricing() {
   const router = useRouter();
   const { setIsPro, setIsPremium } = useTiers();
 
+  // Effect to set the document title when the component mounts.
   useEffect(() => {
     document.title = "Pricing – Free, Pro, Premium | MySpendWise";
   }, []);
 
+  /**
+   * Handles the selection of a pricing plan.
+   * Updates the user's tier status and redirects them to the signup page.
+   * @param {object} plan - The selected plan object.
+   */
   const choosePlan = (plan: (typeof plans)[number]) => {
     if (plan.name === "Free") {
       setIsPremium(false);
@@ -93,7 +103,7 @@ export default function Pricing() {
       </header>
 
       <main>
-        {/* Hero */}
+        {/* Hero section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-background via-primary/5 to-background">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5" />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center">
@@ -107,7 +117,7 @@ export default function Pricing() {
           </div>
         </section>
 
-        {/* Plans */}
+        {/* Pricing plans section */}
         <section className="py-12 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
