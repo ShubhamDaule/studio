@@ -26,7 +26,6 @@ if (typeof window !== 'undefined') {
   GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 }
 
-
 type Page = {
   pageNumber: number;
   thumbnailUrl: string;
@@ -112,9 +111,9 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
     try {
         // 1. Load the original PDF from the ArrayBuffer
         const originalArrayBuffer = file.arrayBuffer;
-        const srcDoc = await PDFDocument.load(originalArrayBuffer, { ignoreEncryption: true });
         
         // 2. Create a new PDF and copy only the selected pages
+        const srcDoc = await PDFDocument.load(originalArrayBuffer, { ignoreEncryption: true });
         const newDoc = await PDFDocument.create();
         const selectedPageNumbers = Array.from(selectedPages).sort((a, b) => a - b);
         const pageIndices = selectedPageNumbers.map(p => p - 1); // Convert to 0-based indices
@@ -125,14 +124,14 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         // 3. Save the new PDF to a Uint8Array
         const newPdfBytesUint8 = await newDoc.save();
         
-        // 4. IMPORTANT: Create a clean, standalone ArrayBuffer for app state and text extraction
+        // 4. IMPORTANT: Create a clean, standalone ArrayBuffer for app state.
         const newArrayBuffer = newPdfBytesUint8.buffer.slice(
             newPdfBytesUint8.byteOffset,
             newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
         );
 
-        // 5. Re-extract text from the new, smaller PDF's ArrayBuffer
-        const pdf = await pdfjsLib.getDocument({ data: newArrayBuffer.slice(0) }).promise;
+        // 5. Re-extract text from the new Uint8Array
+        const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8 }).promise;
         let newText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
