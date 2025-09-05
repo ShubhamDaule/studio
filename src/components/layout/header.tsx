@@ -31,6 +31,11 @@ import { Progress } from "@/components/ui/progress";
 import { UploadConfirmationDialog } from "../dialogs/upload-confirmation-dialog";
 import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
+// Set the workerSrc for pdfjs-dist
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+}
+
 type PendingUpload = {
   data: ExtractedTransaction[];
   fileName: string;

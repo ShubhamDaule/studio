@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -19,7 +20,12 @@ import * as pdfjsLib from "pdfjs-dist";
 import { Loader2 } from "lucide-react";
 import { PDFDocument } from 'pdf-lib';
 
-// The worker is now configured via patch-package and doesn't need to be set here.
+// The worker is now configured via a postinstall script and doesn't need to be set here.
+// However, to be extra safe, we can set it here as well.
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+}
+
 
 type Page = {
   pageNumber: number;
@@ -116,14 +122,17 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         const copiedPages = await newDoc.copyPages(srcDoc, pageIndices);
         copiedPages.forEach(page => newDoc.addPage(page));
         
-        // 3. Save the new PDF to a Uint8Array and create a clean ArrayBuffer for app state.
+        // 3. Save the new PDF to a Uint8Array.
         const newPdfBytesUint8 = await newDoc.save();
+        
+        // 4. Create a clean ArrayBuffer from the Uint8Array for app state.
+        // This MUST be done before passing the Uint8Array to pdfjs, which might detach it.
         const newArrayBuffer = newPdfBytesUint8.buffer.slice(
             newPdfBytesUint8.byteOffset,
             newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
         );
 
-        // 4. Re-extract text from the new Uint8Array
+        // 5. Re-extract text from the new Uint8Array
         const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8 }).promise;
         let newText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
@@ -133,7 +142,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
             newText += "\\n" + pageText;
         }
         
-        // 5. Pass both the new text and the new buffer back
+        // 6. Pass both the new text and the new buffer back
         onSave(file.fileName, newText, newArrayBuffer);
 
     } catch (err: any) {
