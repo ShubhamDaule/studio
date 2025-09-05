@@ -33,7 +33,7 @@ import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
 // Set the workerSrc for pdfjs-dist
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 }
 
 type PendingUpload = {

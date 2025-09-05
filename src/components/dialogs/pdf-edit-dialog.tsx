@@ -23,7 +23,7 @@ import { PDFDocument } from 'pdf-lib';
 // The worker is now configured via a postinstall script and doesn't need to be set here.
 // However, to be extra safe, we can set it here as well.
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 }
 
 
