@@ -19,7 +19,6 @@ import { preAnalyzeTransactions } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { calculateAppTokens } from "@/hooks/use-tiers";
 import { format, parseISO } from "date-fns";
-import * as pdfjsLib from "pdfjs-dist";
 
 type Props = {
   isOpen: boolean;
@@ -47,19 +46,10 @@ export function UploadConfirmationDialog({ isOpen, onClose, onConfirm, filesToCo
     onConfirm(pendingFiles);
   };
   
-  const handleSaveEdits = async (fileName: string, newBuffer: ArrayBuffer) => {
+  const handleSaveEdits = async (fileName: string, newText: string, newBuffer: ArrayBuffer) => {
     try {
-        const analysisBuffer = newBuffer.slice(0);
-        const pdf = await pdfjsLib.getDocument({ data: analysisBuffer }).promise;
-        let fullText = "";
-        for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            const pageText = content.items.map(item => (item as any).str).join(" ");
-            fullText += "\\n" + pageText;
-        }
-
-        const preAnalysisResult = await preAnalyzeTransactions(fullText, fileName, true);
+        // We already have the text, so just send it for pre-analysis to get new metadata and cost.
+        const preAnalysisResult = await preAnalyzeTransactions(newText, fileName, true);
         if (preAnalysisResult.error || !preAnalysisResult.usage) {
             toast({ variant: "destructive", title: `Re-analysis Failed: ${fileName}`, description: preAnalysisResult.error });
             return;
@@ -69,8 +59,8 @@ export function UploadConfirmationDialog({ isOpen, onClose, onConfirm, filesToCo
             if (f.fileName === fileName) {
                 return {
                     ...f,
-                    text: fullText,
-                    arrayBuffer: newBuffer,
+                    text: newText, // Use the newly extracted text
+                    arrayBuffer: newBuffer, // Use the new, smaller buffer
                     cost: calculateAppTokens(preAnalysisResult.usage.totalTokens),
                     bankName: preAnalysisResult.bankName ?? 'Unknown',
                     statementType: preAnalysisResult.statementType ?? 'Unknown',

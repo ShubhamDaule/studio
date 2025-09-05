@@ -19,9 +19,9 @@ import type { UploadFile } from "@/lib/types";
 import * as pdfjsLib from "pdfjs-dist";
 import { Loader2 } from "lucide-react";
 import { PDFDocument } from 'pdf-lib';
-
 import { GlobalWorkerOptions } from 'pdfjs-dist';
 
+// Use a direct import for the worker to ensure it's bundled correctly by Next.js/Turbopack.
 if (typeof window !== 'undefined') {
   GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 }
@@ -36,7 +36,7 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   file: UploadFile;
-  onSave: (fileName: string, newBuffer: ArrayBuffer) => void;
+  onSave: (fileName: string, newText: string, newBuffer: ArrayBuffer) => void;
 };
 
 export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
@@ -110,24 +110,39 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const handleSaveChanges = async () => {
     setIsLoading(true);
     try {
+        // 1. Load the original PDF from the ArrayBuffer
         const originalArrayBuffer = file.arrayBuffer;
         const srcDoc = await PDFDocument.load(originalArrayBuffer, { ignoreEncryption: true });
+        
+        // 2. Create a new PDF and copy only the selected pages
         const newDoc = await PDFDocument.create();
-
         const selectedPageNumbers = Array.from(selectedPages).sort((a, b) => a - b);
-        const pageIndices = selectedPageNumbers.map(p => p - 1); 
+        const pageIndices = selectedPageNumbers.map(p => p - 1); // Convert to 0-based indices
 
         const copiedPages = await newDoc.copyPages(srcDoc, pageIndices);
         copiedPages.forEach(page => newDoc.addPage(page));
         
+        // 3. Save the new PDF to a Uint8Array
         const newPdfBytesUint8 = await newDoc.save();
         
+        // 4. IMPORTANT: Create a clean, standalone ArrayBuffer for app state and text extraction
         const newArrayBuffer = newPdfBytesUint8.buffer.slice(
             newPdfBytesUint8.byteOffset,
             newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
         );
+
+        // 5. Re-extract text from the new, smaller PDF's ArrayBuffer
+        const pdf = await pdfjsLib.getDocument({ data: newArrayBuffer.slice(0) }).promise;
+        let newText = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            const pageText = content.items.map(item => (item as any).str).join(" ");
+            newText += "\\n" + pageText;
+        }
         
-        onSave(file.fileName, newArrayBuffer);
+        // 6. Pass both the new text and the new buffer back
+        onSave(file.fileName, newText, newArrayBuffer);
 
     } catch (err: any) {
         console.error("PDF re-build failed:", err);
