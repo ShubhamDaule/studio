@@ -39,12 +39,19 @@ type Props = {
   onSave: (fileName: string, newText: string, newBuffer: ArrayBuffer) => void;
 };
 
+/**
+ * A dialog for editing which pages of a PDF to include for analysis.
+ * It generates thumbnails for each page, allows the user to select/deselect pages,
+ * and then rebuilds the PDF in memory with only the selected pages before re-running
+ * text extraction.
+ */
 export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const { toast } = useToast();
   const [pages, setPages] = React.useState<Page[]>([]);
   const [selectedPages, setSelectedPages] = React.useState<Set<number>>(new Set());
   const [isLoading, setIsLoading] = React.useState(true);
   
+  // Effect to generate page thumbnails when the dialog is opened.
   React.useEffect(() => {
     if (!isOpen) return;
 
@@ -87,6 +94,10 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
     generateThumbnails();
   }, [isOpen, file, toast, onClose]);
   
+  /**
+   * Toggles the selection state of a single page.
+   * @param {number} pageNumber - The page number to toggle.
+   */
   const handleTogglePage = (pageNumber: number) => {
     setSelectedPages(prev => {
         const newSet = new Set(prev);
@@ -99,40 +110,49 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
     });
   };
   
+  /**
+   * Selects all pages in the PDF.
+   */
   const handleSelectAll = () => {
     setSelectedPages(new Set(pages.map(p => p.pageNumber)));
   }
 
+  /**
+   * Deselects all pages in the PDF.
+   */
   const handleDeselectAll = () => {
     setSelectedPages(new Set());
   }
 
+  /**
+   * Rebuilds the PDF with only the selected pages and re-extracts the text.
+   * This is the core logic that ensures the AI only processes the desired content.
+   */
   const handleSaveChanges = async () => {
     setIsLoading(true);
     try {
-        // 1. Load the original PDF from the ArrayBuffer
+        // STEP 1: Load the original PDF into pdf-lib.
         const originalArrayBuffer = file.arrayBuffer;
-        
-        // 2. Create a new PDF and copy only the selected pages
         const srcDoc = await PDFDocument.load(originalArrayBuffer, { ignoreEncryption: true });
+        
+        // STEP 2: Create a new PDF document and copy only the selected pages into it.
         const newDoc = await PDFDocument.create();
         const selectedPageNumbers = Array.from(selectedPages).sort((a, b) => a - b);
         const pageIndices = selectedPageNumbers.map(p => p - 1); // Convert to 0-based indices
-
         const copiedPages = await newDoc.copyPages(srcDoc, pageIndices);
         copiedPages.forEach(page => newDoc.addPage(page));
         
-        // 3. Save the new PDF to a Uint8Array.
+        // STEP 3: Save the new, smaller PDF to a Uint8Array.
         const newPdfBytesUint8 = await newDoc.save();
         
-        // 4. Create a clean ArrayBuffer from the Uint8Array for app state.
-        // This MUST be done before passing the Uint8Array to pdfjs, which might detach it.
+        // STEP 4 (CRITICAL FIX): Create a clean ArrayBuffer from the Uint8Array for the app state.
+        // This MUST be done *before* passing the Uint8Array to pdfjs, which might detach it.
         const newArrayBuffer = newPdfBytesUint8.buffer.slice(
             newPdfBytesUint8.byteOffset,
             newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
         );
 
-        // 5. Re-extract text from the new Uint8Array
+        // STEP 5: Re-extract text from the new Uint8Array using pdfjs-dist.
         const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8 }).promise;
         let newText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
@@ -142,7 +162,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
             newText += "\\n" + pageText;
         }
         
-        // 6. Pass both the new text and the new buffer back
+        // STEP 6: Pass both the newly extracted text and the new, smaller ArrayBuffer back.
         onSave(file.fileName, newText, newArrayBuffer);
 
     } catch (err: any) {
