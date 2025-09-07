@@ -3,9 +3,6 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { Inter } from 'next/font/google';
 import { AppBody } from '@/components/layout/app-body';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
-import { usePathname } from 'next/navigation';
 
 const inter = Inter({
   subsets: ['latin'],
