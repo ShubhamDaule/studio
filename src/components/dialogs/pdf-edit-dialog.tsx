@@ -19,6 +19,7 @@ import type { UploadFile } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import { PDFDocument } from 'pdf-lib';
 import { extractTextFromPdf } from "@/lib/pdf-utils";
+import * as pdfjsLib from 'pdfjs-dist';
 
 /**
  * A dialog for editing which pages of a PDF to include for analysis.
@@ -47,6 +48,8 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const [selectedPages, setSelectedPages] = React.useState<Set<number>>(new Set()); // Uses 0-based index
   const [isLoading, setIsLoading] = React.useState(true);
   const [originalPdf, setOriginalPdf] = React.useState<PDFDocument | null>(null);
+  const [originalPdfJsDoc, setOriginalPdfJsDoc] = React.useState<pdfjsLib.PDFDocumentProxy | null>(null);
+
 
   /**
    * Effect to load the PDF and generate page thumbnails when the dialog is opened.
@@ -58,8 +61,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
       setIsLoading(true);
       try {
         // Dynamically import pdfjs-dist only on the client-side
-        const pdfjsLib = await import('pdfjs-dist');
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/legacy/build/pdf.worker.min.mjs`;
 
         const bufferCopy = file.arrayBuffer.slice(0);
         
@@ -68,6 +70,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         setOriginalPdf(pdfDoc);
 
         const pdfjsDoc = await pdfjsLib.getDocument({ data: bufferCopy }).promise;
+        setOriginalPdfJsDoc(pdfjsDoc);
         
         const pageThumbnails: Page[] = [];
         const initialSelected = new Set<number>();
@@ -144,32 +147,39 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         if (selectedPages.size === 0) {
           throw new Error("No pages selected. Please select at least one page.");
         }
-        if (!originalPdf) {
+        if (!originalPdf || !originalPdfJsDoc) {
             throw new Error("Original PDF document not loaded.");
         }
 
-        // STEP 1: Create a new PDF document.
-        const newDoc = await PDFDocument.create();
-        
-        // STEP 2: Copy only the selected pages into it.
         const sortedPageIndices = Array.from(selectedPages).sort((a, b) => a - b);
-        
+
+        // STEP 1 (Text Extraction): Extract text directly from the original PDF for each selected page.
+        // This is more reliable than extracting from a reconstructed PDF.
+        let combinedText = '';
+        for (const pageIndex of sortedPageIndices) {
+            const page = await originalPdfJsDoc.getPage(pageIndex + 1); // pdf.js is 1-based
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items
+                .filter(item => 'str' in item)
+                .map(item => (item as any).str)
+                .join(' ');
+            combinedText += pageText + '\n\n';
+        }
+
+        // STEP 2 (PDF Reconstruction): Create a new, smaller PDF document with only the selected pages.
+        // This smaller file buffer is useful for potential later use, but the text is now sourced directly.
+        const newDoc = await PDFDocument.create();
         const copiedPages = await newDoc.copyPages(originalPdf, sortedPageIndices);
         copiedPages.forEach(page => newDoc.addPage(page));
-        
-        // STEP 3: Save the new, smaller PDF to a Uint8Array.
         const newPdfBytesUint8 = await newDoc.save();
         
-        // STEP 4: Re-extract text from the new PDF data.
-        const newText = await extractTextFromPdf(newPdfBytesUint8);
-        
-        // STEP 5: Validate that the new text is not empty before saving.
-        if (newText.trim().length < 10) {
+        // STEP 3: Validate that the extracted text is not empty before saving.
+        if (combinedText.trim().length < 10) {
             throw new Error(`Selected pages contain no readable text. Please check your selection.`);
         }
         
-        // STEP 6: Pass both the newly extracted text and the new, smaller ArrayBuffer back.
-        onSave(file.fileName, newText, newPdfBytesUint8.buffer);
+        // STEP 4: Pass both the directly extracted text and the new, smaller ArrayBuffer back.
+        onSave(file.fileName, combinedText, newPdfBytesUint8.buffer);
         onClose();
 
     } catch (err: any) {
