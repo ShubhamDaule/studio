@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { Transaction, ExtractedTransaction, BankName, StatementType, FinancialSource, TransactionFile, StatementPeriod, Category } from "@/lib/types";
 import { usePathname } from "next/navigation";
 import { mockCategories, mockTransactions } from "@/lib/mock-data";
-import { startOfDay, endOfDay, getYear, parseISO } from "date-fns";
+import { startOfDay, endOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
 type NewTransactionsCallback = (uploads: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null }[]) => void;
@@ -88,7 +88,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
             return { minDate: undefined, maxDate: undefined };
         }
         
-        const transactionDates = allTransactions.map(t => new Date(t.date));
+        const transactionDates = allTransactions.map(t => new Date(`${t.date}T00:00:00`));
         const min = new Date(Math.min.apply(null, transactionDates.map(d => d.getTime())));
         const max = new Date(Math.max.apply(null, transactionDates.map(d => d.getTime())));
         return { minDate: startOfDay(min), maxDate: endOfDay(max) };
@@ -158,7 +158,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (combinedTransactions.length > 0) {
-            const allDates = combinedTransactions.map(t => new Date(t.date));
+            const allDates = combinedTransactions.map(t => new Date(`${t.date}T00:00:00`));
             const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
             const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
             setDateRange({ from: startOfDay(newMinDate), to: endOfDay(newMaxDate) });
@@ -203,18 +203,15 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         
         return allTransactions.filter((t) => {
             try {
-                // Use new Date() for robust parsing of 'YYYY-MM-DD'
-                const transactionDate = new Date(t.date);
-                 // Adjust for timezone offset to prevent off-by-one-day errors
-                const tzOffset = transactionDate.getTimezoneOffset() * 60000;
-                const transactionDateUTC = new Date(transactionDate.getTime() + tzOffset);
+                // By appending T00:00:00, we force JS to parse the date as UTC, avoiding timezone shifts.
+                const transactionDate = new Date(`${t.date}T00:00:00`);
 
-                if (isNaN(transactionDateUTC.getTime())) return false;
+                if (isNaN(transactionDate.getTime())) return false;
         
                 const rangeFrom = startOfDay(dateRange.from!);
                 const rangeTo = endOfDay(dateRange.to!);
             
-                const isInDateRange = transactionDateUTC >= rangeFrom && transactionDateUTC <= rangeTo;
+                const isInDateRange = transactionDate >= rangeFrom && transactionDate <= rangeTo;
                 const matchesSource = selectedSourceFilter === "all" || t.bankName === selectedSourceFilter;
             
                 return isInDateRange && matchesSource;
