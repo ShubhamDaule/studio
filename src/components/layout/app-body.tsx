@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/context/auth-context';
 import { TiersProvider } from '@/hooks/use-tiers';
 import { DashboardProvider } from '@/context/dashboard-context';
-import { Header } from '../layout/header';
-import { Footer } from '../layout/footer';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 
 /**
  * AppBody is the main layout component that wraps the entire application.
