@@ -33,6 +33,11 @@ import { extractTextFromPdf } from "@/lib/pdf-utils";
 
 
 /**
+ * @fileoverview The global header for the application.
+ * It contains the logo, navigation, user menu, and the multi-step file upload logic.
+ */
+
+/**
  * Defines a type for the data structure that holds the final, processed transactions
  * ready to be added to the dashboard context.
  */
@@ -244,10 +249,14 @@ const DashboardNav = () => {
         for (const file of Array.from(files)) {
             try {
                 // Read file into memory as an ArrayBuffer.
-                const arrayBuffer = await file.arrayBuffer();
+                const originalArrayBuffer = await file.arrayBuffer();
                 
-                // Extract raw text from the entire PDF using our utility function.
-                const fullText = await extractTextFromPdf(new Uint8Array(arrayBuffer));
+                // Create a safe copy of the buffer for text extraction.
+                // This prevents the original buffer from being "detached" and causing errors later in the PDF editor.
+                const bufferForTextExtraction = originalArrayBuffer.slice(0);
+
+                // Extract raw text from the entire PDF using the copied buffer.
+                const fullText = await extractTextFromPdf(new Uint8Array(bufferForTextExtraction));
                 
                 /**
                  * STEP 2: Pre-Analysis (Client & Server)
@@ -262,11 +271,12 @@ const DashboardNav = () => {
                 }
                 
                 // Store the prepared file data, ready for the user's confirmation.
+                // Crucially, we store the ORIGINAL, untouched arrayBuffer for potential editing.
                 preppedFiles.push({
                     text: fullText,
                     fileName: file.name,
                     cost: calculateAppTokens(preAnalysisResult.usage.totalTokens),
-                    arrayBuffer: arrayBuffer,
+                    arrayBuffer: originalArrayBuffer,
                     bankName: preAnalysisResult.bankName,
                     statementType: preAnalysisResult.statementType,
                     statementPeriod: preAnalysisResult.statementPeriod ?? null,
