@@ -158,14 +158,14 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         const newPdfBytesUint8 = await newDoc.save();
         
         // STEP 4 (CRITICAL): Create a clean ArrayBuffer from the Uint8Array for the app state and text extraction.
-        // This is a crucial step to ensure the data format is correct for the next library.
+        // This is the crucial step that was previously failing. This correctly converts the data format.
         const newArrayBuffer = newPdfBytesUint8.buffer.slice(
             newPdfBytesUint8.byteOffset,
             newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
         );
 
         // STEP 5: Re-extract text from the new PDF data using pdfjs-dist.
-        const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8.slice() }).promise;
+        const pdf = await pdfjsLib.getDocument({ data: newArrayBuffer.slice(0) }).promise;
         let newText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
@@ -182,13 +182,13 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         
         // STEP 7: Pass both the newly extracted text and the new, smaller ArrayBuffer back to the confirmation dialog.
         onSave(file.fileName, newText, newArrayBuffer);
+        onClose();
 
     } catch (err: any) {
         console.error("PDF re-build failed:", err);
         toast({ variant: "destructive", title: "Apply Changes failed", description: err?.message ?? "Unknown error" });
     } finally {
         setIsLoading(false);
-        onClose();
     }
   };
 
