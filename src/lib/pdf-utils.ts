@@ -1,5 +1,5 @@
 
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
 
 // Sets the PDF.js worker source. This is a critical step to ensure the library can process PDFs in the browser.
 // It points to a reliable CDN to fetch the legacy worker script, matching the imported library version.
