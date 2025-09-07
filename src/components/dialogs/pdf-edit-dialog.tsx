@@ -54,7 +54,11 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const [selectedPages, setSelectedPages] = React.useState<Set<number>>(new Set()); // Uses 0-based index
   const [isLoading, setIsLoading] = React.useState(true);
   
-  // Effect to generate page thumbnails when the dialog is opened.
+  /**
+   * Effect to generate page thumbnails when the dialog is opened.
+   * This function loads the PDF and creates a small image preview for each page,
+   * making it easy for the user to identify which pages to include or exclude.
+   */
   React.useEffect(() => {
     if (!isOpen) return;
 
@@ -154,26 +158,29 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         const newPdfBytesUint8 = await newDoc.save();
         
         // STEP 4 (CRITICAL): Create a clean ArrayBuffer from the Uint8Array for the app state and text extraction.
+        // This is a crucial step to ensure the data format is correct for the next library.
         const newArrayBuffer = newPdfBytesUint8.buffer.slice(
             newPdfBytesUint8.byteOffset,
             newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
         );
 
         // STEP 5: Re-extract text from the new PDF data using pdfjs-dist.
-        const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8 }).promise;
+        const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8.slice() }).promise;
         let newText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
             const content = await page.getTextContent();
+            // We join all the text items on the page into a single string.
             const pageText = content.items.map(item => ('str' in item ? item.str : '')).join(" ");
             newText += "\\n" + pageText;
         }
 
+        // STEP 6: Validate that the new text is not empty before saving.
         if (newText.trim().length < 10) {
             throw new Error(`Selected pages contain no readable text. Please check your selection.`);
         }
         
-        // STEP 6: Pass both the newly extracted text and the new, smaller ArrayBuffer back.
+        // STEP 7: Pass both the newly extracted text and the new, smaller ArrayBuffer back to the confirmation dialog.
         onSave(file.fileName, newText, newArrayBuffer);
 
     } catch (err: any) {
@@ -247,5 +254,3 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
     </Dialog>
   );
 }
-
-    
