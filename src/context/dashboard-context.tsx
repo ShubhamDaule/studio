@@ -91,13 +91,13 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         const transactionDates = allTransactions.map(t => new Date(`${t.date}T00:00:00`));
         const min = new Date(Math.min.apply(null, transactionDates.map(d => d.getTime())));
         const max = new Date(Math.max.apply(null, transactionDates.map(d => d.getTime())));
-        return { minDate: startOfDay(min), maxDate: endOfDay(max) };
+        return { minDate: min, maxDate: max };
 
     }, [isDashboard, allTransactions]);
     
     React.useEffect(() => {
         if (minDate && maxDate && !dateRange) {
-            setDateRange({ from: minDate, to: maxDate });
+            setDateRange({ from: minDate, to: endOfDay(maxDate) });
         }
     }, [minDate, maxDate, dateRange]);
 
@@ -161,7 +161,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
             const allDates = combinedTransactions.map(t => new Date(`${t.date}T00:00:00`));
             const newMinDate = new Date(Math.min.apply(null, allDates.map(d => d.getTime())));
             const newMaxDate = new Date(Math.max.apply(null, allDates.map(d => d.getTime())));
-            setDateRange({ from: startOfDay(newMinDate), to: endOfDay(newMaxDate) });
+            setDateRange({ from: newMinDate, to: endOfDay(newMaxDate) });
         }
 
         setTimeout(() => {
