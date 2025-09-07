@@ -1,9 +1,9 @@
 
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
 
 // Sets the PDF.js worker source. This is a critical step to ensure the library can process PDFs in the browser.
-// It points to a reliable CDN to fetch the worker script.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+// It points to a reliable CDN to fetch the legacy worker script, matching the imported library version.
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/legacy/build/pdf.worker.min.mjs`;
 
 /**
  * Extracts all text content from a given PDF file's binary data.
