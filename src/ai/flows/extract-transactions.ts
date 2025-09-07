@@ -51,7 +51,7 @@ function detectBankAndStatementType(text: string): StatementInfo {
   const lowerText = text.toLowerCase();
 
   const bankKeywords: Record<BankName, string[]> = {
-    'Chase': ['chase'],
+    'Chase': ['chase', 'jpmorgan chase'],
     'Discover': ['discover'],
     'Amex': ['american express', 'amex'],
     'Bank of America': ['bank of america'],
@@ -172,7 +172,35 @@ function preProcessStatementText(bankName: BankName, rawText: string) {
     let preProcessingFailed = false;
 
     try {
-        if (bankName === 'Amex') {
+        if (bankName === 'Chase' && text.includes('TRANSACTION DETAIL')) {
+            const lines = text.split('\n');
+            const transactionLines = [];
+            let inTransactionSection = false;
+
+            for(const line of lines) {
+                 if (line.trim().match(/TRANSACTION DETAIL/)) {
+                    inTransactionSection = true;
+                    continue;
+                 }
+                 if(line.includes("Beginning Balance")) {
+                    inTransactionSection = true;
+                    continue;
+                 }
+                 if(line.includes("Ending Balance")) {
+                    inTransactionSection = false;
+                    continue;
+                 }
+                 if(inTransactionSection) {
+                    transactionLines.push(line);
+                 }
+            }
+            if(transactionLines.length > 0) {
+                 text = transactionLines.join('\n');
+            } else {
+                preProcessingFailed = true;
+            }
+
+        } else if (bankName === 'Amex') {
             let startIndex = text.indexOf("Payments and Credits");
             if(startIndex !== -1) text = text.substring(startIndex);
             else preProcessingFailed = true;
@@ -216,11 +244,11 @@ ${categoryTriggers.map(c => `- **${c.category}**: Keywords -> [${c.keywords.join
 
 
 const sharedPrompt = `
-Extract transactions from the provided statement text. For each transaction, provide the following fields:
-- date: 'YYYY-MM-DD'
-- merchant: The merchant name, cleaned of unnecessary details. If a location provides essential context for an ambiguous merchant, add it in brackets. For example: "Starbucks (New York, NY)".
-- amount: The transaction amount. Follow the specific rules below for assigning positive or negative values.
-- category: Assign a category to each transaction based on the rules below.
+You are an expert at extracting structured transaction data from raw text.
+- Each transaction is on a new line that starts with a date in 'MM/DD' format.
+- Sometimes, the description for a transaction wraps onto the next line. You MUST combine these wrapped lines into the merchant description of the preceding transaction line.
+- Ignore any lines that are not part of a transaction (like page headers, balances, or informational text).
+- For each valid transaction line, extract the date, a clean merchant description, and the amount.
 - DO NOT pay attention to the running balance column if it exists.
 
 ${categoryPromptSection}
@@ -258,8 +286,15 @@ const bankAccountPrompt = ai.definePrompt({
 ${sharedPrompt}
 
 **CRITICAL RULE for Transaction Amount:**
-- **Debits** (withdrawals, purchases, payments MADE FROM the account, e.g., "Zelle Payment") MUST be **POSITIVE** numbers.
-- **Credits** (deposits, payroll, refunds RECEIVED, e.g., "Direct Deposit") MUST be **NEGATIVE** numbers.
+- **Debits** (withdrawals, purchases, payments MADE FROM the account, e.g., "Zelle Payment To", "Card Purchase") MUST be **POSITIVE** numbers.
+- **Credits** (deposits, payroll, refunds RECEIVED, e.g., "Direct Deposit", "Zelle Payment From") MUST be **NEGATIVE** numbers.
+
+**Example of multi-line description:**
+A transaction might look like this in the text:
+04/28 Card Purchase With Pin  04/27 H Mart Bk Schaumburg I Schaumburg IL
+ Card 4194-29.30 761.38
+
+You must extract this as a single transaction with the merchant: "Card Purchase With Pin 04/27 H Mart Bk Schaumburg I Schaumburg IL Card 4194"
 
 Statement Text:
 ---
@@ -318,3 +353,5 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
         processedText,
     };
 }
+
+    
