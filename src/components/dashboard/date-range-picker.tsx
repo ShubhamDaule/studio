@@ -83,12 +83,16 @@ export function DateRangePicker({
       return;
     }
     
-    let normalizedFrom = startOfDay(selectedDate.from);
+    // CRITICAL FIX: Normalize dates to avoid timezone issues.
+    // Use startOfDay and endOfDay to ensure the full range is captured
+    // regardless of the user's local timezone.
+    const normalizedFrom = startOfDay(selectedDate.from);
     let normalizedTo: Date;
 
     if (selectedDate.to) {
       normalizedTo = endOfDay(selectedDate.to);
     } else {
+      // If only one day is selected, the range is the full 24 hours of that day.
       normalizedTo = endOfDay(selectedDate.from);
     }
 
