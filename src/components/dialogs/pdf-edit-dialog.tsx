@@ -18,8 +18,9 @@ import { useToast } from "@/hooks/use-toast";
 import type { UploadFile } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import { PDFDocument } from 'pdf-lib';
-import { extractTextFromPdf } from "@/lib/pdf-utils";
 import * as pdfjsLib from 'pdfjs-dist';
+import { extractTextFromPdf } from "@/lib/pdf-utils";
+
 
 /**
  * A dialog for editing which pages of a PDF to include for analysis.
@@ -47,9 +48,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const [pages, setPages] = React.useState<Page[]>([]);
   const [selectedPages, setSelectedPages] = React.useState<Set<number>>(new Set()); // Uses 0-based index
   const [isLoading, setIsLoading] = React.useState(true);
-  const [originalPdf, setOriginalPdf] = React.useState<PDFDocument | null>(null);
-  const [originalPdfJsDoc, setOriginalPdfJsDoc] = React.useState<pdfjsLib.PDFDocumentProxy | null>(null);
-
+  const [pdfJsDoc, setPdfJsDoc] = React.useState<pdfjsLib.PDFDocumentProxy | null>(null);
 
   /**
    * Effect to load the PDF and generate page thumbnails when the dialog is opened.
@@ -60,23 +59,20 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
     const setupPdfEditor = async () => {
       setIsLoading(true);
       try {
-        // Dynamically import pdfjs-dist only on the client-side
+        // Configure the worker for pdfjs-dist
         pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/legacy/build/pdf.worker.min.mjs`;
 
         const bufferCopy = file.arrayBuffer.slice(0);
         
-        // Load with both libraries: pdf-lib for editing, pdfjs-dist for thumbnails/text
-        const pdfDoc = await PDFDocument.load(bufferCopy, { ignoreEncryption: true });
-        setOriginalPdf(pdfDoc);
-
-        const pdfjsDoc = await pdfjsLib.getDocument({ data: bufferCopy }).promise;
-        setOriginalPdfJsDoc(pdfjsDoc);
+        // Load with pdfjs-dist for thumbnails and text extraction
+        const pdfDocProxy = await pdfjsLib.getDocument({ data: bufferCopy }).promise;
+        setPdfJsDoc(pdfDocProxy);
         
         const pageThumbnails: Page[] = [];
         const initialSelected = new Set<number>();
 
-        for (let i = 0; i < pdfjsDoc.numPages; i++) {
-          const page = await pdfjsDoc.getPage(i + 1); // pdfjs is 1-based for getPage
+        for (let i = 0; i < pdfDocProxy.numPages; i++) {
+          const page = await pdfDocProxy.getPage(i + 1); // pdfjs is 1-based for getPage
           const viewport = page.getViewport({ scale: 0.5 });
           const canvas = document.createElement("canvas");
           const context = canvas.getContext("2d");
@@ -147,17 +143,17 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         if (selectedPages.size === 0) {
           throw new Error("No pages selected. Please select at least one page.");
         }
-        if (!originalPdf || !originalPdfJsDoc) {
+        if (!pdfJsDoc) {
             throw new Error("Original PDF document not loaded.");
         }
 
         const sortedPageIndices = Array.from(selectedPages).sort((a, b) => a - b);
-
-        // STEP 1 (Text Extraction): Extract text directly from the original PDF for each selected page.
+        
+        // STEP 1: Extract text directly from the original PDF for each selected page.
         // This is more reliable than extracting from a reconstructed PDF.
         let combinedText = '';
         for (const pageIndex of sortedPageIndices) {
-            const page = await originalPdfJsDoc.getPage(pageIndex + 1); // pdf.js is 1-based
+            const page = await pdfJsDoc.getPage(pageIndex + 1); // pdf.js is 1-based
             const textContent = await page.getTextContent();
             const pageText = textContent.items
                 .filter(item => 'str' in item)
@@ -166,13 +162,14 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
             combinedText += pageText + '\n\n';
         }
 
-        // STEP 2 (PDF Reconstruction): Create a new, smaller PDF document with only the selected pages.
-        // This smaller file buffer is useful for potential later use, but the text is now sourced directly.
+        // STEP 2: Reconstruct a new, smaller PDF using the original ArrayBuffer.
+        // This is still useful for consistency, even if text extraction is decoupled.
+        const originalPdfDoc = await PDFDocument.load(file.arrayBuffer.slice(0), { ignoreEncryption: true });
         const newDoc = await PDFDocument.create();
-        const copiedPages = await newDoc.copyPages(originalPdf, sortedPageIndices);
+        const copiedPages = await newDoc.copyPages(originalPdfDoc, sortedPageIndices);
         copiedPages.forEach(page => newDoc.addPage(page));
         const newPdfBytesUint8 = await newDoc.save();
-        
+
         // STEP 3: Validate that the extracted text is not empty before saving.
         if (combinedText.trim().length < 10) {
             throw new Error(`Selected pages contain no readable text. Please check your selection.`);
