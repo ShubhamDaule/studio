@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { UploadFile } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import { PDFDocument } from 'pdf-lib';
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
 import { extractTextFromPdf } from "@/lib/pdf-utils";
 
 
