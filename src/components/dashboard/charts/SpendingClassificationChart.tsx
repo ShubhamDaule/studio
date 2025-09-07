@@ -45,7 +45,6 @@ export const categoryClassification: { [key: string]: 'Needs' | 'Wants' | 'Savin
 const chartConfig = {
   Needs: { label: 'Needs', color: 'hsl(var(--chart-1))' },
   Wants: { label: 'Wants', color: 'hsl(var(--chart-2))' },
-  'Savings & Other': { label: 'Savings & Other', color: 'hsl(var(--chart-3))' },
 } satisfies ChartConfig;
 
 const renderActiveShape = (props: any) => {
@@ -89,15 +88,20 @@ export function SpendingClassificationChart({ transactions, onClick }: { transac
 
   const aggregatedData = React.useMemo(() => {
     const spending = transactions
-      .filter(t => t.amount > 0 && categoryClassification[t.category])
+      .filter(t => {
+        const classification = categoryClassification[t.category];
+        return t.amount > 0 && (classification === 'Needs' || classification === 'Wants');
+      })
       .reduce((acc, t) => {
-        const classification = categoryClassification[t.category] || 'Wants';
-        acc[classification] = (acc[classification] || 0) + t.amount;
+        const classification = categoryClassification[t.category];
+        if (classification) {
+            acc[classification] = (acc[classification] || 0) + t.amount;
+        }
         return acc;
       }, {} as Record<string, number>);
 
     return Object.entries(spending)
-        .map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/ & /g, "-")})` }))
+        .map(([name, value]) => ({ name, value, fill: `var(--color-${name})` }))
         .sort((a,b) => b.value - a.value);
   }, [transactions]);
 
