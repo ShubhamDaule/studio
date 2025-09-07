@@ -318,11 +318,6 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     // Then, pre-process the text to remove unnecessary headers/footers based on the bank.
     const processedText = preProcessStatementText(bankInfo.bankName, pdfText);
     
-    // DEBUG: Log the cleaned text that will be sent to the AI model.
-    console.log('============= AI INPUT (PROCESSED TEXT) =============');
-    console.log(processedText);
-    console.log('=====================================================');
-
     // Choose the appropriate AI prompt (Credit Card vs. Bank Account) based on the detected statement type.
     let llmResponse;
     if (bankInfo.statementType === 'Bank Account') {
@@ -334,24 +329,16 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     
     const extractedData = llmResponse.output || [];
 
-    // DEBUG: Log the raw JSON output received from the AI.
-    console.log('==================== AI OUTPUT ====================');
-    console.log(JSON.stringify(extractedData, null, 2));
-    console.log('=====================================================');
-
-    // Finally, validate the AI's output to ensure it's in the correct format before returning.
-    const validTransactions = extractedData.filter(txn => 
-        txn.date && txn.merchant && txn.category && typeof txn.amount === 'number'
-    );
-
     return { 
         bankName: bankInfo.bankName, 
         statementType: bankInfo.statementType, 
         statementPeriod: bankInfo.statementPeriod,
-        transactions: validTransactions,
+        transactions: extractedData,
         rawText: pdfText,
         processedText,
     };
 }
+
+    
 
     
