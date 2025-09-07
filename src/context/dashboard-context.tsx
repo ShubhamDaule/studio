@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { Transaction, ExtractedTransaction, BankName, StatementType, FinancialSource, TransactionFile, StatementPeriod, Category } from "@/lib/types";
 import { usePathname } from "next/navigation";
 import { mockCategories, mockTransactions } from "@/lib/mock-data";
-import { startOfDay, endOfDay, parseISO } from "date-fns";
+import { startOfDay, endOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
 type NewTransactionsCallback = (uploads: { data: ExtractedTransaction[], fileName: string, bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null }[]) => void;
@@ -203,13 +203,17 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         
         return allTransactions.filter((t) => {
             try {
-                 const transactionDate = parseISO(t.date);
+                // Use new Date() for robust parsing of 'YYYY-MM-DD' and add timezone offset
+                const transactionDate = new Date(t.date);
                 if (isNaN(transactionDate.getTime())) return false;
+                
+                const tzOffset = transactionDate.getTimezoneOffset() * 60000;
+                const transactionDateUTC = new Date(transactionDate.getTime() + tzOffset);
         
                 const rangeFrom = startOfDay(dateRange.from!);
                 const rangeTo = endOfDay(dateRange.to!);
             
-                const isInDateRange = transactionDate >= rangeFrom && transactionDate <= rangeTo;
+                const isInDateRange = transactionDateUTC >= rangeFrom && transactionDateUTC <= rangeTo;
                 const matchesSource = selectedSourceFilter === "all" || t.bankName === selectedSourceFilter;
             
                 return isInDateRange && matchesSource;
@@ -302,3 +306,5 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     </DashboardContext.Provider>
   );
 }
+
+    
