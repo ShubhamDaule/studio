@@ -99,7 +99,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         if (minDate && maxDate && !dateRange) {
             setDateRange({ from: minDate, to: endOfDay(maxDate) });
         }
-    }, [minDate, maxDate, dateRange]);
+    }, [minDate, maxDate]);
 
 
     const addUploadedTransactions: NewTransactionsCallback = React.useCallback((uploads) => {
