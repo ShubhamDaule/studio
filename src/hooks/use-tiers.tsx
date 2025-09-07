@@ -4,11 +4,12 @@ import React, { createContext, useContext, useState, ReactNode, useCallback, use
 import { useToast } from './use-toast';
 
 const TOKENS_PER_APP_TOKEN = 2000;
+const MINIMUM_TOKEN_CHARGE = 0.2;
 
 export const calculateAppTokens = (apiTokens: number): number => {
   if (apiTokens <= 0) return 0;
-  // Calculate proportional tokens, but ensure it's at least 0.1.
-  // This allows for more granular cost display for smaller operations.
+  // Calculate proportional tokens, but ensure it's at least a small fraction for display.
+  // The actual minimum charge is handled in consumeTokens.
   return Math.max(0.1, apiTokens / TOKENS_PER_APP_TOKEN);
 }
 
@@ -69,7 +70,11 @@ export const TiersProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const consumeTokens = useCallback((tokensToConsume: number, isAppTokens: boolean = false): boolean => {
-    const appTokensToConsume = isAppTokens ? tokensToConsume : calculateAppTokens(tokensToConsume);
+    let appTokensToConsume = isAppTokens ? tokensToConsume : calculateAppTokens(tokensToConsume);
+    // Enforce the minimum token charge, unless the calculated amount is zero.
+    if (appTokensToConsume > 0) {
+        appTokensToConsume = Math.max(appTokensToConsume, MINIMUM_TOKEN_CHARGE);
+    }
     
     const formattedAppTokens = appTokensToConsume.toFixed(1);
     const formattedBalance = tokenBalance.toFixed(1);

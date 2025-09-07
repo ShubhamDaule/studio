@@ -18,6 +18,7 @@ import { CategoryIcon } from "../../icons";
 import { detectAnomalies } from "@/lib/analytics";
 import { AnomalyDetective } from "../../characters/anomaly-detective";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useTiers } from "@/hooks/use-tiers";
 
 interface AnomaliesCardProps {
   transactions: Transaction[];
@@ -51,8 +52,10 @@ const AnomalyItem = ({ anomaly, transaction }: { anomaly: Anomaly; transaction: 
 
 export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
   const { toast } = useToast();
+  const { consumeTokens, tokenBalance } = useTiers();
   const [anomalies, setAnomalies] = React.useState<Anomaly[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
+  const ANOMALY_DETECTION_COST = 2.0;
 
   React.useEffect(() => {
     // Clear anomalies when transactions change
@@ -60,11 +63,26 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
   }, [transactions]);
   
   const handleScan = async () => {
+    if (tokenBalance < ANOMALY_DETECTION_COST) {
+        toast({
+            variant: "destructive",
+            title: "Insufficient Tokens",
+            description: `You need ${ANOMALY_DETECTION_COST.toFixed(1)} token(s) to use the Anomaly Detective.`,
+        });
+        return;
+    }
+    
     setIsLoading(true);
     toast({
       title: "Scanning for Anomalies",
       description: "The detective is on the case, analyzing your transactions...",
     });
+
+    // Consume tokens before running the analysis.
+    if (!consumeTokens(ANOMALY_DETECTION_COST, true)) {
+        setIsLoading(false);
+        return; // Stop if token consumption fails for any reason.
+    }
 
     // This is a client-side statistical analysis, not an AI call.
     const result = await detectAnomalies(transactions);
@@ -149,7 +167,7 @@ export function AnomaliesCard({ transactions }: AnomaliesCardProps) {
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Analyzing..." : "Ask the Detective"}
+          {isLoading ? "Analyzing..." : `Ask the Detective (${ANOMALY_DETECTION_COST.toFixed(1)} Tokens)`}
         </Button>
       </CardFooter>
     </Card>
