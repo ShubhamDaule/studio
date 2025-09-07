@@ -22,7 +22,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { preAnalyzeTransactions } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
-import * as pdfjsLib from "pdfjs-dist";
 import type { ExtractedTransaction, BankName, StatementType, StatementPeriod, TokenUsage, UploadFile } from "@/lib/types";
 import { Logo } from "./logo";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
@@ -30,14 +29,8 @@ import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
 import { Progress } from "@/components/ui/progress";
 import { UploadConfirmationDialog } from "../dialogs/upload-confirmation-dialog";
 import { RawJsonDialog } from "../dialogs/raw-json-dialog";
+import { extractTextFromPdf } from "@/lib/pdf-utils";
 
-/**
- * Sets the PDF.js worker source. This is a critical step to ensure the library can process PDFs in the browser.
- * It points to a reliable CDN to fetch the worker script. This needs to be done in any component that uses pdfjsLib.
- */
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-}
 
 /**
  * Defines a type for the data structure that holds the final, processed transactions
@@ -234,7 +227,12 @@ const DashboardNav = () => {
         setIsClient(true);
     }, []);
 
-    // Step 1: Handle file selection and initial client-side processing
+    /**
+     * STEP 1: Handle File Selection (Client-Side)
+     * Reads the selected PDF file(s) from the user's machine.
+     * Extracts the raw text from each file to prepare for pre-analysis.
+     * @param {React.ChangeEvent<HTMLInputElement>} event - The file input change event.
+     */
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
@@ -245,21 +243,17 @@ const DashboardNav = () => {
 
         for (const file of Array.from(files)) {
             try {
-                // Step 1a: Read file into memory as an ArrayBuffer.
+                // Read file into memory as an ArrayBuffer.
                 const arrayBuffer = await file.arrayBuffer();
                 
-                // Step 1b: Extract raw text from the entire PDF using pdfjs-dist on the client.
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer.slice(0) }).promise;
-                let fullText = "";
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const content = await page.getTextContent();
-                    const pageText = content.items.map(item => ('str' in item ? item.str : '')).join(" ");
-                    fullText += "\\n" + pageText;
-                }
+                // Extract raw text from the entire PDF using our utility function.
+                const fullText = await extractTextFromPdf(new Uint8Array(arrayBuffer));
                 
-                // Step 2: Send the raw text to a server action for pre-analysis (cost estimation, bank/date detection).
-                // The `skipAi: true` flag prevents this from being a full AI call.
+                /**
+                 * STEP 2: Pre-Analysis (Client & Server)
+                 * Send the raw text to a server action for cost estimation and metadata detection (bank, date range).
+                 * The `skipAi: true` flag prevents a full AI call, making this step fast and cheap.
+                 */
                 const preAnalysisResult = await preAnalyzeTransactions(fullText, file.name, true);
 
                 if (preAnalysisResult.error || !preAnalysisResult.usage || !preAnalysisResult.bankName || !preAnalysisResult.statementType) {
@@ -283,7 +277,11 @@ const DashboardNav = () => {
             }
         }
         
-        // Step 3: If any files were successfully pre-processed, open the confirmation dialog.
+        /**
+         * STEP 3: Confirmation Dialog
+         * If any files were successfully pre-processed, open the confirmation dialog
+         * where the user can review costs and edit pages.
+         */
         if (preppedFiles.length > 0) {
             setFilesToConfirm(preppedFiles);
             setIsConfirming(true);
@@ -296,7 +294,8 @@ const DashboardNav = () => {
     };
 
     /**
-     * Step 4: After user confirms (and potentially edits pages), send the final text
+     * Step 4: Final AI Extraction (Client & Server)
+     * After user confirms (and potentially edits pages), send the final text
      * to the server for the full AI extraction.
      * @param {UploadFile[]} confirmedFiles - The list of files the user has confirmed for processing.
      */
@@ -349,7 +348,10 @@ const DashboardNav = () => {
             allJsonOutput += `// ${file.fileName}\n${JSON.stringify(finalResult.data, null, 2)}\n\n`;
         }
         
-        // Step 5 (Part 1): If successful, consume tokens and show the debug dialog.
+        /**
+         * STEP 5, Part 1: Debug Dialog & Token Consumption
+         * If successful, consume the tokens and show the debug dialog for transparency.
+         */
         if (allFinalUploads.length > 0) {
             if (consumeTokens(totalUsage.totalTokens)) {
                 setDebugInfo({
@@ -366,7 +368,8 @@ const DashboardNav = () => {
     }
 
     /**
-     * Step 5 (Part 2): After the user reviews the raw AI output in the debug dialog,
+     * STEP 5, Part 2: Add to Dashboard
+     * After the user reviews the raw AI output in the debug dialog,
      * this function adds the processed transactions to the main dashboard state.
      */
     const handleContinueFromDebug = () => {
@@ -479,5 +482,3 @@ export function Header() {
         </header>
     );
 }
-
-    

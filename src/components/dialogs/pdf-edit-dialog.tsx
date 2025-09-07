@@ -16,18 +16,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { UploadFile } from "@/lib/types";
-import * as pdfjsLib from "pdfjs-dist";
 import { Loader2 } from "lucide-react";
 import { PDFDocument } from 'pdf-lib';
+import { extractTextFromPdf } from "@/lib/pdf-utils";
 
 /**
- * Sets the PDF.js worker source. This is a critical step to ensure the library can process PDFs in the browser.
- * It points to a reliable CDN to fetch the worker script.
+ * A dialog for editing which pages of a PDF to include for analysis.
+ * It generates thumbnails for each page, allows the user to select/deselect pages,
+ * and then rebuilds the PDF in memory with only the selected pages before re-running
+ * text extraction.
  */
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-}
-
 
 type Page = {
   pageNumber: number; // 1-based for display
@@ -42,36 +40,40 @@ type Props = {
   onSave: (fileName: string, newText: string, newBuffer: ArrayBuffer) => void;
 };
 
-/**
- * A dialog for editing which pages of a PDF to include for analysis.
- * It generates thumbnails for each page, allows the user to select/deselect pages,
- * and then rebuilds the PDF in memory with only the selected pages before re-running
- * text extraction.
- */
+
 export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const { toast } = useToast();
   const [pages, setPages] = React.useState<Page[]>([]);
   const [selectedPages, setSelectedPages] = React.useState<Set<number>>(new Set()); // Uses 0-based index
   const [isLoading, setIsLoading] = React.useState(true);
-  
+  const [originalPdf, setOriginalPdf] = React.useState<PDFDocument | null>(null);
+
   /**
-   * Effect to generate page thumbnails when the dialog is opened.
-   * This function loads the PDF and creates a small image preview for each page,
-   * making it easy for the user to identify which pages to include or exclude.
+   * Effect to load the PDF and generate page thumbnails when the dialog is opened.
    */
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !file) return;
 
-    const generateThumbnails = async () => {
+    const setupPdfEditor = async () => {
       setIsLoading(true);
       try {
+        // Dynamically import pdfjs-dist only on the client-side
+        const pdfjsLib = await import('pdfjs-dist');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
         const bufferCopy = file.arrayBuffer.slice(0);
-        const pdf = await pdfjsLib.getDocument({ data: bufferCopy }).promise;
+        
+        // Load with both libraries: pdf-lib for editing, pdfjs-dist for thumbnails/text
+        const pdfDoc = await PDFDocument.load(bufferCopy, { ignoreEncryption: true });
+        setOriginalPdf(pdfDoc);
+
+        const pdfjsDoc = await pdfjsLib.getDocument({ data: bufferCopy }).promise;
+        
         const pageThumbnails: Page[] = [];
         const initialSelected = new Set<number>();
 
-        for (let i = 0; i < pdf.numPages; i++) {
-          const page = await pdf.getPage(i + 1); // pdfjs is 1-based for getPage
+        for (let i = 0; i < pdfjsDoc.numPages; i++) {
+          const page = await pdfjsDoc.getPage(i + 1); // pdfjs is 1-based for getPage
           const viewport = page.getViewport({ scale: 0.5 });
           const canvas = document.createElement("canvas");
           const context = canvas.getContext("2d");
@@ -81,11 +83,11 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
           if (context) {
             await page.render({ canvasContext: context, viewport: viewport }).promise;
             pageThumbnails.push({
-              pageNumber: i + 1, // 1-based for display
-              pageIndex: i,      // 0-based for logic
+              pageNumber: i + 1,
+              pageIndex: i,
               thumbnailUrl: canvas.toDataURL(),
             });
-            initialSelected.add(i); // Add 0-based index
+            initialSelected.add(i);
           }
         }
         setPages(pageThumbnails);
@@ -99,7 +101,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
       }
     };
 
-    generateThumbnails();
+    setupPdfEditor();
   }, [isOpen, file, toast, onClose]);
   
   /**
@@ -142,46 +144,32 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         if (selectedPages.size === 0) {
           throw new Error("No pages selected. Please select at least one page.");
         }
+        if (!originalPdf) {
+            throw new Error("Original PDF document not loaded.");
+        }
 
-        // STEP 1: Load the original PDF into pdf-lib.
-        const originalArrayBuffer = file.arrayBuffer;
-        const srcDoc = await PDFDocument.load(originalArrayBuffer, { ignoreEncryption: true });
-        
-        // STEP 2: Create a new PDF document and copy only the selected pages into it.
+        // STEP 1: Create a new PDF document.
         const newDoc = await PDFDocument.create();
+        
+        // STEP 2: Copy only the selected pages into it.
         const sortedPageIndices = Array.from(selectedPages).sort((a, b) => a - b);
         
-        const copiedPages = await newDoc.copyPages(srcDoc, sortedPageIndices);
+        const copiedPages = await newDoc.copyPages(originalPdf, sortedPageIndices);
         copiedPages.forEach(page => newDoc.addPage(page));
         
         // STEP 3: Save the new, smaller PDF to a Uint8Array.
         const newPdfBytesUint8 = await newDoc.save();
         
-        // STEP 4 (CRITICAL): Create a clean ArrayBuffer from the Uint8Array for the app state and text extraction.
-        // This is the crucial step that was previously failing. This correctly converts the data format.
-        const newArrayBuffer = newPdfBytesUint8.buffer.slice(
-            newPdfBytesUint8.byteOffset,
-            newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
-        );
-
-        // STEP 5: Re-extract text from the new PDF data using pdfjs-dist.
-        const pdf = await pdfjsLib.getDocument({ data: newArrayBuffer.slice(0) }).promise;
-        let newText = "";
-        for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            // We join all the text items on the page into a single string.
-            const pageText = content.items.map(item => ('str' in item ? item.str : '')).join(" ");
-            newText += "\\n" + pageText;
-        }
-
-        // STEP 6: Validate that the new text is not empty before saving.
+        // STEP 4: Re-extract text from the new PDF data.
+        const newText = await extractTextFromPdf(newPdfBytesUint8);
+        
+        // STEP 5: Validate that the new text is not empty before saving.
         if (newText.trim().length < 10) {
             throw new Error(`Selected pages contain no readable text. Please check your selection.`);
         }
         
-        // STEP 7: Pass both the newly extracted text and the new, smaller ArrayBuffer back to the confirmation dialog.
-        onSave(file.fileName, newText, newArrayBuffer);
+        // STEP 6: Pass both the newly extracted text and the new, smaller ArrayBuffer back.
+        onSave(file.fileName, newText, newPdfBytesUint8.buffer);
         onClose();
 
     } catch (err: any) {
