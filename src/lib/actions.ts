@@ -59,8 +59,11 @@ export async function preAnalyzeTransactions(pdfText: string, fileName: string, 
             // First pass: Pre-analyze to get bank info and statement period
             const { bankName, statementType, statementPeriod } = await extractTransactions(input);
             const inputTokens = estimateTokens(JSON.stringify(input));
-            // Rough estimation for the second call
-            const estimatedOutputTokens = inputTokens * 0.25; 
+            
+            // A more realistic estimation for the second call.
+            // The JSON output is typically around 30-40% of the raw text input size.
+            const estimatedOutputTokens = inputTokens * 0.40; 
+            
             return {
                 bankName,
                 statementType,
