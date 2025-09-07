@@ -31,12 +31,18 @@ import { Progress } from "@/components/ui/progress";
 import { UploadConfirmationDialog } from "../dialogs/upload-confirmation-dialog";
 import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 
-// The worker is now configured via a postinstall script and doesn't need to be set here.
-// However, to be extra safe, we can set it here as well.
+/**
+ * Sets the PDF.js worker source. This is a critical step to ensure the library can process PDFs in the browser.
+ * It points to a reliable CDN to fetch the worker script. This needs to be done in any component that uses pdfjsLib.
+ */
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 }
 
+/**
+ * Defines a type for the data structure that holds the final, processed transactions
+ * ready to be added to the dashboard context.
+ */
 type PendingUpload = {
   data: ExtractedTransaction[];
   fileName: string;
@@ -45,12 +51,20 @@ type PendingUpload = {
   statementPeriod: StatementPeriod | null;
 };
 
+/**
+ * Defines a type for the data structure that holds information for the debug dialog,
+ * showing what was sent to and received from the AI.
+ */
 type DebugInfo = {
     processedText: string;
     jsonOutput: string;
     finalUploads: PendingUpload[];
 }
 
+/**
+ * Renders the user navigation dropdown menu in the header.
+ * It displays user info, token balance, and links to settings and sign-out.
+ */
 const UserNav = () => {
   const { user, signOut } = useAuth();
   const { tokenBalance, maxTokens } = useTiers();
@@ -128,6 +142,9 @@ const UserNav = () => {
   )
 }
 
+/**
+ * Renders the navigation links for the landing page.
+ */
 const LandingNavLinks = ({ className }: { className?: string }) => (
     <div className={cn("flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-1", className)}>
         <Button variant="link" asChild><Link href="/landing#why-MySpendWise">Why MySpendWise</Link></Button>
@@ -135,6 +152,9 @@ const LandingNavLinks = ({ className }: { className?: string }) => (
     </div>
 );
 
+/**
+ * Renders the navigation for the landing page, including auth buttons and a mobile sheet menu.
+ */
 const LandingNav = () => {
     const { user } = useAuth();
     const pathname = usePathname();
@@ -182,6 +202,10 @@ const LandingNav = () => {
 };
 
 
+/**
+ * Renders the navigation specific to the dashboard, including date/source filters and the upload button.
+ * This component contains the core logic for the multi-step file processing pipeline.
+ */
 const DashboardNav = () => {
     const { 
         dateRange,
@@ -200,6 +224,7 @@ const DashboardNav = () => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isClient, setIsClient] = React.useState(false);
 
+    // State for managing the multi-step upload process
     const [filesToConfirm, setFilesToConfirm] = React.useState<UploadFile[]>([]);
     const [isConfirming, setIsConfirming] = React.useState(false);
     const [debugInfo, setDebugInfo] = React.useState<DebugInfo | null>(null);
@@ -220,24 +245,21 @@ const DashboardNav = () => {
 
         for (const file of Array.from(files)) {
             try {
-                // Step 1a: Read file into memory
-                const originalBuffer = await file.arrayBuffer();
+                // Step 1a: Read file into memory as an ArrayBuffer.
+                const arrayBuffer = await file.arrayBuffer();
                 
-                // Use a copy for analysis, and another for storage/editing
-                const analysisBuffer = originalBuffer.slice(0); 
-                const storageBuffer = originalBuffer.slice(0);
-
-                // Step 1b: Extract raw text from the entire PDF using pdfjs
-                const pdf = await pdfjsLib.getDocument({ data: analysisBuffer }).promise;
+                // Step 1b: Extract raw text from the entire PDF using pdfjs-dist on the client.
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer.slice(0) }).promise;
                 let fullText = "";
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const content = await page.getTextContent();
-                    const pageText = content.items.map(item => (item as any).str).join(" ");
+                    const pageText = content.items.map(item => ('str' in item ? item.str : '')).join(" ");
                     fullText += "\\n" + pageText;
                 }
                 
-                // Step 2: Send text to server for pre-analysis (cost estimation, bank detection)
+                // Step 2: Send the raw text to a server action for pre-analysis (cost estimation, bank/date detection).
+                // The `skipAi: true` flag prevents this from being a full AI call.
                 const preAnalysisResult = await preAnalyzeTransactions(fullText, file.name, true);
 
                 if (preAnalysisResult.error || !preAnalysisResult.usage || !preAnalysisResult.bankName || !preAnalysisResult.statementType) {
@@ -245,11 +267,12 @@ const DashboardNav = () => {
                     continue;
                 }
                 
+                // Store the prepared file data, ready for the user's confirmation.
                 preppedFiles.push({
                     text: fullText,
                     fileName: file.name,
                     cost: calculateAppTokens(preAnalysisResult.usage.totalTokens),
-                    arrayBuffer: storageBuffer,
+                    arrayBuffer: arrayBuffer,
                     bankName: preAnalysisResult.bankName,
                     statementType: preAnalysisResult.statementType,
                     statementPeriod: preAnalysisResult.statementPeriod ?? null,
@@ -260,7 +283,7 @@ const DashboardNav = () => {
             }
         }
         
-        // Step 3 (Implicit): If files were successfully pre-processed, open the confirmation dialog
+        // Step 3: If any files were successfully pre-processed, open the confirmation dialog.
         if (preppedFiles.length > 0) {
             setFilesToConfirm(preppedFiles);
             setIsConfirming(true);
@@ -268,10 +291,15 @@ const DashboardNav = () => {
              setIsUploading(false);
         }
         
+        // Reset the file input to allow uploading the same file again.
         if(fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    // Step 4: User confirms, send final text to server for full AI extraction
+    /**
+     * Step 4: After user confirms (and potentially edits pages), send the final text
+     * to the server for the full AI extraction.
+     * @param {UploadFile[]} confirmedFiles - The list of files the user has confirmed for processing.
+     */
     const handleConfirmUpload = async (confirmedFiles: UploadFile[]) => {
         setIsConfirming(false);
         if (confirmedFiles.length === 0) {
@@ -279,7 +307,20 @@ const DashboardNav = () => {
             return;
         }
         
-        // This keeps the loader active during AI processing
+        // Validate each file before sending to AI to prevent errors with empty text.
+        for (const file of confirmedFiles) {
+            if (!file.text || file.text.trim().length < 50) {
+                toast({
+                    variant: "destructive",
+                    title: "Processing Canceled",
+                    description: `File "${file.fileName}" has insufficient text content (${file.text.trim().length} characters). Please check your page selection.`
+                });
+                setIsUploading(false);
+                return;
+            }
+        }
+
+        // Keep the loader active during the main AI processing step.
         setIsUploading(true);
         toast({ title: "Sending to AI...", description: "Extracting transactions. This may take a moment." });
 
@@ -289,7 +330,7 @@ const DashboardNav = () => {
         let allJsonOutput = "";
 
         for (const file of confirmedFiles) {
-            // The `false` flag tells the server action to perform the full AI extraction
+            // The `false` flag tells the server action to perform the full AI extraction.
             const finalResult = await preAnalyzeTransactions(file.text, file.fileName, false);
             if (finalResult.error || !finalResult.data || !finalResult.bankName || !finalResult.statementType || !finalResult.usage || !finalResult.processedText) {
                 toast({ variant: "destructive", title: `Upload Failed: ${file.fileName}`, description: finalResult.error });
@@ -303,11 +344,12 @@ const DashboardNav = () => {
                 statementType: finalResult.statementType,
                 statementPeriod: finalResult.statementPeriod,
             });
+            // Aggregate text and JSON for the debug dialog.
             allProcessedText += `--- START ${file.fileName} ---\n${finalResult.processedText}\n--- END ${file.fileName} ---\n\n`;
             allJsonOutput += `// ${file.fileName}\n${JSON.stringify(finalResult.data, null, 2)}\n\n`;
         }
         
-        // Step 5 (Part 1): Show debug dialog with raw AI input/output
+        // Step 5 (Part 1): If successful, consume tokens and show the debug dialog.
         if (allFinalUploads.length > 0) {
             if (consumeTokens(totalUsage.totalTokens)) {
                 setDebugInfo({
@@ -323,7 +365,10 @@ const DashboardNav = () => {
         }
     }
 
-    // Step 5 (Part 2): User clicks "Continue", add data to the dashboard
+    /**
+     * Step 5 (Part 2): After the user reviews the raw AI output in the debug dialog,
+     * this function adds the processed transactions to the main dashboard state.
+     */
     const handleContinueFromDebug = () => {
         if (debugInfo) {
             addUploadedTransactions(debugInfo.finalUploads);
@@ -374,6 +419,7 @@ const DashboardNav = () => {
             </div>
         </div>
 
+        {/* Render dialogs needed for the upload flow */}
         {isClient && (
             <UploadConfirmationDialog
                 isOpen={isConfirming}
@@ -401,6 +447,9 @@ const DashboardNav = () => {
     )
 }
 
+/**
+ * Determines which navigation component to render based on the current page path.
+ */
 const NavContent = () => {
     const pathname = usePathname();
     const isDashboard = pathname.startsWith('/dashboard');
@@ -412,6 +461,10 @@ const NavContent = () => {
 }
 
 
+/**
+ * The main header component for the application.
+ * It's sticky and contains the logo and the appropriate navigation content.
+ */
 export function Header() {
     return (
         <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b">
@@ -426,3 +479,5 @@ export function Header() {
         </header>
     );
 }
+
+    

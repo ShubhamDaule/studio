@@ -20,15 +20,18 @@ import * as pdfjsLib from "pdfjs-dist";
 import { Loader2 } from "lucide-react";
 import { PDFDocument } from 'pdf-lib';
 
-// The worker is now configured via a postinstall script and doesn't need to be set here.
-// However, to be extra safe, we can set it here as well.
+/**
+ * Sets the PDF.js worker source. This is a critical step to ensure the library can process PDFs in the browser.
+ * It points to a reliable CDN to fetch the worker script.
+ */
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 }
 
 
 type Page = {
-  pageNumber: number;
+  pageNumber: number; // 1-based for display
+  pageIndex: number;  // 0-based for logic
   thumbnailUrl: string;
 };
 
@@ -48,7 +51,7 @@ type Props = {
 export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const { toast } = useToast();
   const [pages, setPages] = React.useState<Page[]>([]);
-  const [selectedPages, setSelectedPages] = React.useState<Set<number>>(new Set());
+  const [selectedPages, setSelectedPages] = React.useState<Set<number>>(new Set()); // Uses 0-based index
   const [isLoading, setIsLoading] = React.useState(true);
   
   // Effect to generate page thumbnails when the dialog is opened.
@@ -63,8 +66,8 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
         const pageThumbnails: Page[] = [];
         const initialSelected = new Set<number>();
 
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
+        for (let i = 0; i < pdf.numPages; i++) {
+          const page = await pdf.getPage(i + 1); // pdfjs is 1-based for getPage
           const viewport = page.getViewport({ scale: 0.5 });
           const canvas = document.createElement("canvas");
           const context = canvas.getContext("2d");
@@ -74,10 +77,11 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
           if (context) {
             await page.render({ canvasContext: context, viewport: viewport }).promise;
             pageThumbnails.push({
-              pageNumber: i,
+              pageNumber: i + 1, // 1-based for display
+              pageIndex: i,      // 0-based for logic
               thumbnailUrl: canvas.toDataURL(),
             });
-            initialSelected.add(i);
+            initialSelected.add(i); // Add 0-based index
           }
         }
         setPages(pageThumbnails);
@@ -95,16 +99,16 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   }, [isOpen, file, toast, onClose]);
   
   /**
-   * Toggles the selection state of a single page.
-   * @param {number} pageNumber - The page number to toggle.
+   * Toggles the selection state of a single page using its 0-based index.
+   * @param {number} pageIndex - The 0-based index of the page to toggle.
    */
-  const handleTogglePage = (pageNumber: number) => {
+  const handleTogglePage = (pageIndex: number) => {
     setSelectedPages(prev => {
         const newSet = new Set(prev);
-        if (newSet.has(pageNumber)) {
-            newSet.delete(pageNumber);
+        if (newSet.has(pageIndex)) {
+            newSet.delete(pageIndex);
         } else {
-            newSet.add(pageNumber);
+            newSet.add(pageIndex);
         }
         return newSet;
     });
@@ -114,7 +118,7 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
    * Selects all pages in the PDF.
    */
   const handleSelectAll = () => {
-    setSelectedPages(new Set(pages.map(p => p.pageNumber)));
+    setSelectedPages(new Set(pages.map(p => p.pageIndex)));
   }
 
   /**
@@ -131,35 +135,42 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
   const handleSaveChanges = async () => {
     setIsLoading(true);
     try {
+        if (selectedPages.size === 0) {
+          throw new Error("No pages selected. Please select at least one page.");
+        }
+
         // STEP 1: Load the original PDF into pdf-lib.
         const originalArrayBuffer = file.arrayBuffer;
         const srcDoc = await PDFDocument.load(originalArrayBuffer, { ignoreEncryption: true });
         
         // STEP 2: Create a new PDF document and copy only the selected pages into it.
         const newDoc = await PDFDocument.create();
-        const selectedPageNumbers = Array.from(selectedPages).sort((a, b) => a - b);
-        const pageIndices = selectedPageNumbers.map(p => p - 1); // Convert to 0-based indices
-        const copiedPages = await newDoc.copyPages(srcDoc, pageIndices);
+        const sortedPageIndices = Array.from(selectedPages).sort((a, b) => a - b);
+        
+        const copiedPages = await newDoc.copyPages(srcDoc, sortedPageIndices);
         copiedPages.forEach(page => newDoc.addPage(page));
         
         // STEP 3: Save the new, smaller PDF to a Uint8Array.
         const newPdfBytesUint8 = await newDoc.save();
         
-        // STEP 4 (CRITICAL FIX): Create a clean ArrayBuffer from the Uint8Array for the app state.
-        // This MUST be done *before* passing the Uint8Array to pdfjs, which might detach it.
+        // STEP 4 (CRITICAL): Create a clean ArrayBuffer from the Uint8Array for the app state and text extraction.
         const newArrayBuffer = newPdfBytesUint8.buffer.slice(
             newPdfBytesUint8.byteOffset,
             newPdfBytesUint8.byteOffset + newPdfBytesUint8.byteLength
         );
 
-        // STEP 5: Re-extract text from the new Uint8Array using pdfjs-dist.
+        // STEP 5: Re-extract text from the new PDF data using pdfjs-dist.
         const pdf = await pdfjsLib.getDocument({ data: newPdfBytesUint8 }).promise;
         let newText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
             const content = await page.getTextContent();
-            const pageText = content.items.map(item => (item as any).str).join(" ");
+            const pageText = content.items.map(item => ('str' in item ? item.str : '')).join(" ");
             newText += "\\n" + pageText;
+        }
+
+        if (newText.trim().length < 10) {
+            throw new Error(`Selected pages contain no readable text. Please check your selection.`);
         }
         
         // STEP 6: Pass both the newly extracted text and the new, smaller ArrayBuffer back.
@@ -200,20 +211,20 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
                 <ScrollArea className="h-96 border rounded-md p-4">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {pages.map((page) => (
-                        <div key={page.pageNumber} className="relative group">
-                             <Label htmlFor={`page-${page.pageNumber}`} className="cursor-pointer">
+                        <div key={page.pageIndex} className="relative group">
+                             <Label htmlFor={`page-${page.pageIndex}`} className="cursor-pointer">
                                 <img
                                     src={page.thumbnailUrl}
                                     alt={`Page ${page.pageNumber}`}
                                     className="rounded-md border-2 border-transparent group-hover:border-primary transition-colors data-[checked=true]:border-primary"
-                                    data-checked={selectedPages.has(page.pageNumber)}
+                                    data-checked={selectedPages.has(page.pageIndex)}
                                 />
-                                <div className="absolute inset-0 bg-black/50 rounded-md opacity-0 transition-opacity group-hover:opacity-100 data-[checked=false]:opacity-40" data-checked={selectedPages.has(page.pageNumber)} />
+                                <div className="absolute inset-0 bg-black/50 rounded-md opacity-0 transition-opacity group-hover:opacity-100 data-[checked=false]:opacity-40" data-checked={selectedPages.has(page.pageIndex)} />
                              </Label>
                              <Checkbox
-                                id={`page-${page.pageNumber}`}
-                                checked={selectedPages.has(page.pageNumber)}
-                                onCheckedChange={() => handleTogglePage(page.pageNumber)}
+                                id={`page-${page.pageIndex}`}
+                                checked={selectedPages.has(page.pageIndex)}
+                                onCheckedChange={() => handleTogglePage(page.pageIndex)}
                                 className="absolute top-2 right-2 h-5 w-5 bg-background"
                             />
                             <div className="absolute bottom-2 left-2 text-white text-xs font-bold bg-black/50 rounded-full px-2 py-0.5">
@@ -236,3 +247,5 @@ export function PdfEditDialog({ isOpen, onClose, file, onSave }: Props) {
     </Dialog>
   );
 }
+
+    
