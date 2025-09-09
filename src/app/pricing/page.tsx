@@ -18,7 +18,6 @@ const plans = [
     price: 0,
     period: "one-time",
     tokens: 10,
-    tokenPrice: 0.5,
     highlight: false,
     features: [
       "10 tokens included (one-time)",
@@ -32,7 +31,6 @@ const plans = [
     price: 5,
     period: "month",
     tokens: 20,
-    tokenPrice: 0.35,
     highlight: true,
     features: [
       "20 tokens renewed monthly",
@@ -46,7 +44,6 @@ const plans = [
     price: 10,
     period: "month",
     tokens: 45,
-    tokenPrice: undefined,
     highlight: false,
     features: [
       "All Pro features",
@@ -57,12 +54,36 @@ const plans = [
   },
 ] as const;
 
+const tokenPacks = [
+  {
+    name: "50 Tokens",
+    price: 15,
+    description: "Perfect for occasional use",
+    save: null,
+    features: ["Tokens never expire", "Use with any plan", "Instant activation"],
+  },
+  {
+    name: "100 Tokens",
+    price: 25,
+    description: "Most popular add-on",
+    save: 5,
+    features: ["Tokens never expire", "Use with any plan", "Instant activation"],
+  },
+  {
+    name: "250 Tokens",
+    price: 50,
+    description: "Best value for power users",
+    save: 25,
+    features: ["Tokens never expire", "Use with any plan", "Instant activation"],
+  },
+];
+
 /**
  * Renders the pricing page, allowing users to view and select a subscription plan.
  */
 export default function Pricing() {
   const router = useRouter();
-  const { setIsPro, setIsPremium } = useTiers();
+  const { setIsPro, setIsPremium, setTokenBalance, tokenBalance } = useTiers();
 
   // Effect to set the document title when the component mounts.
   useEffect(() => {
@@ -87,6 +108,10 @@ export default function Pricing() {
     }
     router.push("/auth?mode=signup");
   };
+
+  const handlePurchaseTokens = (tokens: number) => {
+    setTokenBalance(current => current + tokens);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -139,13 +164,6 @@ export default function Pricing() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col space-y-6">
-                     {typeof plan.tokenPrice === "number" && (
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-accent" />
-                        <p className="text-sm text-muted-foreground">Additional tokens {Math.round(plan.tokenPrice * 100)}¢ each</p>
-                      </div>
-                    )}
-
                     <ul className="space-y-3 pt-2 flex-1">
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-start gap-3">
@@ -167,6 +185,52 @@ export default function Pricing() {
               Prices in USD. You can change or cancel your plan anytime.
             </p>
           </div>
+        </section>
+        
+        {/* Token packs section */}
+        <section className="py-12 md:py-16 bg-muted/30">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                 <div className="flex justify-center mb-6">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Zap className="w-7 h-7 text-primary" />
+                    </div>
+                </div>
+                <h2 className="text-3xl md:text-5xl font-bold mb-4">Need more tokens?</h2>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-12">
+                    Purchase additional tokens that never expire. Perfect for handling seasonal spikes or large projects.
+                </p>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-start max-w-5xl mx-auto">
+                    {tokenPacks.map((pack) => (
+                        <Card key={pack.name} className="flex flex-col h-full text-left relative">
+                            {pack.save && (
+                                <Badge className="absolute -top-3 right-4 bg-primary/10 text-primary border-primary/20">Save ${pack.save}</Badge>
+                            )}
+                            <CardHeader>
+                                <CardTitle className="text-2xl">{pack.name}</CardTitle>
+                                <CardDescription>
+                                    <span className="text-4xl font-bold text-foreground">${pack.price}</span>
+                                    <span className="text-muted-foreground"> one-time</span>
+                                </CardDescription>
+                                <p className="text-sm text-muted-foreground pt-2">{pack.description}</p>
+                            </CardHeader>
+                            <CardContent className="flex-1 flex flex-col space-y-6">
+                                <ul className="space-y-3 pt-2 flex-1">
+                                    {pack.features.map((f) => (
+                                        <li key={f} className="flex items-center gap-3">
+                                            <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                                            <span>{f}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <Button onClick={() => handlePurchaseTokens(parseInt(pack.name))} variant="outline" className="w-full h-11 btn-outline-primary mt-auto">
+                                   Purchase Tokens
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            </div>
         </section>
       </main>
     </div>
