@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const tokenPacks = [
   {
-    name: "Starter Pack",
+    name: "Essential Pack",
     tokens: 10,
     price: 3.5,
     description: "$0.35 per token",
@@ -19,7 +19,7 @@ const tokenPacks = [
     saveAmount: null,
   },
   {
-    name: "Booster Pack",
+    name: "Growth Pack",
     tokens: 25,
     price: 8.5,
     description: "$0.34 per token",
@@ -27,7 +27,7 @@ const tokenPacks = [
     saveAmount: 0.25,
   },
   {
-    name: "Power Pack",
+    name: "Pro Pack",
     tokens: 50,
     price: 15.5,
     description: "$0.31 per token",
@@ -35,7 +35,7 @@ const tokenPacks = [
     saveAmount: 2.0,
   },
   {
-    name: "Ultimate Bundle",
+    name: "Enterprise Pack",
     tokens: 100,
     price: 28.0,
     description: "$0.28 per token",
