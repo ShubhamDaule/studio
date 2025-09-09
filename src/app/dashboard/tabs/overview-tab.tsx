@@ -5,10 +5,10 @@ import * as React from "react";
 import { Wallet, ReceiptText } from "lucide-react";
 import { SpendingChart } from "@/components/dashboard/charts/spending-chart";
 import { SpendingByDayChart } from "@/components/dashboard/charts/spending-by-day-chart";
-import { SpendingBySourceChart } from "@/components/dashboard/charts/spending-by-source-chart";
-import { TopMerchantsChart } from "@/components/dashboard/charts/top-merchants-chart";
-import { SpendingClassificationChart } from "@/components/dashboard/charts/SpendingClassificationChart";
-import { SpendingTrendChart } from "@/components/dashboard/charts/spending-trend-chart";
+import { SpendingBySourceChart, SpendingBySourceChartHeader } from "@/components/dashboard/charts/spending-by-source-chart";
+import { TopMerchantsChart, TopMerchantsChartHeader } from "@/components/dashboard/charts/top-merchants-chart";
+import { SpendingClassificationChart, SpendingClassificationChartHeader } from "@/components/dashboard/charts/SpendingClassificationChart";
+import { SpendingTrendChart, SpendingTrendChartHeader } from "@/components/dashboard/charts/spending-trend-chart";
 import StatsCard from "@/components/dashboard/cards/stats-card";
 import { HighestTransactionCard } from "@/components/dashboard/cards/highest-transaction-card";
 import { HighestDayCard } from "@/components/dashboard/cards/highest-day-card";
@@ -90,18 +90,18 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             {/* Section for secondary charts */}
             <>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <UpgradeGate requiredTier="Pro" type="card">
+                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingBySourceChartHeader />}>
                         <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
                     </UpgradeGate>
-                    <UpgradeGate requiredTier="Pro" type="card">
+                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<TopMerchantsChartHeader />}>
                         <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
                     </UpgradeGate>
                 </div>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <UpgradeGate requiredTier="Pro" type="card">
+                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingClassificationChartHeader />}>
                         <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
                     </UpgradeGate>
-                    <UpgradeGate requiredTier="Pro" type="card">
+                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingTrendChartHeader />}>
                          <SpendingTrendChart transactions={allTransactions} />
                     </UpgradeGate>
                 </div>

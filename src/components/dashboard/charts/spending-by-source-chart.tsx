@@ -36,6 +36,17 @@ const renderActiveShape = (props: any) => {
 };
 
 
+export const SpendingBySourceChartHeader = () => (
+    <CardHeader>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+            <Banknote className="h-6 w-6" />
+            Spending by Source
+        </CardTitle>
+        <CardDescription>Breakdown of spending from each bank.</CardDescription>
+    </CardHeader>
+);
+
+
 export function SpendingBySourceChart({ transactions, onPieClick }: { transactions: Transaction[], onPieClick: (data: any) => void }) {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
 
@@ -90,13 +101,7 @@ export function SpendingBySourceChart({ transactions, onPieClick }: { transactio
 
   return (
     <Card className="flex flex-col h-full card-interactive group" onClick={() => onPieClick({name: null})}>
-      <CardHeader>
-        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-            <Banknote className="h-6 w-6" />
-            Spending by Source
-        </CardTitle>
-        <CardDescription>Breakdown of spending from each bank.</CardDescription>
-      </CardHeader>
+      <SpendingBySourceChartHeader />
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}

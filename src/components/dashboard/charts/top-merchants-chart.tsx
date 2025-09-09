@@ -45,6 +45,17 @@ const CustomBar = (props: any) => {
     );
 };
 
+export const TopMerchantsChartHeader = () => (
+    <CardHeader>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+            <TopMerchantIcon className="h-6 w-6" />
+            Top 5 Merchants
+        </CardTitle>
+        <CardDescription>Your highest spending by merchant. Click a bar for details.</CardDescription>
+    </CardHeader>
+);
+
+
 export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChartProps) {
   const [hoveredBar, setHoveredBar] = React.useState<string | null>(null);
 
@@ -76,13 +87,7 @@ export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChar
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <CardHeader>
-        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-            <TopMerchantIcon className="h-6 w-6" />
-            Top 5 Merchants
-        </CardTitle>
-        <CardDescription>Your highest spending by merchant. Click a bar for details.</CardDescription>
-      </CardHeader>
+      <TopMerchantsChartHeader />
       <CardContent className="flex-1 pb-4">
         <ChartContainer config={chartConfig} className="h-[220px] w-full sm:h-[250px]">
           <BarChart

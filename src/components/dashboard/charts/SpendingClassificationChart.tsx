@@ -83,6 +83,17 @@ const renderActiveShape = (props: any) => {
 };
 
 
+export const SpendingClassificationChartHeader = () => (
+    <CardHeader>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+          <Target className="h-6 w-6" />
+          Needs vs. Wants
+        </CardTitle>
+        <CardDescription>How your spending is classified. Click a slice for details.</CardDescription>
+    </CardHeader>
+);
+
+
 export function SpendingClassificationChart({ transactions, onClick }: { transactions: Transaction[], onClick: (data: any) => void }) {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(0);
 
@@ -121,13 +132,7 @@ export function SpendingClassificationChart({ transactions, onClick }: { transac
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <CardHeader>
-        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-          <Target className="h-6 w-6" />
-          Needs vs. Wants
-        </CardTitle>
-        <CardDescription>How your spending is classified. Click a slice for details.</CardDescription>
-      </CardHeader>
+      <SpendingClassificationChartHeader />
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}
