@@ -44,11 +44,11 @@ const plans = [
     name: "Premium",
     price: 10,
     period: "month",
-    tokens: 45,
+    tokens: 50,
     highlight: false,
     features: [
       "All Pro features",
-      "45 tokens renewed monthly",
+      "50 tokens renewed monthly",
       "Export data to CSV",
       "Historical data tracking",
     ],
