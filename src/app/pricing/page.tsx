@@ -1,17 +1,15 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, ArrowRight, Shield, Zap, ArrowLeft } from "lucide-react";
+import { CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { useTiers } from "@/hooks/use-tiers";
 import { Logo } from "@/components/layout/logo";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 
 // Defines the available subscription plans and their features.
 const plans = [
@@ -25,7 +23,7 @@ const plans = [
       "10 tokens included (one-time)",
       "Upload up to 3 files at once",
       "Basic charts & analytics",
-      "No AI Assistant or Budgeting",
+      "Standard transaction categorization",
     ],
   },
   {
@@ -37,7 +35,8 @@ const plans = [
     features: [
       "20 tokens renewed monthly",
       "Unlimited file uploads",
-      "AI Insights & Budgeting included",
+      "AI-powered Insights & Anomaly Detection",
+      "Advanced Budgeting tools",
       "Email support",
     ],
   },
@@ -50,40 +49,20 @@ const plans = [
     features: [
       "All Pro features",
       "45 tokens renewed monthly",
-      "Store transactions (2 tokens/file)",
+      "Store transactions permanently",
+      "Export data to CSV",
       "Priority support",
     ],
   },
 ] as const;
 
-const tokenPacks = [
-  {
-    name: "50 Tokens",
-    price: 15,
-    tokens: 50,
-    description: "Perfect for occasional use",
-  },
-  {
-    name: "100 Tokens",
-    price: 25,
-    tokens: 100,
-    description: "Most popular add-on",
-  },
-  {
-    name: "250 Tokens",
-    price: 50,
-    tokens: 250,
-    description: "Best value for power users",
-  },
-];
 
 /**
  * Renders the pricing page, allowing users to view and select a subscription plan.
  */
 export default function Pricing() {
   const router = useRouter();
-  const { isPro, isPremium, setTier, setTokenBalance } = useTiers();
-  const [selectedTokenPack, setSelectedTokenPack] = useState(tokenPacks[1]);
+  const { setTier } = useTiers();
 
   // Effect to set the document title when the component mounts.
   useEffect(() => {
@@ -99,17 +78,6 @@ export default function Pricing() {
     setTier(plan.name);
     router.push("/auth?mode=signup");
   };
-
-  const handlePurchaseTokens = () => {
-    setTokenBalance(current => current + selectedTokenPack.tokens);
-  }
-
-  const handleTokenPackChange = (value: string) => {
-      const pack = tokenPacks.find(p => p.name === value);
-      if (pack) {
-          setSelectedTokenPack(pack);
-      }
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -143,7 +111,7 @@ export default function Pricing() {
           </div>
         </section>
 
-        {/* Unified Pricing Plans & Token Packs section */}
+        {/* Pricing Plans section */}
         <section className="py-12 md:py-16 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
@@ -182,41 +150,6 @@ export default function Pricing() {
             <p className="text-xs text-muted-foreground mt-6 text-center sm:text-left">
               Prices in USD. You can change or cancel your plan anytime.
             </p>
-
-             {/* Token Purchase Section */}
-            <div className="mt-16 md:mt-20">
-              <Card className="max-w-2xl mx-auto">
-                <CardHeader className="text-center">
-                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
-                        <Zap className="h-6 w-6 text-primary" />
-                    </div>
-                  <CardTitle className="text-3xl">Need more tokens?</CardTitle>
-                  <CardDescription>
-                    Purchase additional one-time tokens that never expire.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-                   <div className="w-full sm:w-auto flex-1">
-                     <Label htmlFor="token-packs">Token Amount</Label>
-                    <Select onValueChange={handleTokenPackChange} defaultValue={selectedTokenPack.name}>
-                      <SelectTrigger id="token-packs" className="h-12 text-base">
-                        <SelectValue placeholder="Select a token pack" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {tokenPacks.map((pack) => (
-                          <SelectItem key={pack.name} value={pack.name}>{pack.name} - ${pack.price}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="w-full sm:w-auto">
-                    <Button onClick={handlePurchaseTokens} size="lg" className="h-12 w-full btn-outline-primary mt-auto sm:mt-6">
-                      Buy for ${selectedTokenPack.price}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </section>
       </main>
