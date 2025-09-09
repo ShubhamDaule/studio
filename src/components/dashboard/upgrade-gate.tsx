@@ -15,9 +15,10 @@ type UpgradeGateProps = {
   requiredTier: "Pro" | "Premium";
   type: "tab" | "card";
   cardHeader?: React.ReactNode;
+  cardStyle?: "default" | "compact";
 };
 
-export function UpgradeGate({ children, requiredTier, type, cardHeader }: UpgradeGateProps) {
+export function UpgradeGate({ children, requiredTier, type, cardHeader, cardStyle = "default" }: UpgradeGateProps) {
   const { isPro, isPremium } = useTiers();
 
   const hasAccess = requiredTier === "Pro" ? isPro : isPremium;
@@ -57,24 +58,38 @@ export function UpgradeGate({ children, requiredTier, type, cardHeader }: Upgrad
       )
   }
 
-  // Card type
+  const UpgradeContent = () => (
+    <>
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-orange-100">
+          <Crown className="h-6 w-6 text-orange-500" />
+      </div>
+      <p className="font-semibold text-lg text-orange-900">Pro+ Feature</p>
+      <p className="text-sm text-orange-800/80 mb-4 max-w-xs">
+          Upgrade to the Pro plan to unlock this chart.
+      </p>
+      <Button asChild size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+          <Link href="/pricing">
+              <Crown className="mr-2 h-4 w-4" />
+              Upgrade to Pro
+          </Link>
+      </Button>
+    </>
+  );
+
+  if (cardStyle === 'compact') {
+      return (
+        <Card className="h-full flex flex-col items-center justify-center text-center p-4 bg-orange-50/50 border-orange-200/80">
+          <UpgradeContent />
+        </Card>
+      );
+  }
+
+  // Default Card type
   return (
     <Card className="h-full flex flex-col">
         {cardHeader}
         <CardContent className="flex-1 flex flex-col items-center justify-center text-center p-4 bg-orange-50/50 border-orange-200/80 m-1 rounded-b-lg">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-orange-100">
-                <Crown className="h-6 w-6 text-orange-500" />
-            </div>
-            <p className="font-semibold text-lg text-orange-900">Pro+ Feature</p>
-            <p className="text-sm text-orange-800/80 mb-4 max-w-xs">
-                Upgrade to the Pro plan to unlock this chart.
-            </p>
-            <Button asChild size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-                <Link href="/pricing">
-                    <Crown className="mr-2 h-4 w-4" />
-                    Upgrade to Pro
-                </Link>
-            </Button>
+           <UpgradeContent />
         </CardContent>
     </Card>
   );
