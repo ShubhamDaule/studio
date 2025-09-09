@@ -74,7 +74,7 @@ export default function LandingPage() {
                 className="btn-gradient-base btn-hover-fade w-full sm:w-auto px-8 py-6 text-lg"
                 asChild
               >
-                <Link href="/dashboard">Try It For Free <ArrowRight className="ml-2 w-5 h-5" /></Link>
+                <Link href="/upload-preview">Try It For Free <ArrowRight className="ml-2 w-5 h-5" /></Link>
               </Button>
               <Button
                 className="bg-white text-primary border border-primary font-bold px-8 py-6 text-lg transition-smooth hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white hover:border-0 w-full sm:w-auto"
@@ -113,7 +113,7 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-12 sm:gap-16 items-center">
             <div className="relative">
                 <Image 
-                    src="https://placehold.co/600x400.png"
+                    src="https://picsum.photos/600/400"
                     alt="MySpendWise Dashboard Preview"
                     width={600}
                     height={400}
