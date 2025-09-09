@@ -22,11 +22,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Transaction, Category } from "@/lib/types";
 import { CategoryIcon } from "@/components/icons";
-import { ArrowUp, ArrowDown, Sparkles, FileDown } from "lucide-react";
+import { ArrowUp, ArrowDown, Sparkles, FileDown, Gavel } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTiers } from "@/hooks/use-tiers";
 import { format, parseISO } from "date-fns";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { RulesDialog } from "../dialogs/rules-dialog";
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -46,6 +47,7 @@ export function TransactionTable({
 }: TransactionTableProps) {
   const [sortColumn, setSortColumn] = React.useState<SortableColumn>('date');
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc');
+  const [isRulesDialogOpen, setIsRulesDialogOpen] = React.useState(false);
 
   const handleSort = (column: SortableColumn) => {
     if (sortColumn === column) {
@@ -136,102 +138,111 @@ export function TransactionTable({
   );
 
   return (
-    <Card className="card-interactive group">
-      <CardHeader className="flex flex-row justify-between items-center">
-        <div>
-            <CardTitle className="group-hover:text-primary transition-colors">All Transactions</CardTitle>
-            <CardDescription>
-              Review and re-categorize your transactions as needed. Click headers to sort.
-            </CardDescription>
-        </div>
-        <Button size="sm" onClick={handleExportCSV} disabled={transactions.length === 0} className="btn-gradient-base btn-hover-fade">
-            <FileDown className="mr-2 h-4 w-4" />
-            Export as CSV
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto relative">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-muted/0">
-                <SortableHeader column="merchant" label="Merchant" />
-                <SortableHeader column="date" label="Date" />
-                <SortableHeader column="amount" label="Amount" />
-                <TableHead className="text-center">
-                    <div className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Category</div>
-                </TableHead>
-                <TableHead>
-                    <div className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Source</div>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedTransactions.length > 0 ? (
-                sortedTransactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell className="font-medium">
-                      {transaction.merchant}
-                    </TableCell>
-                    <TableCell>{formatDate(transaction.date)}</TableCell>
-                    <TableCell className={`font-medium ${transaction.amount < 0 ? 'text-primary' : ''}`}>
-                      {formatCurrency(transaction.amount)}
-                    </TableCell>
-                    <TableCell className="w-[200px] text-center">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                           <Select
-                            value={transaction.category}
-                            onValueChange={(value: string) =>
-                              onCategoryChange(transaction.id, value)
-                            }
-                          >
-                            <SelectTrigger className="w-full h-9">
-                              <SelectValue>
-                                <div className="flex items-center gap-2">
-                                    <CategoryIcon
-                                        category={allCategories.find(c => c.name === transaction.category)}
-                                        className="h-4 w-4"
-                                    />
-                                    <span className="text-sm font-medium">{transaction.category}</span>
-                                </div>
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {allCategories.map((cat) => (
-                                <SelectItem key={cat.name} value={cat.name}>
-                                  <div className="flex items-center">
-                                    <CategoryIcon
-                                      category={cat}
-                                      className="mr-2 h-4 w-4"
-                                    />
-                                    {cat.name}
+    <>
+      <Card className="card-interactive group">
+        <CardHeader className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+          <div>
+              <CardTitle className="group-hover:text-primary transition-colors">All Transactions</CardTitle>
+              <CardDescription>
+                Review and re-categorize your transactions as needed. Click headers to sort.
+              </CardDescription>
+          </div>
+          <div className="flex items-center gap-2 mt-4 sm:mt-0">
+              <Button size="sm" variant="outline" onClick={() => setIsRulesDialogOpen(true)}>
+                  <Gavel className="mr-2 h-4 w-4" />
+                  Rules
+              </Button>
+              <Button size="sm" onClick={handleExportCSV} disabled={transactions.length === 0} className="btn-gradient-base btn-hover-fade">
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Export as CSV
+              </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto relative">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-muted/0">
+                  <SortableHeader column="merchant" label="Merchant" />
+                  <SortableHeader column="date" label="Date" />
+                  <SortableHeader column="amount" label="Amount" />
+                  <TableHead className="text-center">
+                      <div className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Category</div>
+                  </TableHead>
+                  <TableHead>
+                      <div className="text-black dark:text-white font-semibold hover:text-primary transition-colors cursor-default">Source</div>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedTransactions.length > 0 ? (
+                  sortedTransactions.map((transaction) => (
+                    <TableRow key={transaction.id}>
+                      <TableCell className="font-medium">
+                        {transaction.merchant}
+                      </TableCell>
+                      <TableCell>{formatDate(transaction.date)}</TableCell>
+                      <TableCell className={`font-medium ${transaction.amount < 0 ? 'text-primary' : ''}`}>
+                        {formatCurrency(transaction.amount)}
+                      </TableCell>
+                      <TableCell className="w-[200px] text-center">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                             <Select
+                              value={transaction.category}
+                              onValueChange={(value: string) =>
+                                onCategoryChange(transaction.id, value)
+                              }
+                            >
+                              <SelectTrigger className="w-full h-9">
+                                <SelectValue>
+                                  <div className="flex items-center gap-2">
+                                      <CategoryIcon
+                                          category={allCategories.find(c => c.name === transaction.category)}
+                                          className="h-4 w-4"
+                                      />
+                                      <span className="text-sm font-medium">{transaction.category}</span>
                                   </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{transaction.category}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground truncate max-w-xs">
-                        {transaction.bankName !== 'Unknown' ? transaction.bankName : transaction.fileSource}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {allCategories.map((cat) => (
+                                  <SelectItem key={cat.name} value={cat.name}>
+                                    <div className="flex items-center">
+                                      <CategoryIcon
+                                        category={cat}
+                                        className="mr-2 h-4 w-4"
+                                      />
+                                      {cat.name}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{transaction.category}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground truncate max-w-xs">
+                          {transaction.bankName !== 'Unknown' ? transaction.bankName : transaction.fileSource}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                      No transactions to display. Upload a statement to get started.
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
-                    No transactions to display. Upload a statement to get started.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+      <RulesDialog isOpen={isRulesDialogOpen} onClose={() => setIsRulesDialogOpen(false)} />
+    </>
   );
 }
