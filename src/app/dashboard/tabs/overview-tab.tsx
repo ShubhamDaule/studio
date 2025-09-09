@@ -15,6 +15,7 @@ import { HighestDayCard } from "@/components/dashboard/cards/highest-day-card";
 import { CurrentBalanceCard } from "@/components/dashboard/cards/current-balance-card";
 import { useDashboardContext } from "@/context/dashboard-context";
 import { useBudgets } from "@/hooks/useBudgets";
+import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
 
 // Props for the OverviewTab component, including a function to open dialogs.
 type OverviewTabProps = {
@@ -89,12 +90,20 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             {/* Section for secondary charts */}
             <>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
-                    <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
+                    <UpgradeGate requiredTier="Pro">
+                        <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
+                    </UpgradeGate>
+                    <UpgradeGate requiredTier="Pro">
+                        <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
+                    </UpgradeGate>
                 </div>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
-                    <SpendingTrendChart transactions={allTransactions} />
+                    <UpgradeGate requiredTier="Pro">
+                        <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
+                    </UpgradeGate>
+                    <UpgradeGate requiredTier="Pro">
+                         <SpendingTrendChart transactions={allTransactions} />
+                    </UpgradeGate>
                 </div>
             </>
         </div>

@@ -34,6 +34,8 @@ import { ClassificationTransactionsDialog } from "@/components/dialogs/classific
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useTiers } from "@/hooks/use-tiers";
 import { cn } from "@/lib/utils";
+import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
+
 
 export default function DashboardPage() {
     const { 
@@ -48,9 +50,10 @@ export default function DashboardPage() {
         isUploading,
     } = useDashboardContext();
     
-    const { isPremium, consumeTokens, tokenBalance } = useTiers();
+    const { isPremium, isPro, consumeTokens, tokenBalance } = useTiers();
     const { toast } = useToast();
     const [fileToDelete, setFileToDelete] = React.useState<TransactionFile | null>(null);
+    const [activeTab, setActiveTab] = React.useState("overview");
 
     const {
         dialogState,
@@ -107,6 +110,16 @@ export default function DashboardPage() {
              </main>
         )
     }
+    
+    const handleTabChange = (value: string) => {
+        if (!isPro && (value === 'insights' || value === 'budgeting')) {
+            return;
+        }
+        if(!isPremium && value === 'saved') {
+            return;
+        }
+        setActiveTab(value);
+    }
 
     return (
         <TooltipProvider>
@@ -130,7 +143,7 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     )}
-                    <Tabs defaultValue="overview" className="w-full">
+                    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                         <TabsList className={cn(
                             "grid w-full",
                             isPremium ? "grid-cols-5" : "grid-cols-4"
@@ -143,14 +156,18 @@ export default function DashboardPage() {
                                 <List className="mr-2 h-4 w-4" />
                                 Transactions
                             </TabsTrigger>
-                            <TabsTrigger value="insights">
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                AI Insights
-                            </TabsTrigger>
-                            <TabsTrigger value="budgeting">
-                                <Target className="mr-2 h-4 w-4" />
-                                Budgeting
-                            </TabsTrigger>
+                            <UpgradeGate requiredTier="Pro">
+                                <TabsTrigger value="insights">
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    AI Insights
+                                </TabsTrigger>
+                            </UpgradeGate>
+                            <UpgradeGate requiredTier="Pro">
+                                <TabsTrigger value="budgeting">
+                                    <Target className="mr-2 h-4 w-4" />
+                                    Budgeting
+                                </TabsTrigger>
+                            </UpgradeGate>
                             {isPremium && (
                                 <TabsTrigger value="saved">
                                     <History className="mr-2 h-4 w-4" />
@@ -167,10 +184,10 @@ export default function DashboardPage() {
                             <TransactionsTab />
                         </TabsContent>
                         <TabsContent value="insights" className="mt-4">
-                            <InsightsTab />
+                           {isPro && <InsightsTab />}
                         </TabsContent>
                         <TabsContent value="budgeting" className="mt-4">
-                            <BudgetingTab />
+                            {isPro && <BudgetingTab />}
                         </TabsContent>
                          {isPremium && (
                             <TabsContent value="saved" className="mt-4">
