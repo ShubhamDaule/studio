@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Search, ArrowRight, GripVertical, Landmark } from "lucide-react";
 import { EditRuleDialog } from "./edit-rule-dialog";
 
@@ -33,7 +32,7 @@ export function RulesDialog({ isOpen, onClose }: Props) {
               <DialogTitle className="text-2xl">Rules</DialogTitle>
             </div>
             <DialogDescription>
-              Rules allow you to rename, recategorize, split your transactions, and more. If multiple rules apply to the same transaction, they will apply in the order listed here (top to bottom). You can drag and drop to edit the order as needed.
+              Create rules to automatically manage your transactions. You can rename merchants, change categories, and more. Rules run in order from top to bottom, and you can drag them to reorder.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
