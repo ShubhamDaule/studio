@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Lock, Star, Crown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Card, CardContent, CardHeader } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 type UpgradeGateProps = {
   children: React.ReactNode;
@@ -58,7 +58,7 @@ export function UpgradeGate({ children, requiredTier, type, cardHeader, cardStyl
       )
   }
 
-  const UpgradeContent = () => (
+  const DefaultUpgradeContent = () => (
     <>
       <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-orange-100">
           <Crown className="h-6 w-6 text-orange-500" />
@@ -75,11 +75,25 @@ export function UpgradeGate({ children, requiredTier, type, cardHeader, cardStyl
       </Button>
     </>
   );
+  
+  const CompactUpgradeContent = () => (
+     <div className="flex flex-col items-center justify-center text-center p-4 h-full">
+        <Button asChild size="sm" className="bg-green-600 hover:bg-green-700 text-white mt-2">
+            <Link href="/pricing">
+                <Crown className="mr-2 h-4 w-4" />
+                Upgrade to Pro
+            </Link>
+        </Button>
+     </div>
+  )
 
   if (cardStyle === 'compact') {
       return (
-        <Card className="h-full flex flex-col items-center justify-center text-center p-4 bg-orange-50/50 border-orange-200/80">
-          <UpgradeContent />
+        <Card className="h-full flex flex-col bg-orange-50/50 border-orange-200/80">
+          {cardHeader}
+          <CardContent className="flex-1 p-0">
+             <CompactUpgradeContent />
+          </CardContent>
         </Card>
       );
   }
@@ -89,7 +103,7 @@ export function UpgradeGate({ children, requiredTier, type, cardHeader, cardStyl
     <Card className="h-full flex flex-col">
         {cardHeader}
         <CardContent className="flex-1 flex flex-col items-center justify-center text-center p-4 bg-orange-50/50 border-orange-200/80 m-1 rounded-b-lg">
-           <UpgradeContent />
+           <DefaultUpgradeContent />
         </CardContent>
     </Card>
   );

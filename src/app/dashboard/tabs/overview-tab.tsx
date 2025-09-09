@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Wallet, ReceiptText } from "lucide-react";
+import { Wallet, ReceiptText, TrendingUp, CalendarDays } from "lucide-react";
 import { SpendingChart } from "@/components/dashboard/charts/spending-chart";
 import { SpendingByDayChart } from "@/components/dashboard/charts/spending-by-day-chart";
 import { SpendingBySourceChart, SpendingBySourceChartHeader } from "@/components/dashboard/charts/spending-by-source-chart";
@@ -16,6 +16,7 @@ import { CurrentBalanceCard } from "@/components/dashboard/cards/current-balance
 import { useDashboardContext } from "@/context/dashboard-context";
 import { useBudgets } from "@/hooks/useBudgets";
 import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
+import { CardHeader, CardTitle } from "@/components/ui/card";
 
 // Props for the OverviewTab component, including a function to open dialogs.
 type OverviewTabProps = {
@@ -68,7 +69,17 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                         (transactionsTab as HTMLElement)?.click();
                     }}
                 />
-                 <UpgradeGate requiredTier="Pro" type="card" cardStyle="compact">
+                 <UpgradeGate 
+                    requiredTier="Pro" 
+                    type="card" 
+                    cardStyle="compact"
+                    cardHeader={
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Highest Single Transaction</CardTitle>
+                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                    }
+                 >
                     <HighestTransactionCard 
                         transaction={highestTransaction}
                         onClick={() => openDialog('transactionDetail', highestTransaction)}
@@ -78,7 +89,17 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                 {currentBalance !== null ? (
                      <CurrentBalanceCard balance={currentBalance} />
                 ) : (
-                    <UpgradeGate requiredTier="Pro" type="card" cardStyle="compact">
+                    <UpgradeGate 
+                        requiredTier="Pro" 
+                        type="card" 
+                        cardStyle="compact"
+                        cardHeader={
+                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Highest Spending Day</CardTitle>
+                                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                        }
+                    >
                         <HighestDayCard 
                             day={highestDay}
                             onClick={() => openDialog('day', highestDay?.date ?? null)}
