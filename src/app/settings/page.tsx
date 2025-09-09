@@ -12,7 +12,9 @@ import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle } from "lucide-react";
+import { useTiers } from "@/hooks/use-tiers";
+import { cn } from "@/lib/utils";
 
 // Schema for validating the profile form using Zod.
 const profileFormSchema = z.object({
@@ -25,6 +27,7 @@ const profileFormSchema = z.object({
 export default function SettingsPage() {
   const { user, updateUserProfile } = useAuth();
   const router = useRouter();
+  const { isPro, isPremium, setIsPro, setIsPremium } = useTiers();
 
   // Initialize react-hook-form with the validation schema and default values.
   const form = useForm<z.infer<typeof profileFormSchema>>({
@@ -47,6 +50,20 @@ export default function SettingsPage() {
   // This can happen briefly during initial load or after sign-out.
   if (!user) {
     return null; 
+  }
+
+  const currentTier = isPremium ? "Premium" : isPro ? "Pro" : "Free";
+
+  const handleSetTier = (tier: 'Free' | 'Pro' | 'Premium') => {
+    if (tier === 'Free') {
+        setIsPremium(false);
+        setIsPro(false);
+    } else if (tier === 'Pro') {
+        setIsPremium(false);
+        setIsPro(true);
+    } else { // Premium
+        setIsPremium(true);
+    }
   }
 
   return (
@@ -109,6 +126,34 @@ export default function SettingsPage() {
                 Email cannot be changed. Contact support if you need to update your email address.
               </p>
           </CardContent>
+        </Card>
+
+         {/* Tier Management Card */}
+        <Card>
+            <CardHeader>
+                <CardTitle>Subscription Status</CardTitle>
+                <CardDescription>
+                    For testing purposes, you can switch your subscription tier here.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <p className="text-sm">
+                    Your current tier is: <span className="font-bold text-primary">{currentTier}</span>
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                    {(['Free', 'Pro', 'Premium'] as const).map(tier => (
+                         <Button
+                            key={tier}
+                            variant={currentTier === tier ? 'secondary' : 'outline'}
+                            onClick={() => handleSetTier(tier)}
+                            className={cn("w-full sm:w-auto", currentTier === tier && "font-bold border-primary/50 text-primary")}
+                        >
+                            {currentTier === tier && <CheckCircle className="mr-2 h-4 w-4" />}
+                            Set to {tier}
+                        </Button>
+                    ))}
+                </div>
+            </CardContent>
         </Card>
       </div>
     </div>
