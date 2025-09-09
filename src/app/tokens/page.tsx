@@ -27,7 +27,7 @@ const tokenPacks = [
     saveAmount: 5,
   },
   {
-    name: "250 Tokens",
+    name: "215 Tokens",
     price: 50,
     description: "Best value for power users",
     features: ["Tokens never expire", "Use with any plan", "Instant activation"],
