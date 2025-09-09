@@ -16,14 +16,15 @@ const plans = [
   {
     name: "Free",
     price: 0,
-    period: "month",
-    tokens: 5,
+    period: "one-time",
+    tokens: 10,
     tokenPrice: 0.5,
     highlight: false,
     features: [
-      "Upload statements",
-      "Basic charts",
-      "Community support",
+      "10 tokens included (one-time)",
+      "Upload up to 3 files at once",
+      "Basic charts & analytics",
+      "No AI Assistant or Budgeting",
     ],
   },
   {
@@ -34,8 +35,9 @@ const plans = [
     tokenPrice: 0.35,
     highlight: true,
     features: [
-      "All Free features",
-      "Advanced insights",
+      "20 tokens renewed monthly",
+      "Unlimited file uploads",
+      "AI Insights & Budgeting included",
       "Email support",
     ],
   },
@@ -48,8 +50,9 @@ const plans = [
     highlight: false,
     features: [
       "All Pro features",
+      "45 tokens renewed monthly",
+      "Store transactions (2 tokens/file)",
       "Priority support",
-      "Early access to new tools",
     ],
   },
 ] as const;
@@ -136,11 +139,7 @@ export default function Pricing() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col space-y-6">
-                    <div className="flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-primary" />
-                      <p className="text-sm text-muted-foreground">{plan.tokens} tokens/month included</p>
-                    </div>
-                    {typeof plan.tokenPrice === "number" && (
+                     {typeof plan.tokenPrice === "number" && (
                       <div className="flex items-center gap-2">
                         <Zap className="h-4 w-4 text-accent" />
                         <p className="text-sm text-muted-foreground">Additional tokens {Math.round(plan.tokenPrice * 100)}¢ each</p>
