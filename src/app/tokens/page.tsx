@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Zap, ArrowLeft } from "lucide-react";
+import { Zap, ArrowLeft, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -15,7 +15,6 @@ const tokenPacks = [
     tokens: 10,
     price: 3.5,
     description: "$0.35 per token",
-    features: ["Tokens never expire", "Instant activation"],
     highlight: false,
     saveAmount: null,
   },
@@ -24,7 +23,6 @@ const tokenPacks = [
     tokens: 25,
     price: 8.5,
     description: "$0.34 per token",
-    features: ["Tokens never expire", "Instant activation"],
     highlight: false,
     saveAmount: 0.25,
   },
@@ -33,7 +31,6 @@ const tokenPacks = [
     tokens: 50,
     price: 15.5,
     description: "$0.31 per token",
-    features: ["Tokens never expire", "Instant activation"],
     highlight: false,
     saveAmount: 2.0,
   },
@@ -42,7 +39,6 @@ const tokenPacks = [
     tokens: 100,
     price: 28.0,
     description: "$0.28 per token",
-    features: ["Tokens never expire", "Instant activation"],
     highlight: true,
     saveAmount: 7.0,
   },
@@ -75,9 +71,9 @@ export default function TokensPage() {
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">
                     Need more tokens?
                 </h1>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Purchase additional tokens that never expire. Perfect for handling seasonal
-                    spikes or large projects.
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                    Purchase additional one-time token packs to handle large projects or seasonal spikes. 
+                    All tokens never expire and are activated instantly.
                 </p>
             </section>
 
@@ -89,26 +85,27 @@ export default function TokensPage() {
                             pack.highlight && "ring-2 ring-primary shadow-lg"
                         )}>
                             <CardHeader className="text-center">
-                                {pack.highlight && (
+                                {pack.highlight ? (
                                     <div className="flex justify-center">
                                         <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                                             Best Value
                                         </Badge>
                                     </div>
+                                ) : (
+                                    <div className="h-[22px]"></div> // Placeholder for alignment
                                 )}
                                 <CardTitle className="text-2xl pt-2">{pack.name}</CardTitle>
-                                <p className="text-4xl font-bold">${pack.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-sm font-normal text-muted-foreground ml-1">one-time</span></p>
-                                <CardDescription>{pack.tokens} Tokens &bull; {pack.description}</CardDescription>
+                                <p className="text-4xl font-bold">${pack.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                             </CardHeader>
-                            <CardContent className="flex-1 flex flex-col space-y-4">
-                                <ul className="space-y-3 pt-2 flex-1">
-                                    {pack.features.map((feature) => (
-                                        <li key={feature} className="flex items-center gap-3">
-                                            <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                                            <span>{feature}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                            <CardContent className="flex-1 flex flex-col items-center justify-center text-center space-y-2">
+                                <p className="text-3xl font-bold text-primary">{pack.tokens}</p>
+                                <p className="font-semibold">Tokens</p>
+                                <CardDescription>{pack.description}</CardDescription>
+                                {pack.saveAmount ? (
+                                    <Badge variant="outline" className="bg-green-100/50 border-green-300/50 text-green-800">
+                                        Save ${pack.saveAmount.toFixed(2)}
+                                    </Badge>
+                                ) : <div className="h-6" />}
                             </CardContent>
                             <CardFooter>
                                 <Button 
@@ -118,7 +115,7 @@ export default function TokensPage() {
                                         pack.highlight ? "btn-gradient-base btn-hover-fade" : "btn-outline-primary"
                                      )}
                                 >
-                                  Purchase Tokens
+                                  Purchase
                                 </Button>
                             </CardFooter>
                         </Card>
