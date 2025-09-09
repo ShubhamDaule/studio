@@ -31,15 +31,6 @@ export function RulesDialog({ isOpen, onClose }: Props) {
           <DialogHeader>
             <div className="flex items-center justify-between">
               <DialogTitle className="text-2xl">Rules</DialogTitle>
-              <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">Options</Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                      <DropdownMenuItem>Import Rules</DropdownMenuItem>
-                      <DropdownMenuItem>Export Rules</DropdownMenuItem>
-                  </DropdownMenuContent>
-              </DropdownMenu>
             </div>
             <DialogDescription>
               Rules allow you to rename, recategorize, split your transactions, and more. If multiple rules apply to the same transaction, they will apply in the order listed here (top to bottom). You can drag and drop to edit the order as needed.
