@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 import { ClassificationTransactionsDialog } from "@/components/dialogs/classification-transactions-dialog";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function DashboardPage() {
     const { 
@@ -70,6 +71,14 @@ export default function DashboardPage() {
         setFileToDelete(null);
     };
 
+    const handleSaveFile = (file: TransactionFile) => {
+        // TODO: Implement actual save logic and token consumption
+        toast({
+            title: "Feature Coming Soon!",
+            description: `Storing transactions from ${file.fileName} will be available shortly.`
+        })
+    }
+
     if (isUploading) {
         return (
              <main className="container mx-auto p-4 sm:p-6 lg:p-8">
@@ -79,108 +88,115 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
-            <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-                {!isUsingMockData && transactionFiles.length > 0 && (
-                    <div className="mb-8 p-6 bg-muted/30 rounded-lg">
-                        <h2 className="text-xl font-semibold mb-2">Uploaded Statements</h2>
-                        <p className="text-muted-foreground mb-4">
-                            Manage the statements you've uploaded. Remove a file to exclude its transactions.
-                        </p>
-                        <div className="flex flex-wrap gap-3">
-                            {transactionFiles.map(file => (
-                                <FilePill key={file.fileName} file={file} onDelete={() => setFileToDelete(file)} />
-                            ))}
+        <TooltipProvider>
+            <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background text-foreground">
+                <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+                    {!isUsingMockData && transactionFiles.length > 0 && (
+                        <div className="mb-8 p-6 bg-muted/30 rounded-lg">
+                            <h2 className="text-xl font-semibold mb-2">Uploaded Statements</h2>
+                            <p className="text-muted-foreground mb-4">
+                                Manage the statements you've uploaded. Remove a file to exclude its transactions.
+                            </p>
+                            <div className="flex flex-wrap gap-3">
+                                {transactionFiles.map(file => (
+                                    <FilePill 
+                                        key={file.fileName} 
+                                        file={file} 
+                                        onDelete={() => setFileToDelete(file)}
+                                        onSave={() => handleSaveFile(file)}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
-                <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="overview">
-                            <LayoutGrid className="mr-2 h-4 w-4" />
-                            Overview
-                        </TabsTrigger>
-                        <TabsTrigger value="transactions">
-                            <List className="mr-2 h-4 w-4" />
-                            Transactions
-                        </TabsTrigger>
-                        <TabsTrigger value="insights">
-                            <Sparkles className="mr-2 h-4 w-4" />
-                            AI Insights
-                        </TabsTrigger>
-                        <TabsTrigger value="budgeting">
-                            <Target className="mr-2 h-4 w-4" />
-                            Budgeting
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="overview" className="mt-4">
-                        <OverviewTab 
-                            openDialog={openDialog}
-                        />
-                    </TabsContent>
-                    <TabsContent value="transactions" className="mt-4">
-                        <TransactionsTab />
-                    </TabsContent>
-                    <TabsContent value="insights" className="mt-4">
-                        <InsightsTab />
-                    </TabsContent>
-                    <TabsContent value="budgeting" className="mt-4">
-                        <BudgetingTab />
-                    </TabsContent>
-                </Tabs>
-            </main>
-            
-            <CategoryTransactionsDialog
-                isOpen={dialogState.category}
-                onClose={() => closeDialog('category')}
-                {...dialogData}
-            />
-            <DayTransactionsDialog
-                isOpen={dialogState.day}
-                onClose={() => closeDialog('day')}
-                {...dialogData}
-            />
-            <SourceTransactionsDialog
-                isOpen={dialogState.source}
-                onClose={() => closeDialog('source')}
-                {...dialogData}
-            />
-            <MerchantTransactionsDialog
-                isOpen={dialogState.merchant}
-                onClose={() => closeDialog('merchant')}
-                {...dialogData}
-            />
-             <ClassificationTransactionsDialog
-                isOpen={dialogState.classification}
-                onClose={() => closeDialog('classification')}
-                {...dialogData}
-            />
-            <TransactionDetailDialog
-                isOpen={dialogState.transactionDetail}
-                onClose={() => closeDialog('transactionDetail')}
-                transaction={dialogData.transaction}
-                allCategories={allCategories}
-            />
+                    )}
+                    <Tabs defaultValue="overview" className="w-full">
+                        <TabsList className="grid w-full grid-cols-4">
+                            <TabsTrigger value="overview">
+                                <LayoutGrid className="mr-2 h-4 w-4" />
+                                Overview
+                            </TabsTrigger>
+                            <TabsTrigger value="transactions">
+                                <List className="mr-2 h-4 w-4" />
+                                Transactions
+                            </TabsTrigger>
+                            <TabsTrigger value="insights">
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                AI Insights
+                            </TabsTrigger>
+                            <TabsTrigger value="budgeting">
+                                <Target className="mr-2 h-4 w-4" />
+                                Budgeting
+                            </TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="overview" className="mt-4">
+                            <OverviewTab 
+                                openDialog={openDialog}
+                            />
+                        </TabsContent>
+                        <TabsContent value="transactions" className="mt-4">
+                            <TransactionsTab />
+                        </TabsContent>
+                        <TabsContent value="insights" className="mt-4">
+                            <InsightsTab />
+                        </TabsContent>
+                        <TabsContent value="budgeting" className="mt-4">
+                            <BudgetingTab />
+                        </TabsContent>
+                    </Tabs>
+                </main>
+                
+                <CategoryTransactionsDialog
+                    isOpen={dialogState.category}
+                    onClose={() => closeDialog('category')}
+                    {...dialogData}
+                />
+                <DayTransactionsDialog
+                    isOpen={dialogState.day}
+                    onClose={() => closeDialog('day')}
+                    {...dialogData}
+                />
+                <SourceTransactionsDialog
+                    isOpen={dialogState.source}
+                    onClose={() => closeDialog('source')}
+                    {...dialogData}
+                />
+                <MerchantTransactionsDialog
+                    isOpen={dialogState.merchant}
+                    onClose={() => closeDialog('merchant')}
+                    {...dialogData}
+                />
+                 <ClassificationTransactionsDialog
+                    isOpen={dialogState.classification}
+                    onClose={() => closeDialog('classification')}
+                    {...dialogData}
+                />
+                <TransactionDetailDialog
+                    isOpen={dialogState.transactionDetail}
+                    onClose={() => closeDialog('transactionDetail')}
+                    transaction={dialogData.transaction}
+                    allCategories={allCategories}
+                />
 
-            <AlertDialog open={!!fileToDelete} onOpenChange={(open) => !open && setFileToDelete(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This will permanently delete all transactions from{' '}
-                        <strong>{fileToDelete?.fileName}</strong>. 
-                        This action cannot be undone.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteFile} className="bg-destructive hover:bg-destructive/90">
-                        <Trash className="mr-2 h-4 w-4" />
-                        Delete File
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </div>
+                <AlertDialog open={!!fileToDelete} onOpenChange={(open) => !open && setFileToDelete(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete all transactions from{' '}
+                            <strong>{fileToDelete?.fileName}</strong>. 
+                            This action cannot be undone.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteFile} className="bg-destructive hover:bg-destructive/90">
+                            <Trash className="mr-2 h-4 w-4" />
+                            Delete File
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
+        </TooltipProvider>
     );
 }
