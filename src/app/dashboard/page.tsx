@@ -156,24 +156,24 @@ export default function DashboardPage() {
                                 <List className="mr-2 h-4 w-4" />
                                 Transactions
                             </TabsTrigger>
-                            <UpgradeGate requiredTier="Pro">
+                            <UpgradeGate requiredTier="Pro" type="tab">
                                 <TabsTrigger value="insights">
                                     <Sparkles className="mr-2 h-4 w-4" />
                                     AI Insights
                                 </TabsTrigger>
                             </UpgradeGate>
-                            <UpgradeGate requiredTier="Pro">
+                            <UpgradeGate requiredTier="Pro" type="tab">
                                 <TabsTrigger value="budgeting">
                                     <Target className="mr-2 h-4 w-4" />
                                     Budgeting
                                 </TabsTrigger>
                             </UpgradeGate>
-                            {isPremium && (
+                            <UpgradeGate requiredTier="Premium" type="tab">
                                 <TabsTrigger value="saved">
                                     <History className="mr-2 h-4 w-4" />
                                     Saved
                                 </TabsTrigger>
-                            )}
+                            </UpgradeGate>
                         </TabsList>
                         <TabsContent value="overview" className="mt-4">
                             <OverviewTab 

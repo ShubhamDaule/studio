@@ -90,18 +90,18 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             {/* Section for secondary charts */}
             <>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <UpgradeGate requiredTier="Pro">
+                    <UpgradeGate requiredTier="Pro" type="card">
                         <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
                     </UpgradeGate>
-                    <UpgradeGate requiredTier="Pro">
+                    <UpgradeGate requiredTier="Pro" type="card">
                         <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
                     </UpgradeGate>
                 </div>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <UpgradeGate requiredTier="Pro">
+                    <UpgradeGate requiredTier="Pro" type="card">
                         <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
                     </UpgradeGate>
-                    <UpgradeGate requiredTier="Pro">
+                    <UpgradeGate requiredTier="Pro" type="card">
                          <SpendingTrendChart transactions={allTransactions} />
                     </UpgradeGate>
                 </div>
