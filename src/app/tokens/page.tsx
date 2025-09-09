@@ -11,28 +11,36 @@ import { useToast } from "@/hooks/use-toast";
 
 const tokenPacks = [
   {
-    name: "50 Tokens",
-    price: 15,
-    description: "Perfect for occasional use",
-    features: ["Tokens never expire", "Use with any plan", "Instant activation"],
+    name: "10 Tokens",
+    price: 5,
+    description: "The Starter Pack",
+    features: ["$0.50 per token", "Tokens never expire", "Instant activation"],
     highlight: false,
     saveAmount: null,
   },
   {
-    name: "100 Tokens",
-    price: 25,
-    description: "Most popular add-on",
-    features: ["Tokens never expire", "Use with any plan", "Instant activation"],
-    highlight: true,
-    saveAmount: 5,
+    name: "25 Tokens",
+    price: 10,
+    description: "The Booster Pack",
+    features: ["$0.40 per token", "Tokens never expire", "Instant activation"],
+    highlight: false,
+    saveAmount: 2.5,
   },
   {
-    name: "215 Tokens",
-    price: 50,
-    description: "Best value for power users",
-    features: ["Tokens never expire", "Use with any plan", "Instant activation"],
+    name: "50 Tokens",
+    price: 17.5,
+    description: "The Power Pack",
+    features: ["$0.35 per token", "Tokens never expire", "Instant activation"],
     highlight: false,
-    saveAmount: 15,
+    saveAmount: 7.5,
+  },
+  {
+    name: "100 Tokens",
+    price: 30,
+    description: "The Ultimate Bundle",
+    features: ["$0.30 per token", "Tokens never expire", "Instant activation"],
+    highlight: true,
+    saveAmount: 20,
   },
 ];
 
@@ -70,7 +78,7 @@ export default function TokensPage() {
             </section>
 
             <section className="mt-12">
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
                     {tokenPacks.map((pack) => (
                         <Card key={pack.name} className={cn(
                             "flex flex-col h-full", 
@@ -80,12 +88,12 @@ export default function TokensPage() {
                                 {pack.saveAmount && (
                                     <div className="flex justify-center">
                                         <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
-                                            Save ${pack.saveAmount}
+                                            Save ${pack.saveAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </Badge>
                                     </div>
                                 )}
                                 <CardTitle className="text-2xl pt-2">{pack.name}</CardTitle>
-                                <p className="text-4xl font-bold">${pack.price}<span className="text-sm font-normal text-muted-foreground ml-1">one-time</span></p>
+                                <p className="text-4xl font-bold">${pack.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-sm font-normal text-muted-foreground ml-1">one-time</span></p>
                                 <CardDescription>{pack.description}</CardDescription>
                             </CardHeader>
                             <CardContent className="flex-1 flex flex-col space-y-4">
