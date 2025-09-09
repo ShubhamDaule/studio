@@ -168,12 +168,12 @@ export default function DashboardPage() {
                                     Budgeting
                                 </TabsTrigger>
                             </UpgradeGate>
-                            <UpgradeGate requiredTier="Premium" type="tab">
+                            {isPremium && (
                                 <TabsTrigger value="saved">
                                     <History className="mr-2 h-4 w-4" />
                                     Saved
                                 </TabsTrigger>
-                            </UpgradeGate>
+                            )}
                         </TabsList>
                         <TabsContent value="overview" className="mt-4">
                             <OverviewTab 
