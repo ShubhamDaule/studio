@@ -63,6 +63,7 @@ export default function SettingsPage() {
         setIsPro(true);
     } else { // Premium
         setIsPremium(true);
+        setIsPro(true); // Premium implies Pro
     }
   }
 
