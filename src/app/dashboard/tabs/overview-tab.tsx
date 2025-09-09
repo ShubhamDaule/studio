@@ -17,6 +17,7 @@ import { useDashboardContext } from "@/context/dashboard-context";
 import { useBudgets } from "@/hooks/useBudgets";
 import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
 import { CardHeader, CardTitle } from "@/components/ui/card";
+import { SubscriptionsCard } from "@/components/dashboard/cards/subscriptions-card";
 
 // Props for the OverviewTab component, including a function to open dialogs.
 type OverviewTabProps = {
@@ -122,10 +123,15 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                         <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
                     </UpgradeGate>
                 </div>
-                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
+                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
+                    <UpgradeGate requiredTier="Pro" type="card">
+                        <SubscriptionsCard transactions={filteredTransactions} />
+                    </UpgradeGate>
                     <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingClassificationChartHeader />}>
                         <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
                     </UpgradeGate>
+                </div>
+                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingTrendChartHeader />}>
                          <SpendingTrendChart transactions={allTransactions} />
                     </UpgradeGate>
