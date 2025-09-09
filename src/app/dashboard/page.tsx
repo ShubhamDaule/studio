@@ -48,7 +48,7 @@ export default function DashboardPage() {
         isUploading,
     } = useDashboardContext();
     
-    const { isPremium } = useTiers();
+    const { isPremium, consumeTokens, tokenBalance } = useTiers();
     const { toast } = useToast();
     const [fileToDelete, setFileToDelete] = React.useState<TransactionFile | null>(null);
 
@@ -75,12 +75,29 @@ export default function DashboardPage() {
         setFileToDelete(null);
     };
 
-    const handleSaveFile = (file: TransactionFile) => {
-        // TODO: Implement actual save logic and token consumption
-        toast({
-            title: "Feature Coming Soon!",
-            description: `Storing transactions from ${file.fileName} will be available shortly.`
-        })
+    const handleSaveFile = (fileToSave: TransactionFile) => {
+        const SAVE_COST = 2.0;
+        if (tokenBalance < SAVE_COST) {
+            toast({
+                variant: "destructive",
+                title: "Insufficient Tokens",
+                description: `You need ${SAVE_COST} tokens to save this file.`,
+            });
+            return;
+        }
+
+        if (consumeTokens(SAVE_COST, true)) {
+            setTransactionFiles(prevFiles => 
+                prevFiles.map(file => 
+                    file.fileName === fileToSave.fileName ? { ...file, isSaved: true } : file
+                )
+            );
+            toast({
+                title: "File Saved!",
+                description: `Transactions from ${fileToSave.fileName} are now stored.`,
+            });
+            // In a real app, you would also save the transactions to a database here.
+        }
     }
 
     if (isUploading) {

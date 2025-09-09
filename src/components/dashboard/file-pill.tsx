@@ -4,7 +4,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import type { TransactionFile } from "@/lib/types";
-import { Banknote, X, Save, Star } from "lucide-react";
+import { Banknote, X, Save, Star, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTiers } from "@/hooks/use-tiers";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -21,8 +21,17 @@ export function FilePill({ file, onDelete, onSave }: Props) {
   const { isPremium } = useTiers();
 
   const SaveButton = () => {
+    if (file.isSaved) {
+        return (
+            <div className="flex items-center gap-1 text-xs text-primary font-medium pr-2">
+                <CheckCircle className="w-4 h-4" />
+                Saved
+            </div>
+        )
+    }
+
     const saveButton = (
-        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={onSave} disabled={!isPremium}>
+        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={onSave} disabled={!isPremium || file.isSaved}>
             <Save className={cn("w-4 h-4", !isPremium && "text-muted-foreground/50")} />
         </Button>
     );

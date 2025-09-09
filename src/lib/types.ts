@@ -23,6 +23,7 @@ export type TransactionFile = {
   bankName: BankName;
   statementType: StatementType;
   statementPeriod: StatementPeriod | null;
+  isSaved?: boolean;
 };
 
 export type Transaction = {
