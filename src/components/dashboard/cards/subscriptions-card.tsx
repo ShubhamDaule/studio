@@ -38,14 +38,16 @@ export function SubscriptionsCard({ transactions }: SubscriptionsCardProps) {
       </CardHeader>
       <CardContent>
         {subscriptions.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {subscriptions.slice(0, 5).map((sub) => (
-              <div key={sub.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                   <CategoryIcon category="Subscriptions" className="h-5 w-5 text-muted-foreground" />
+              <div key={sub.id} className="flex items-center p-3 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="w-8 h-8 rounded-full bg-background flex items-center justify-center">
+                    <CategoryIcon category="Subscriptions" className="h-5 w-5 text-muted-foreground" />
+                  </div>
                   <span className="font-medium">{sub.merchant}</span>
                 </div>
-                <span className="font-semibold text-primary">
+                <span className="font-bold text-primary text-lg">
                   {formatCurrency(sub.amount)}
                 </span>
               </div>
