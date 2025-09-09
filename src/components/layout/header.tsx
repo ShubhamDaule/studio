@@ -30,6 +30,8 @@ import { Progress } from "@/components/ui/progress";
 import { UploadConfirmationDialog } from "../dialogs/upload-confirmation-dialog";
 import { RawJsonDialog } from "../dialogs/raw-json-dialog";
 import { extractTextFromPdf } from "@/lib/pdf-utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 
 /**
@@ -218,7 +220,7 @@ const DashboardNav = () => {
         setIsUploading
     } = useDashboardContext();
     const { toast } = useToast();
-    const { consumeTokens } = useTiers();
+    const { isPremium, isPro, setTier, consumeTokens } = useTiers();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isClient, setIsClient] = React.useState(false);
 
@@ -226,6 +228,8 @@ const DashboardNav = () => {
     const [filesToConfirm, setFilesToConfirm] = React.useState<UploadFile[]>([]);
     const [isConfirming, setIsConfirming] = React.useState(false);
     const [debugInfo, setDebugInfo] = React.useState<DebugInfo | null>(null);
+
+    const currentTier = isPremium ? "Premium" : isPro ? "Pro" : "Free";
 
 
     React.useEffect(() => {
@@ -394,6 +398,24 @@ const DashboardNav = () => {
        <>
         <div className="flex w-full items-center justify-end gap-2">
             <div className="hidden sm:flex items-center gap-2">
+                <RadioGroup 
+                    value={currentTier} 
+                    onValueChange={(value) => setTier(value as 'Free' | 'Pro' | 'Premium')} 
+                    className="flex items-center space-x-2 border rounded-md p-1 bg-muted"
+                >
+                  <div className="flex items-center space-x-1">
+                    <RadioGroupItem value="Free" id="r1" />
+                    <Label htmlFor="r1" className="text-xs">Free</Label>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <RadioGroupItem value="Pro" id="r2" />
+                    <Label htmlFor="r2" className="text-xs">Pro</Label>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <RadioGroupItem value="Premium" id="r3" />
+                    <Label htmlFor="r3" className="text-xs">Premium</Label>
+                  </div>
+                </RadioGroup>
                 <DateRangePicker
                     date={dateRange}
                     setDate={setDateRange}

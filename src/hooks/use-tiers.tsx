@@ -14,16 +14,19 @@ export const calculateAppTokens = (apiTokens: number): number => {
 }
 
 const TIER_CONFIG = {
-    free: { tokens: 5 },
+    free: { tokens: 10 },
     pro: { tokens: 20 },
     premium: { tokens: 45 },
 };
+
+type Tier = 'Free' | 'Pro' | 'Premium';
 
 type TiersContextType = {
   isPro: boolean;
   isPremium: boolean;
   tokenBalance: number;
   maxTokens: number;
+  setTier: (tier: Tier) => void;
   setIsPro: (isPro: boolean) => void;
   setIsPremium: (isPremium: boolean) => void;
   setTokenBalance: React.Dispatch<React.SetStateAction<number>>;
@@ -52,20 +55,32 @@ export const TiersProvider = ({ children }: { children: ReactNode }) => {
     return TIER_CONFIG.free.tokens;
   }, [isPro, isPremium]);
 
+  const setTier = useCallback((tier: Tier) => {
+    if (tier === 'Free') {
+        setIsPro(false);
+        setIsPremium(false);
+        setTokenBalance(TIER_CONFIG.free.tokens);
+    } else if (tier === 'Pro') {
+        setIsPro(true);
+        setIsPremium(false);
+        setTokenBalance(TIER_CONFIG.pro.tokens);
+    } else { // Premium
+        setIsPro(true);
+        setIsPremium(true);
+        setTokenBalance(TIER_CONFIG.premium.tokens);
+    }
+  }, []);
+
   const handleSetIsPro = (pro: boolean) => {
-    setIsPro(pro);
-    setTokenBalance(pro ? TIER_CONFIG.pro.tokens : TIER_CONFIG.free.tokens);
-    if (isPremium) setIsPremium(false);
+    setTier(pro ? 'Pro' : 'Free');
   }
   
   const handleSetIsPremium = (premium: boolean) => {
-      setIsPremium(premium);
       if (premium) {
-          setTokenBalance(TIER_CONFIG.premium.tokens);
-          setIsPro(true);
+        setTier('Premium');
       } else {
-         // Revert to pro if it was active, otherwise free
-         setTokenBalance(isPro ? TIER_CONFIG.pro.tokens : TIER_CONFIG.free.tokens);
+        // Revert to pro if it was active, otherwise free
+        setTier(isPro ? 'Pro' : 'Free');
       }
   }
 
@@ -103,6 +118,7 @@ export const TiersProvider = ({ children }: { children: ReactNode }) => {
         isPremium, 
         tokenBalance,
         maxTokens,
+        setTier,
         setIsPro: handleSetIsPro, 
         setIsPremium: handleSetIsPremium,
         setTokenBalance,
