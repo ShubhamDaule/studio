@@ -5,7 +5,6 @@ import * as React from "react";
 import Link from "next/link";
 import { useTiers } from "@/hooks/use-tiers";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Lock, Star } from "lucide-react";
 
@@ -26,32 +25,28 @@ export function UpgradeGate({ children, requiredTier }: UpgradeGateProps) {
   const childElement = React.Children.only(children) as React.ReactElement;
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="relative w-full h-full">
-            {React.cloneElement(childElement, {
-                className: cn(childElement.props.className, "blur-md pointer-events-none opacity-60"),
-                disabled: true
-            })}
-          <div className="absolute inset-0 flex items-center justify-center bg-background/30 rounded-lg">
-            <Lock className="h-6 w-6 text-foreground/80" />
-          </div>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>
-         <div className="flex flex-col items-center gap-2 p-1 max-w-xs">
-            <p className="font-semibold flex items-center gap-2">
-                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" /> 
-                {requiredTier}+ Feature
-            </p>
-            <p className="text-muted-foreground text-center">
-                This feature is available for {requiredTier} and higher plans.
+    <div className="relative w-full h-full overflow-hidden rounded-lg">
+        {React.cloneElement(childElement, {
+            className: cn(childElement.props.className, "blur-md pointer-events-none opacity-50"),
+            disabled: true
+        })}
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/40 text-center p-4">
+        <div className="p-4 bg-background/80 backdrop-blur-sm rounded-lg shadow-lg flex flex-col items-center gap-3">
+            <div className="flex items-center gap-2 font-semibold">
+                 <Lock className="h-5 w-5 text-primary" />
+                 <span>{requiredTier}+ Feature</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+                This feature is only available on the {requiredTier} plan.
             </p>
             <Button asChild size="sm" className="mt-1 w-full btn-gradient-base btn-hover-fade">
-                <Link href="/pricing">Upgrade to {requiredTier}</Link>
+                <Link href="/pricing">
+                    <Star className="mr-2 h-4 w-4" />
+                    Upgrade to {requiredTier}
+                </Link>
             </Button>
         </div>
-      </TooltipContent>
-    </Tooltip>
+      </div>
+    </div>
   );
 }
