@@ -5,7 +5,6 @@ import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays } from "lucide-react";
 import { format } from 'date-fns';
-import { parseISO } from 'date-fns';
 
 interface HighestDayCardProps {
     day: { date: string; total: number } | null;
@@ -18,7 +17,8 @@ export function HighestDayCard({ day, onClick }: HighestDayCardProps) {
     React.useEffect(() => {
         if (day?.date) {
             try {
-                const date = parseISO(day.date);
+                // By appending T00:00:00, we ensure the date is parsed as UTC, avoiding timezone shifts.
+                const date = new Date(`${day.date}T00:00:00`);
                 if (!isNaN(date.getTime())) {
                     setFormattedDate(format(date, "MMMM do, yyyy"));
                 } else {

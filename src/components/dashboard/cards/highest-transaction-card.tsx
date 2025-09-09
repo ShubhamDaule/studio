@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 import type { Transaction } from "@/lib/types";
 import { format } from "date-fns";
-import { parseISO } from "date-fns";
 
 interface HighestTransactionCardProps {
     transaction: Transaction | null;
@@ -19,7 +18,8 @@ export function HighestTransactionCard({ transaction, onClick }: HighestTransact
     React.useEffect(() => {
         if (transaction?.date) {
              try {
-                const date = parseISO(transaction.date);
+                // By appending T00:00:00, we ensure the date is parsed as UTC, avoiding timezone shifts.
+                const date = new Date(`${transaction.date}T00:00:00`);
                 if (!isNaN(date.getTime())) {
                     setFormattedDate(format(date, "MMM dd, yyyy"));
                 } else {
