@@ -13,7 +13,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ArrowLeft, UploadCloud, Loader2, PartyPopper } from "lucide-react";
+import { ArrowLeft, Upload, FileText, BarChart3, Loader2, PartyPopper } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 export default function UploadPreviewPage() {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -55,7 +56,7 @@ export default function UploadPreviewPage() {
           </Button>
         </div>
 
-        <main className="w-full max-w-2xl mx-auto text-center">
+        <main className="w-full max-w-4xl mx-auto text-center">
           {isLoading ? (
             <div className="flex flex-col items-center gap-4">
               <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -66,25 +67,64 @@ export default function UploadPreviewPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-4xl font-bold mb-4">Upload Your Statement</h1>
-              <p className="text-lg text-muted-foreground mb-8">
-                Drop your PDF bank or credit card statement below to get started.
+              <h1 className="text-4xl font-bold mb-4">Transform Your Financial Data</h1>
+              <p className="text-lg text-muted-foreground mb-12 max-w-3xl mx-auto">
+                Upload your bank statements and get instant insights into your spending patterns,
+                categorized transactions, and detailed financial analysis.
               </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <Card className="text-center">
+                  <CardHeader>
+                    <div className="mx-auto bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
+                      <Upload className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Easy Upload</CardTitle>
+                    <CardDescription>Support for CSV, PDF, and Excel files from any bank</CardDescription>
+                  </CardHeader>
+                </Card>
+                <Card className="text-center">
+                   <CardHeader>
+                     <div className="mx-auto bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
+                      <FileText className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Smart Categorization</CardTitle>
+                    <CardDescription>AI-powered transaction categorization and insights</CardDescription>
+                  </CardHeader>
+                </Card>
+                <Card className="text-center">
+                   <CardHeader>
+                     <div className="mx-auto bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
+                      <BarChart3 className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Visual Analytics</CardTitle>
+                    <CardDescription>Beautiful charts and spending breakdowns</CardDescription>
+                  </CardHeader>
+                </Card>
+              </div>
+
               <div
-                className="relative w-full h-64 border-2 border-dashed border-muted-foreground/30 rounded-lg flex flex-col justify-center items-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                className="relative w-full p-8 border-2 border-dashed border-muted-foreground/30 rounded-lg flex flex-col justify-center items-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
               >
-                <UploadCloud className="w-16 h-16 text-muted-foreground/50 mb-4" />
-                <p className="font-semibold">Click to upload or drag & drop</p>
-                <p className="text-sm text-muted-foreground">PDF files only</p>
+                <div className="mb-4 bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
+                    <Upload className="w-6 h-6 text-primary" />
+                </div>
+                <h2 className="text-xl font-semibold mb-2">Upload Bank Statements</h2>
+                <p className="text-muted-foreground mb-1">Drag & drop your bank statements or click to browse</p>
+                <p className="text-xs text-muted-foreground mb-4">Supports CSV, PDF, XLS, and XLSX files (max 10MB each)</p>
+                
+                <Button variant="outline">Choose Files</Button>
+                
                 <input
                   type="file"
                   ref={fileInputRef}
                   className="hidden"
-                  accept=".pdf"
+                  accept=".pdf,.csv,.xls,.xlsx"
                   onChange={(e) => handleFileSelect(e.target.files)}
+                  multiple
                 />
               </div>
             </>
