@@ -112,7 +112,7 @@ export default function UploadPreviewPage() {
                 <div className="mb-4 bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
                     <Upload className="w-6 h-6 text-primary" />
                 </div>
-                <h2 className="text-xl font-semibold mb-2 text-primary">Upload Bank Statements</h2>
+                <h2 className="text-xl font-semibold mb-2">Upload Bank Statements</h2>
                 <p className="text-muted-foreground mb-1">Drag & drop your bank statements or click to browse</p>
                 <p className="text-xs text-muted-foreground mb-4">Supports PDF files (max 10MB each)</p>
                 
