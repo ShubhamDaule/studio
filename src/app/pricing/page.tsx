@@ -145,8 +145,8 @@ export default function Pricing() {
           </div>
         </section>
 
-        {/* Pricing plans section */}
-        <section className="py-12 md:py-16">
+        {/* Unified Pricing Plans & Token Packs section */}
+        <section className="py-12 md:py-16 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
               {plans.map((plan) => (
@@ -184,12 +184,9 @@ export default function Pricing() {
             <p className="text-xs text-muted-foreground mt-6 text-center sm:text-left">
               Prices in USD. You can change or cancel your plan anytime.
             </p>
-          </div>
-        </section>
-        
-        {/* Token packs section */}
-        <section className="py-12 md:py-16 bg-muted/30">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+
+             {/* Token Packs Sub-section */}
+             <div className="max-w-7xl mx-auto pt-16 md:pt-20 text-center">
                  <div className="flex justify-center mb-6">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                         <Zap className="w-7 h-7 text-primary" />
@@ -231,6 +228,7 @@ export default function Pricing() {
                     ))}
                 </div>
             </div>
+          </div>
         </section>
       </main>
     </div>
