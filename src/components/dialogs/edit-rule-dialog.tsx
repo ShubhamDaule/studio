@@ -59,7 +59,7 @@ export function EditRuleDialog({ isOpen, onClose }: Props) {
             </TabsList>
           </Tabs>
         </DialogHeader>
-        <div className="flex-1 grid grid-cols-2 gap-6 overflow-y-auto p-1">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto p-1">
             {/* Conditions Column */}
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg">If transaction matches criteria...</h3>
@@ -124,7 +124,7 @@ export function EditRuleDialog({ isOpen, onClose }: Props) {
 
                  <RuleSection title="Add tags" isEnabled={addTagsEnabled} onToggle={setAddTagsEnabled}>
                     <div className="flex items-center gap-2 p-2 border rounded-md bg-background">
-                         <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                         <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-1 rounded-full border border-yellow-200/50">
                             <span className="h-2 w-2 rounded-full bg-yellow-400"></span>
                             Subscription
                             <button className="ml-1 text-yellow-600 hover:text-yellow-800">
@@ -151,10 +151,10 @@ export function EditRuleDialog({ isOpen, onClose }: Props) {
             </div>
         </div>
         <div className="flex justify-between items-center pt-4 border-t">
-            <Button variant="destructive" className="bg-red-600 hover:bg-red-700">Delete</Button>
+            <Button variant="destructive">Delete</Button>
             <div className="flex items-center gap-2">
                 <Button variant="ghost" onClick={onClose}>Cancel</Button>
-                <Button className="bg-orange-500 hover:bg-orange-600 text-white">Save</Button>
+                <Button className="btn-gradient-base btn-hover-fade">Save</Button>
             </div>
         </div>
       </DialogContent>

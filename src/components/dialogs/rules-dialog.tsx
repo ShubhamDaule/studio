@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, ArrowRight, GripVertical, Landmark, Tag } from "lucide-react";
+import { Search, ArrowRight, GripVertical, Landmark } from "lucide-react";
 import { EditRuleDialog } from "./edit-rule-dialog";
 
 type Props = {
@@ -53,7 +53,7 @@ export function RulesDialog({ isOpen, onClose }: Props) {
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input placeholder="Search" className="pl-9 w-48" />
                       </div>
-                      <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setIsEditRuleDialogOpen(true)}>Create rule</Button>
+                      <Button className="btn-gradient-base btn-hover-fade" onClick={() => setIsEditRuleDialogOpen(true)}>Create rule</Button>
                   </div>
               </div>
 
@@ -62,25 +62,24 @@ export function RulesDialog({ isOpen, onClose }: Props) {
                 onClick={() => setIsEditRuleDialogOpen(true)}
               >
                   <div className="flex items-center gap-4">
+                      <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
                       {/* Conditions */}
                       <div className="flex-1 space-y-2">
-                          <div className="flex items-center gap-2">
-                              <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                          <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="text-sm font-medium">If</span>
                               <Badge variant="outline">merchant name</Badge>
-                              <Badge variant="outline">contains</Badge>
-                              <Badge variant="outline">monarch</Badge>
+                              <Badge variant="secondary">contains</Badge>
+                              <Badge variant="secondary">monarch</Badge>
                           </div>
-                           <div className="flex items-center gap-2">
-                              <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                           <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="text-sm font-medium">If</span>
                               <Badge variant="outline">expense</Badge>
-                              <Badge variant="outline">greater than</Badge>
-                              <Badge variant="outline">$0.00</Badge>
+                              <Badge variant="secondary">greater than</Badge>
+                              <Badge variant="secondary">$0.00</Badge>
                           </div>
                       </div>
 
-                      <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                      <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
 
                       {/* Actions */}
                       <div className="flex-1 space-y-3">
@@ -93,7 +92,7 @@ export function RulesDialog({ isOpen, onClose }: Props) {
                           </div>
                            <div>
                               <p className="text-sm text-muted-foreground mb-1">Add tag</p>
-                               <Badge variant="secondary" className="font-medium">
+                               <Badge variant="secondary" className="font-medium bg-yellow-100 text-yellow-800 border-yellow-200/50 hover:bg-yellow-100/80">
                                   <span className="h-2 w-2 rounded-full bg-yellow-400 mr-2"></span>
                                   Subscription
                               </Badge>
