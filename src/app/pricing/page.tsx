@@ -49,7 +49,6 @@ const plans = [
     features: [
       "All Pro features",
       "45 tokens renewed monthly",
-      "Store transactions permanently",
       "Export data to CSV",
       "Historical data tracking",
     ],
