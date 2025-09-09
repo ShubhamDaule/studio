@@ -80,7 +80,7 @@ export default function UploadPreviewPage() {
                       <Upload className="h-6 w-6 text-primary" />
                     </div>
                     <CardTitle>Easy Upload</CardTitle>
-                    <CardDescription>Support for CSV, PDF, and Excel files from any bank</CardDescription>
+                    <CardDescription>Securely upload your PDF bank statements.</CardDescription>
                   </CardHeader>
                 </Card>
                 <Card className="text-center">
@@ -114,7 +114,7 @@ export default function UploadPreviewPage() {
                 </div>
                 <h2 className="text-xl font-semibold mb-2">Upload Bank Statements</h2>
                 <p className="text-muted-foreground mb-1">Drag & drop your bank statements or click to browse</p>
-                <p className="text-xs text-muted-foreground mb-4">Supports CSV, PDF, XLS, and XLSX files (max 10MB each)</p>
+                <p className="text-xs text-muted-foreground mb-4">Supports PDF files (max 10MB each)</p>
                 
                 <Button variant="outline">Choose Files</Button>
                 
@@ -122,7 +122,7 @@ export default function UploadPreviewPage() {
                   type="file"
                   ref={fileInputRef}
                   className="hidden"
-                  accept=".pdf,.csv,.xls,.xlsx"
+                  accept=".pdf"
                   onChange={(e) => handleFileSelect(e.target.files)}
                   multiple
                 />
