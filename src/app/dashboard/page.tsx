@@ -13,9 +13,10 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { OverviewTab } from "@/app/dashboard/tabs/overview-tab";
 import { TransactionsTab } from "@/app/dashboard/tabs/transactions-tab";
 import { InsightsTab } from "@/app/dashboard/tabs/insights-tab";
+import { SavedTab } from "@/app/dashboard/tabs/saved-tab";
 import { useDashboardContext } from "@/context/dashboard-context";
 import type { TransactionFile } from "@/lib/types";
-import { LayoutGrid, List, Sparkles, Target, Trash } from "lucide-react";
+import { LayoutGrid, List, Sparkles, Target, Trash, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FilePill } from "@/components/dashboard/file-pill";
 import {
@@ -31,6 +32,8 @@ import {
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 import { ClassificationTransactionsDialog } from "@/components/dialogs/classification-transactions-dialog";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useTiers } from "@/hooks/use-tiers";
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
     const { 
@@ -45,6 +48,7 @@ export default function DashboardPage() {
         isUploading,
     } = useDashboardContext();
     
+    const { isPremium } = useTiers();
     const { toast } = useToast();
     const [fileToDelete, setFileToDelete] = React.useState<TransactionFile | null>(null);
 
@@ -110,7 +114,10 @@ export default function DashboardPage() {
                         </div>
                     )}
                     <Tabs defaultValue="overview" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4">
+                        <TabsList className={cn(
+                            "grid w-full",
+                            isPremium ? "grid-cols-5" : "grid-cols-4"
+                        )}>
                             <TabsTrigger value="overview">
                                 <LayoutGrid className="mr-2 h-4 w-4" />
                                 Overview
@@ -127,6 +134,12 @@ export default function DashboardPage() {
                                 <Target className="mr-2 h-4 w-4" />
                                 Budgeting
                             </TabsTrigger>
+                            {isPremium && (
+                                <TabsTrigger value="saved">
+                                    <History className="mr-2 h-4 w-4" />
+                                    Saved
+                                </TabsTrigger>
+                            )}
                         </TabsList>
                         <TabsContent value="overview" className="mt-4">
                             <OverviewTab 
@@ -142,6 +155,11 @@ export default function DashboardPage() {
                         <TabsContent value="budgeting" className="mt-4">
                             <BudgetingTab />
                         </TabsContent>
+                         {isPremium && (
+                            <TabsContent value="saved" className="mt-4">
+                                <SavedTab />
+                            </TabsContent>
+                        )}
                     </Tabs>
                 </main>
                 
