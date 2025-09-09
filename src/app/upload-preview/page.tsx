@@ -79,7 +79,7 @@ export default function UploadPreviewPage() {
                     <div className="mx-auto bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
                       <Upload className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle className="font-medium">Easy Upload</CardTitle>
+                    <CardTitle className="font-bold text-lg">Easy Upload</CardTitle>
                     <CardDescription>Securely upload your bank statements. Only PDF files are supported.</CardDescription>
                   </CardHeader>
                 </Card>
@@ -88,7 +88,7 @@ export default function UploadPreviewPage() {
                      <div className="mx-auto bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
                       <FileText className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle className="font-medium">Smart Categorization</CardTitle>
+                    <CardTitle className="font-bold text-lg">Smart Categorization</CardTitle>
                     <CardDescription>AI-powered transaction categorization and insights</CardDescription>
                   </CardHeader>
                 </Card>
@@ -97,7 +97,7 @@ export default function UploadPreviewPage() {
                      <div className="mx-auto bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
                       <BarChart3 className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle className="font-medium">Visual Analytics</CardTitle>
+                    <CardTitle className="font-bold text-lg">Visual Analytics</CardTitle>
                     <CardDescription>Beautiful charts and spending breakdowns</CardDescription>
                   </CardHeader>
                 </Card>
