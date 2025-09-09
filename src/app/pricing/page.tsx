@@ -37,7 +37,7 @@ const plans = [
       "Unlimited file uploads",
       "AI-powered Insights & Anomaly Detection",
       "Advanced Budgeting tools",
-      "Email support",
+      "Advanced data visualizations",
     ],
   },
   {
@@ -51,7 +51,7 @@ const plans = [
       "45 tokens renewed monthly",
       "Store transactions permanently",
       "Export data to CSV",
-      "Priority support",
+      "Historical data tracking",
     ],
   },
 ] as const;
