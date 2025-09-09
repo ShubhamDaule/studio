@@ -11,34 +11,38 @@ import { useToast } from "@/hooks/use-toast";
 
 const tokenPacks = [
   {
-    name: "10 Tokens",
+    name: "Starter Pack",
+    tokens: 10,
     price: 3.5,
-    description: "The Starter Pack",
-    features: ["$0.35 per token", "Tokens never expire", "Instant activation"],
+    description: "$0.35 per token",
+    features: ["Tokens never expire", "Instant activation"],
     highlight: false,
     saveAmount: null,
   },
   {
-    name: "25 Tokens",
+    name: "Booster Pack",
+    tokens: 25,
     price: 8.5,
-    description: "The Booster Pack",
-    features: ["$0.34 per token", "Tokens never expire", "Instant activation"],
+    description: "$0.34 per token",
+    features: ["Tokens never expire", "Instant activation"],
     highlight: false,
     saveAmount: 0.25,
   },
   {
-    name: "50 Tokens",
+    name: "Power Pack",
+    tokens: 50,
     price: 15.5,
-    description: "The Power Pack",
-    features: ["$0.31 per token", "Tokens never expire", "Instant activation"],
+    description: "$0.31 per token",
+    features: ["Tokens never expire", "Instant activation"],
     highlight: false,
     saveAmount: 2.0,
   },
   {
-    name: "100 Tokens",
+    name: "Ultimate Bundle",
+    tokens: 100,
     price: 28.0,
-    description: "The Ultimate Bundle",
-    features: ["$0.28 per token", "Tokens never expire", "Instant activation"],
+    description: "$0.28 per token",
+    features: ["Tokens never expire", "Instant activation"],
     highlight: true,
     saveAmount: 7.0,
   },
@@ -50,7 +54,7 @@ export default function TokensPage() {
     const handlePurchase = (packName: string) => {
         toast({
             title: "Purchase Successful!",
-            description: `You have successfully purchased the ${packName} pack.`,
+            description: `You have successfully purchased the ${packName}.`,
         });
     }
 
@@ -85,16 +89,16 @@ export default function TokensPage() {
                             pack.highlight && "ring-2 ring-primary shadow-lg"
                         )}>
                             <CardHeader className="text-center">
-                                {pack.saveAmount && (
+                                {pack.highlight && (
                                     <div className="flex justify-center">
-                                        <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
-                                            Save ${pack.saveAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                                            Best Value
                                         </Badge>
                                     </div>
                                 )}
                                 <CardTitle className="text-2xl pt-2">{pack.name}</CardTitle>
                                 <p className="text-4xl font-bold">${pack.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-sm font-normal text-muted-foreground ml-1">one-time</span></p>
-                                <CardDescription>{pack.description}</CardDescription>
+                                <CardDescription>{pack.tokens} Tokens &bull; {pack.description}</CardDescription>
                             </CardHeader>
                             <CardContent className="flex-1 flex flex-col space-y-4">
                                 <ul className="space-y-3 pt-2 flex-1">
@@ -109,8 +113,10 @@ export default function TokensPage() {
                             <CardFooter>
                                 <Button 
                                     onClick={() => handlePurchase(pack.name)}
-                                    className={cn("w-full h-11", !pack.highlight && "btn-outline-primary")}
-                                    variant={pack.highlight ? "default" : "outline"}
+                                    className={cn(
+                                        "w-full h-11",
+                                        pack.highlight ? "btn-gradient-base btn-hover-fade" : "btn-outline-primary"
+                                     )}
                                 >
                                   Purchase Tokens
                                 </Button>
