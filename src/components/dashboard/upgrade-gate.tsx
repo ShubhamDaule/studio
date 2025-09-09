@@ -30,7 +30,7 @@ export function UpgradeGate({ children, requiredTier }: UpgradeGateProps) {
       <TooltipTrigger asChild>
         <div className="relative w-full h-full">
             {React.cloneElement(childElement, {
-                className: cn(childElement.props.className, "blur-sm pointer-events-none opacity-60"),
+                className: cn(childElement.props.className, "blur-md pointer-events-none opacity-60"),
                 disabled: true
             })}
           <div className="absolute inset-0 flex items-center justify-center bg-background/30 rounded-lg">
