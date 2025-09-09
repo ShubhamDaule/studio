@@ -17,7 +17,7 @@ import { Sparkles, Bot, Loader2, type LucideIcon, RefreshCcw, icons } from "luci
 import { FinancialCoach } from "../../characters/financial-coach";
 import { getAIInsights } from "@/lib/actions";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
+import { useTiers, calculateAppTokens, MINIMUM_TOKEN_CHARGE } from "@/hooks/use-tiers";
 import { estimateTokens } from "@/lib/tokens";
 
 interface FinancialCoachCardProps {
@@ -53,7 +53,9 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
   
   const estimatedTokens = React.useMemo(() => {
     const apiTokens = estimateTokens(JSON.stringify(transactions));
-    return calculateAppTokens(apiTokens);
+    const appTokens = calculateAppTokens(apiTokens);
+    // Enforce minimum token display if there's any usage
+    return appTokens > 0 ? Math.max(appTokens, MINIMUM_TOKEN_CHARGE) : 0;
   }, [transactions]);
 
   const handleGenerateInsights = async () => {
@@ -142,7 +144,7 @@ export function FinancialCoachCard({ transactions }: FinancialCoachCardProps) {
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? "Generating Advice..." : insights ? `Try Again (${estimatedTokens.toFixed(1)} Token${estimatedTokens > 1 ? 's' : ''})` : `Ask Your Coach (${estimatedTokens.toFixed(1)} Token${estimatedTokens > 1 ? 's' : ''})`}
+          {isLoading ? "Generating Advice..." : insights ? `Try Again (${estimatedTokens.toFixed(1)} Token${estimatedTokens !== 1 ? 's' : ''})` : `Ask Your Coach (${estimatedTokens.toFixed(1)} Token${estimatedTokens !== 1 ? 's' : ''})`}
         </Button>
       </CardFooter>
     </Card>

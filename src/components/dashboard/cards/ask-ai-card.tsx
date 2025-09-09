@@ -18,7 +18,7 @@ import { Sparkles, Loader2, BrainCircuit } from "lucide-react";
 import { AskAiCharacter } from "../../characters/ask-ai-character";
 import { getAiQueryResponse } from "@/lib/actions";
 import { DynamicChart } from "@/components/dashboard/charts/dynamic-chart";
-import { useTiers, calculateAppTokens } from "@/hooks/use-tiers";
+import { useTiers, calculateAppTokens, MINIMUM_TOKEN_CHARGE } from "@/hooks/use-tiers";
 import { estimateTokens } from "@/lib/tokens";
 
 interface AskAiCardProps {
@@ -40,7 +40,9 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
       budgets,
     }
     const apiTokens = estimateTokens(JSON.stringify(usage));
-    return calculateAppTokens(apiTokens);
+    const appTokens = calculateAppTokens(apiTokens);
+    // Enforce minimum token display if there's any usage
+    return appTokens > 0 ? Math.max(appTokens, MINIMUM_TOKEN_CHARGE) : 0;
   }, [query, transactions, budgets]);
   
   const handleQuery = async () => {
@@ -141,7 +143,7 @@ export function AskAiCard({ transactions, budgets }: AskAiCardProps) {
           ): (
              <Sparkles className="mr-2 h-4 w-4" />
           )}
-         {isLoading ? "Thinking..." : `Ask AI (${estimatedTokens.toFixed(1)} Token${estimatedTokens > 1 ? 's' : ''})`}
+         {isLoading ? "Thinking..." : `Ask AI (${estimatedTokens.toFixed(1)} Token${estimatedTokens !== 1 ? 's' : ''})`}
         </Button>
       </CardFooter>
     </Card>

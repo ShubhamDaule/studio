@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, ReactNode, useCallback, use
 import { useToast } from './use-toast';
 
 const TOKENS_PER_APP_TOKEN = 2000;
-const MINIMUM_TOKEN_CHARGE = 2.0;
+export const MINIMUM_TOKEN_CHARGE = 2.0;
 
 export const calculateAppTokens = (apiTokens: number): number => {
   if (apiTokens <= 0) return 0;
