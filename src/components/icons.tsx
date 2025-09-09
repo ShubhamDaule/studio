@@ -27,7 +27,8 @@ import {
   Library,
   GraduationCap,
   Shield,
-  Briefcase
+  Briefcase,
+  Crown
 } from 'lucide-react';
 import type { Category } from "@/lib/types";
 

@@ -6,8 +6,9 @@ import Link from "next/link";
 import { useTiers } from "@/hooks/use-tiers";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Lock, Star } from "lucide-react";
+import { Lock, Star, Crown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Card } from "../ui/card";
 
 type UpgradeGateProps = {
   children: React.ReactNode;
@@ -57,26 +58,20 @@ export function UpgradeGate({ children, requiredTier, type }: UpgradeGateProps) 
 
   // Card type
   return (
-    <div className="relative w-full h-full overflow-hidden rounded-lg border">
-        {React.cloneElement(childElement, {
-            className: cn(childElement.props.className, "blur-lg pointer-events-none opacity-50"),
-            disabled: true
-        })}
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 text-center p-4">
-        <div className="flex items-center gap-2 font-semibold text-lg mb-2">
-            <Lock className="h-5 w-5 text-primary" />
-            <span>{requiredTier}+ Feature</span>
+    <Card className="h-full flex flex-col items-center justify-center text-center p-4 bg-orange-50/50 border-orange-200/80">
+        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-orange-100">
+            <Crown className="h-6 w-6 text-orange-500" />
         </div>
-        <p className="text-sm text-muted-foreground mb-4">
-            Upgrade to the {requiredTier} plan to unlock this chart.
+        <p className="font-semibold text-lg text-orange-900">Pro+ Feature</p>
+        <p className="text-sm text-orange-800/80 mb-4 max-w-xs">
+            Upgrade to the Pro plan to unlock this chart.
         </p>
-        <Button asChild size="sm" className="btn-gradient-base btn-hover-fade">
+        <Button asChild size="sm" className="bg-green-600 hover:bg-green-700 text-white">
             <Link href="/pricing">
-                <Star className="mr-2 h-4 w-4" />
-                Upgrade to {requiredTier}
+                <Crown className="mr-2 h-4 w-4" />
+                Upgrade to Pro
             </Link>
         </Button>
-      </div>
-    </div>
+    </Card>
   );
 }
