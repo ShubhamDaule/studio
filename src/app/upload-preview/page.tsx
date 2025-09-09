@@ -79,8 +79,8 @@ export default function UploadPreviewPage() {
                     <div className="mx-auto bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
                       <Upload className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle>Easy Upload</CardTitle>
-                    <CardDescription>Securely upload your PDF bank statements.</CardDescription>
+                    <CardTitle className="font-medium">Easy Upload</CardTitle>
+                    <CardDescription>Securely upload your bank statements. Only PDF files are supported.</CardDescription>
                   </CardHeader>
                 </Card>
                 <Card className="text-center">
@@ -88,7 +88,7 @@ export default function UploadPreviewPage() {
                      <div className="mx-auto bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
                       <FileText className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle>Smart Categorization</CardTitle>
+                    <CardTitle className="font-medium">Smart Categorization</CardTitle>
                     <CardDescription>AI-powered transaction categorization and insights</CardDescription>
                   </CardHeader>
                 </Card>
@@ -97,7 +97,7 @@ export default function UploadPreviewPage() {
                      <div className="mx-auto bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
                       <BarChart3 className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle>Visual Analytics</CardTitle>
+                    <CardTitle className="font-medium">Visual Analytics</CardTitle>
                     <CardDescription>Beautiful charts and spending breakdowns</CardDescription>
                   </CardHeader>
                 </Card>
@@ -112,7 +112,7 @@ export default function UploadPreviewPage() {
                 <div className="mb-4 bg-primary/10 rounded-full h-12 w-12 flex items-center justify-center">
                     <Upload className="w-6 h-6 text-primary" />
                 </div>
-                <h2 className="text-xl font-semibold mb-2">Upload Bank Statements</h2>
+                <h2 className="text-xl font-semibold mb-2 text-primary">Upload Bank Statements</h2>
                 <p className="text-muted-foreground mb-1">Drag & drop your bank statements or click to browse</p>
                 <p className="text-xs text-muted-foreground mb-4">Supports PDF files (max 10MB each)</p>
                 
