@@ -8,15 +8,18 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Lock, Star, Crown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Card, CardContent } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 
 type UpgradeGateProps = {
   children: React.ReactNode;
   requiredTier: "Pro" | "Premium";
   type: "tab" | "card";
+  title?: string;
+  description?: string;
+  icon?: React.ReactNode;
 };
 
-export function UpgradeGate({ children, requiredTier, type }: UpgradeGateProps) {
+export function UpgradeGate({ children, requiredTier, type, title, description, icon }: UpgradeGateProps) {
   const { isPro, isPremium } = useTiers();
 
   const hasAccess = requiredTier === "Pro" ? isPro : isPremium;
@@ -57,17 +60,17 @@ export function UpgradeGate({ children, requiredTier, type }: UpgradeGateProps) 
   }
 
   // Card type
-  const cardHeader = React.Children.map(childElement.props.children, child => {
-    // The displayName for CardHeader is "CardHeader"
-    if (React.isValidElement(child) && (child.type as any).displayName === 'CardHeader') {
-        return child;
-    }
-    return null;
-  });
-
   return (
     <Card className="h-full flex flex-col bg-muted/30">
-        {cardHeader}
+        {title && (
+             <CardHeader>
+                <CardTitle className='flex items-center gap-2'>
+                    {icon}
+                    {title}
+                </CardTitle>
+                {description && <CardDescription>{description}</CardDescription>}
+            </CardHeader>
+        )}
         <CardContent className="flex-1 flex flex-col items-center justify-center text-center p-4">
              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
                 <Crown className="h-6 w-6 text-orange-500" />

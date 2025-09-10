@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Wallet, ReceiptText} from "lucide-react";
+import { Wallet, ReceiptText, Target, Repeat, AreaChart as AreaChartIcon } from "lucide-react";
 import { SpendingChart } from "@/components/dashboard/charts/spending-chart";
 import { SpendingByDayChart } from "@/components/dashboard/charts/spending-by-day-chart";
 import { SpendingBySourceChart } from "@/components/dashboard/charts/spending-by-source-chart";
@@ -101,20 +101,44 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             
             {/* Row 3 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                <UpgradeGate requiredTier="Pro" type="card">
+                <UpgradeGate 
+                    requiredTier="Pro" 
+                    type="card" 
+                    title="Needs vs. Wants" 
+                    description="How your spending is classified."
+                    icon={<Target className="h-6 w-6" />}
+                >
                     <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
                 </UpgradeGate>
-                <UpgradeGate requiredTier="Pro" type="card">
+                <UpgradeGate 
+                    requiredTier="Pro" 
+                    type="card"
+                    title="Recurring Subscriptions"
+                    description="A summary of your detected monthly and yearly subscriptions."
+                    icon={<Repeat className="h-6 w-6" />}
+                >
                     <SubscriptionsCard transactions={filteredTransactions} />
                 </UpgradeGate>
             </div>
             
             {/* Row 4 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                 <UpgradeGate requiredTier="Pro" type="card">
+                 <UpgradeGate 
+                    requiredTier="Pro" 
+                    type="card"
+                    title="Spending vs. Budget"
+                    description="How your spending compares to your set budgets."
+                    icon={<Target className="h-6 w-6" />}
+                 >
                     <BudgetSpendingChart transactions={filteredTransactions} budgets={budgets} allCategories={allCategories} />
                 </UpgradeGate>
-                <UpgradeGate requiredTier="Pro" type="card">
+                <UpgradeGate 
+                    requiredTier="Pro" 
+                    type="card"
+                    title="Spending Trend"
+                    description="A month-over-month view of your spending habits."
+                    icon={<AreaChartIcon className="h-6 w-6" />}
+                >
                      <SpendingTrendChart transactions={allTransactions} />
                 </UpgradeGate>
             </div>
