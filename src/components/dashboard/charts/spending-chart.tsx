@@ -104,7 +104,7 @@ export function SpendingChart({ transactions, onPieClick, onExpand, budgets, all
   }
 
   return (
-    <Card className="flex flex-col h-full card-interactive group" onClick={() => onPieClick({ category: 'all' })}>
+    <Card className="flex flex-col h-full card-interactive group">
       <ChartCardHeader 
         title="Spending Breakdown"
         description="Monthly spending by category. Click a slice for details."
