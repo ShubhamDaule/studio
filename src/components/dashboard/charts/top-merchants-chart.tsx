@@ -75,9 +75,9 @@ export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChar
   };
 
   return (
-    <Card className="flex flex-col h-full card-interactive group">
+    <Card className="flex flex-col h-full">
       <CardHeader>
-        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+        <CardTitle className='flex items-center gap-2'>
             <TopMerchantIcon className="h-6 w-6" />
             Top 5 Merchants
         </CardTitle>
@@ -88,7 +88,7 @@ export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChar
           <BarChart
             data={aggregatedData}
             layout="vertical"
-            margin={{ top: 5, left: 10, right: 40, bottom: 5 }}
+            margin={{ top: 5, left: -10, right: 40, bottom: 5 }}
             onMouseMove={(state) => {
                 if (state.isTooltipActive) {
                     setHoveredBar(state.activeLabel || null);
@@ -104,7 +104,6 @@ export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChar
               tickLine={false}
               axisLine={false}
               tickMargin={10}
-              width={100} // Increased width for longer labels
               tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
               tickFormatter={(value) => truncate(value, 15)} // Truncate labels
             />
