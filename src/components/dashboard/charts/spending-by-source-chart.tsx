@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from 'react';
-import { Treemap, ResponsiveContainer, Rectangle } from 'recharts';
+import { Treemap, ResponsiveContainer, Rectangle, Cell } from 'recharts';
 import {
   Card,
   CardContent,
@@ -21,7 +21,7 @@ import { getStableColor } from '@/lib/colors';
 
 // A custom component to render each cell of the treemap with styling
 const CustomizedContent = (props: any) => {
-  const { root, depth, x, y, width, height, index, name, value, isHovered, color } = props;
+  const { depth, x, y, width, height, name, value, isHovered, color } = props;
   const isParent = depth === 0;
   const textColor = isParent ? 'text-white' : 'text-white/80';
   const textShadow = 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]';
@@ -35,7 +35,7 @@ const CustomizedContent = (props: any) => {
         height={height}
         className={cn(
             "stroke-background stroke-2 transition-all duration-300 ease-in-out cursor-pointer",
-            isHovered ? 'opacity-100 scale-[1.01]' : ''
+            isHovered ? 'scale-[1.01]' : ''
         )}
         style={{
             fill: color,
