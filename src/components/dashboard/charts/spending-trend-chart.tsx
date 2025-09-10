@@ -16,6 +16,7 @@ import type { Transaction } from '@/lib/types';
 import { format, startOfMonth, parseISO } from 'date-fns';
 import { AreaChart as AreaChartIcon } from 'lucide-react';
 import { ChartCardHeader } from './chart-card-header';
+import { getStableColor } from '@/lib/colors';
 
 interface SpendingTrendChartProps {
   transactions: Transaction[];
@@ -25,7 +26,7 @@ interface SpendingTrendChartProps {
 const chartConfig = {
   amount: {
     label: "Amount",
-    color: "hsl(var(--chart-1))",
+    color: getStableColor("monthly_spending"),
   },
 } satisfies ChartConfig;
 

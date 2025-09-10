@@ -15,6 +15,7 @@ import {
 import type { Transaction, Budget, Category } from '@/lib/types';
 import { PieChart as PieChartIcon } from 'lucide-react';
 import { ChartCardHeader } from './chart-card-header';
+import { getStableColor } from '@/lib/colors';
 
 const chartConfigBase = {
   amount: {
@@ -65,9 +66,9 @@ export function SpendingChart({ transactions, onPieClick, onExpand, budgets, all
     const dynamicChartConfig: ChartConfig = { ...chartConfigBase };
     const sortedCategories = Object.entries(categoryTotals).sort((a,b) => b[1] - a[1]);
     
-    const aggregated = sortedCategories.map(([category, amount], index) => {
+    const aggregated = sortedCategories.map(([category, amount]) => {
         const key = category.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        const color = `hsl(var(--chart-${(index % 5) + 1}))`;
+        const color = getStableColor(category);
         
         dynamicChartConfig[key] = {
             label: category,

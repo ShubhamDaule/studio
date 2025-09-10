@@ -16,6 +16,7 @@ import type { Transaction } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
 import { BarChart3 } from 'lucide-react';
 import { ChartCardHeader } from './chart-card-header';
+import { getStableColor } from '@/lib/colors';
 
 interface SpendingByDayChartProps {
   transactions: Transaction[];
@@ -26,7 +27,7 @@ interface SpendingByDayChartProps {
 const chartConfig = {
   amount: {
     label: "Amount",
-    color: "hsl(var(--chart-1))",
+    color: getStableColor("daily_spending"),
   },
 } satisfies ChartConfig;
 

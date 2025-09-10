@@ -15,10 +15,11 @@ import type { Transaction } from '@/lib/types';
 import { Banknote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ChartCardHeader } from './chart-card-header';
+import { getStableColor } from '@/lib/colors';
 
 // A custom component to render each cell of the treemap with styling
 const CustomizedContent = (props: any) => {
-  const { root, depth, x, y, width, height, index, name, value, onPieClick, isHovered } = props;
+  const { root, depth, x, y, width, height, index, name, value, onPieClick, isHovered, color } = props;
   const isParent = depth === 0;
   const textColor = isParent ? 'text-white' : 'text-white/80';
   const textShadow = 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]';
@@ -36,7 +37,7 @@ const CustomizedContent = (props: any) => {
             isHovered ? 'opacity-100 scale-[1.01]' : 'opacity-80'
         )}
         style={{
-            fill: `hsl(var(--chart-${(index % 5) + 1}))`,
+            fill: color,
             transformOrigin: `${x + width/2}px ${y + height/2}px`,
         }}
         radius={4}
@@ -71,6 +72,7 @@ export function SpendingBySourceChart({ transactions, onPieClick, onExpand }: { 
             .map(([source, amount]) => ({
                 name: source,
                 size: amount, // Treemap uses 'size' instead of 'amount' or 'value'
+                color: getStableColor(source)
             }))
             .sort((a, b) => b.size - a.size);
     }, [transactions]);

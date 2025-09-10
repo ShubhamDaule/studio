@@ -4,15 +4,8 @@
 import * as React from 'react';
 import { Pie, PieChart, Bar, BarChart, XAxis, YAxis, Tooltip, Cell, Legend, ResponsiveContainer } from 'recharts';
 import type { ChartData } from '@/lib/types';
+import { getStableColor } from '@/lib/colors';
 
-interface DynamicChartProps {
-    chartData: ChartData;
-}
-
-const chartColors = [
-  "hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))", "hsl(var(--chart-5))"
-];
 
 const formatCurrency = (value: number) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -25,7 +18,7 @@ export function DynamicChart({ chartData }: DynamicChartProps) {
                         <Tooltip formatter={(value) => formatCurrency(value as number)} />
                         <Pie data={chartData.data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8">
                             {chartData.data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
+                                <Cell key={`cell-${index}`} fill={getStableColor(entry.name)} />
                             ))}
                         </Pie>
                         <Legend />
@@ -45,7 +38,7 @@ export function DynamicChart({ chartData }: DynamicChartProps) {
                         <Tooltip formatter={(value) => formatCurrency(value as number)} />
                         <Bar dataKey="value" fill="#8884d8">
                             {chartData.data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
+                                <Cell key={`cell-${index}`} fill={getStableColor(entry.name)} />
                             ))}
                         </Bar>
                     </BarChart>

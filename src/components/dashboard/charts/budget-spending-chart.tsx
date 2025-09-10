@@ -15,6 +15,7 @@ import {
 import type { Transaction, Budget, Category } from '@/lib/types';
 import { Target } from 'lucide-react';
 import { ChartCardHeader } from './chart-card-header';
+import { getStableColor } from '@/lib/colors';
 
 interface BudgetSpendingChartProps {
   transactions: Transaction[];
@@ -26,11 +27,11 @@ interface BudgetSpendingChartProps {
 const chartConfig = {
   spent: {
     label: "Spent",
-    color: "hsl(var(--chart-1))",
+    color: getStableColor("Spent"),
   },
   budget: {
     label: "Budget",
-    color: "hsl(var(--chart-2))",
+    color: getStableColor("Budget"),
   },
 } satisfies ChartConfig;
 

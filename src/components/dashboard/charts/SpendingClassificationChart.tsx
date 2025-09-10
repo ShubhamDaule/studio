@@ -15,6 +15,7 @@ import {
 import type { Transaction } from '@/lib/types';
 import { Target } from 'lucide-react';
 import { ChartCardHeader } from './chart-card-header';
+import { getStableColor } from '@/lib/colors';
 
 // Define the classification of each category
 export const categoryClassification: { [key: string]: 'Needs' | 'Wants' | 'Savings & Other' } = {
@@ -41,8 +42,8 @@ export const categoryClassification: { [key: string]: 'Needs' | 'Wants' | 'Savin
 };
 
 const chartConfig = {
-  Needs: { label: 'Needs', color: 'hsl(var(--chart-1))' },
-  Wants: { label: 'Wants', color: 'hsl(var(--chart-2))' },
+  Needs: { label: 'Needs', color: getStableColor('Needs') },
+  Wants: { label: 'Wants', color: getStableColor('Wants') },
 } satisfies ChartConfig;
 
 const renderActiveShape = (props: any) => {
@@ -99,7 +100,7 @@ export function SpendingClassificationChart({ transactions, onClick, onExpand }:
       }, {} as Record<string, number>);
 
     return Object.entries(spending)
-        .map(([name, value]) => ({ name, value, fill: `var(--color-${name})` }))
+        .map(([name, value]) => ({ name, value, fill: getStableColor(name) }))
         .sort((a,b) => b.value - a.value);
   }, [transactions]);
 
