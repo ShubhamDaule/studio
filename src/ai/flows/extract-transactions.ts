@@ -56,7 +56,7 @@ function detectBankAndStatementType(text: string): StatementInfo {
     'Amex': ['american express', 'amex'],
     'Bank of America': ['bank of america'],
     'Wells Fargo': ['wells fargo'],
-    'Citi': ['citi'],
+    'Citi': ['citi', 'citibank'],
     'Capital One': ['capital one'],
     'U.S. Bank': ['u.s. bank', 'us bank'],
     'PNC Bank': ['pnc bank', 'pnc'],
@@ -84,9 +84,9 @@ function detectBankAndStatementType(text: string): StatementInfo {
   let bankName: BankName = detectedBank;
 
   let statementType: StatementType = 'Unknown';
-  if (['available credit', 'minimum payment', 'credit line', 'card account'].some(k => lowerText.includes(k))) {
+  if (['available credit', 'minimum payment', 'credit line', 'card account', 'credit card'].some(k => lowerText.includes(k))) {
     statementType = 'Credit Card';
-  } else if (['checking', 'savings', 'deposits'].some(k => lowerText.includes(k))) {
+  } else if (['checking', 'savings', 'deposits', 'bank account'].some(k => lowerText.includes(k))) {
     statementType = 'Bank Account';
   }
 
@@ -338,7 +338,3 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
         processedText,
     };
 }
-
-    
-
-    
