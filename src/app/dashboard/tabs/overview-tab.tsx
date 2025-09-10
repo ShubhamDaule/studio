@@ -18,6 +18,7 @@ import { useBudgets } from "@/hooks/useBudgets";
 import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SubscriptionsCard } from "@/components/dashboard/cards/subscriptions-card";
+import { useTiers } from "@/hooks/use-tiers";
 
 // Props for the OverviewTab component, including a function to open dialogs.
 type OverviewTabProps = {
@@ -52,6 +53,7 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
         allCategories,
         dateRange,
     } = useDashboardContext();
+    const { isPro } = useTiers();
 
     // Use the budgets hook to get budget data relevant to the current view.
     const { activeBudgets } = useBudgets({ allCategories, transactions: filteredTransactions, dateRange });
