@@ -49,18 +49,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const renderActiveShape = (props: any) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
-  const RADIAN = Math.PI / 180;
-  const sin = Math.sin(-RADIAN * props.midAngle);
-  const cos = Math.cos(-RADIAN * props.midAngle);
-  const sx = cx + (outerRadius + 10) * cos;
-  const sy = cy + (outerRadius + 10) * sin;
-  const mx = cx + (outerRadius + 30) * cos;
-  const my = cy + (outerRadius + 30) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
-  const ey = my;
-  const textAnchor = cos >= 0 ? 'start' : 'end';
-
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
   return (
     <g>
       <Sector
@@ -73,21 +62,15 @@ const renderActiveShape = (props: any) => {
         fill={fill}
         className="drop-shadow-lg"
       />
-      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
-      <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-sm font-semibold">{payload.name}</text>
-      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="hsl(var(--muted-foreground))" className="text-xs">
-        {`$${value.toFixed(2)} (${(percent * 100).toFixed(0)}%)`}
-      </text>
     </g>
   );
 };
 
 
 export function SpendingClassificationChart({ transactions, onClick }: { transactions: Transaction[], onClick: (data: any) => void }) {
-  const [activeIndex, setActiveIndex] = React.useState<number | undefined>(0);
+  const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
 
-  const aggregatedData = React.useMemo(() => {
+  const { aggregatedData, totalSpending } = React.useMemo(() => {
     const spending = transactions
       .filter(t => {
         const classification = categoryClassification[t.category];
@@ -101,9 +84,13 @@ export function SpendingClassificationChart({ transactions, onClick }: { transac
         return acc;
       }, {} as Record<string, number>);
 
-    return Object.entries(spending)
+    const data = Object.entries(spending)
         .map(([name, value]) => ({ name, value, fill: getStableColor(name) }))
         .sort((a,b) => b.value - a.value);
+
+    const total = data.reduce((acc, item) => acc + item.value, 0);
+
+    return { aggregatedData: data, totalSpending: total };
   }, [transactions]);
 
   const onPieEnter = (_: any, index: number) => {
@@ -115,6 +102,11 @@ export function SpendingClassificationChart({ transactions, onClick }: { transac
   };
   
   const formatCurrency = (value: number) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  
+  const tooltipFormatter = (value: number) => {
+    const percentage = totalSpending > 0 ? ((value / totalSpending) * 100).toFixed(1) : 0;
+    return `${formatCurrency(value)} (${percentage}%)`;
+  }
 
   if (aggregatedData.length === 0) {
     return (
@@ -145,12 +137,18 @@ export function SpendingClassificationChart({ transactions, onClick }: { transac
       <CardContent className="flex-1 pb-0 pt-6">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px]"
+          className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px] relative"
         >
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <p className="text-xs text-muted-foreground">Total (N/W)</p>
+              <p className="text-2xl font-bold">
+                  {totalSpending.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </p>
+          </div>
           <PieChart>
             <Tooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel formatter={(value) => formatCurrency(value as number)} />}
+              content={<ChartTooltipContent formatter={tooltipFormatter} hideLabel />}
             />
             <Pie
               activeIndex={activeIndex}
@@ -158,7 +156,8 @@ export function SpendingClassificationChart({ transactions, onClick }: { transac
               data={aggregatedData}
               dataKey="value"
               nameKey="name"
-              innerRadius="35%"
+              innerRadius="65%"
+              outerRadius="100%"
               strokeWidth={2}
               onMouseEnter={onPieEnter}
               onMouseLeave={onPieLeave}
