@@ -8,6 +8,7 @@ import { AskAiCard } from "@/components/dashboard/cards/ask-ai-card";
 import { useDashboardContext } from "@/context/dashboard-context";
 import { useBudgets } from "@/hooks/useBudgets";
 import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
+import { BrainCircuit } from "lucide-react";
 
 /**
  * Renders the "AI Insights" tab in the dashboard.
@@ -32,7 +33,13 @@ export function InsightsTab() {
             {/* Card for detecting unusual spending patterns */}
             <AnomaliesCard transactions={spendingTransactions} />
             {/* Card for asking natural language questions about financial data */}
-            <UpgradeGate requiredTier="Pro" type="card">
+            <UpgradeGate 
+                requiredTier="Pro" 
+                type="card"
+                title="Ask AI"
+                description="Ask questions about your finances in plain English."
+                icon={<BrainCircuit className="h-6 w-6" />}
+            >
                 <AskAiCard transactions={allTransactions} budgets={activeBudgets} />
             </UpgradeGate>
         </div>
