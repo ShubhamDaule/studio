@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/chart";
 import type { Transaction } from '@/lib/types';
 import { TopMerchantIcon } from '../../icons';
-import { getStableColor } from '@/lib/colors';
 
 interface TopMerchantsChartProps {
   transactions: Transaction[];
@@ -27,7 +26,7 @@ interface TopMerchantsChartProps {
 const chartConfig = {
   amount: {
     label: "Amount",
-    color: getStableColor("top_merchants"),
+    color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
 

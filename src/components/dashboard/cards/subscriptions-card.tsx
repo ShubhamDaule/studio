@@ -29,7 +29,7 @@ export function SubscriptionsCard({ transactions }: SubscriptionsCardProps) {
     <Card className="flex flex-col h-full card-interactive group">
       <CardHeader>
         <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-            <Repeat className="h-6 w-6" />
+            <Repeat className="h-6 w-6 text-primary" />
             Recurring Subscriptions
         </CardTitle>
         <CardDescription>A summary of your detected monthly and yearly subscriptions.</CardDescription>
