@@ -67,7 +67,7 @@ export function SpendingChart({ transactions, onPieClick, onExpand, budgets, all
     
     const aggregated = sortedCategories.map(([category, amount], index) => {
         const key = category.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        const color = `hsl(${(index * 40 + 20) % 360}, 70%, 50%)`;
+        const color = `hsl(var(--chart-${(index % 5) + 1}))`;
         
         dynamicChartConfig[key] = {
             label: category,
@@ -77,7 +77,7 @@ export function SpendingChart({ transactions, onPieClick, onExpand, budgets, all
         return {
             name: category,
             value: amount,
-            fill: `var(--color-${key})`,
+            fill: color,
             key
         }
       });
@@ -114,8 +114,14 @@ export function SpendingChart({ transactions, onPieClick, onExpand, budgets, all
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px]"
+          className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px] relative"
         >
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-xs text-muted-foreground">Total Spent</p>
+                <p className="text-2xl font-bold">
+                    {totalSpending.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </p>
+            </div>
             <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
               <Tooltip
                 cursor={false}
@@ -127,8 +133,8 @@ export function SpendingChart({ transactions, onPieClick, onExpand, budgets, all
                 data={aggregatedData}
                 dataKey="value"
                 nameKey="name"
-                innerRadius="30%"
-                outerRadius="80%"
+                innerRadius="65%"
+                outerRadius="100%"
                 strokeWidth={2}
                 onClick={(data, index, e) => {
                   e.stopPropagation();
