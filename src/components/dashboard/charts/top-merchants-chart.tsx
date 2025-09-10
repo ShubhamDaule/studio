@@ -75,20 +75,20 @@ export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChar
   };
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full card-interactive group">
       <CardHeader>
-        <CardTitle className='flex items-center gap-2'>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
             <TopMerchantIcon className="h-6 w-6" />
             Top 5 Merchants
         </CardTitle>
         <CardDescription>Your highest spending by merchant. Click a bar for details.</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-4">
-        <ChartContainer config={chartConfig} className="h-[220px] w-full sm:h-[250px]">
+        <ChartContainer config={chartConfig} className="h-[250px] w-full sm:h-[300px]">
           <BarChart
             data={aggregatedData}
             layout="vertical"
-            margin={{ top: 5, left: -10, right: 40, bottom: 5 }}
+            margin={{ top: 5, left: 10, right: 50, bottom: 5 }}
             onMouseMove={(state) => {
                 if (state.isTooltipActive) {
                     setHoveredBar(state.activeLabel || null);
@@ -104,6 +104,7 @@ export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChar
               tickLine={false}
               axisLine={false}
               tickMargin={10}
+              width={80} 
               tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
               tickFormatter={(value) => truncate(value, 15)} // Truncate labels
             />
