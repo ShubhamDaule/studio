@@ -8,17 +8,15 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Lock, Star, Crown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 
 type UpgradeGateProps = {
   children: React.ReactNode;
   requiredTier: "Pro" | "Premium";
   type: "tab" | "card";
-  cardHeader?: React.ReactNode;
-  cardStyle?: "default" | "compact";
 };
 
-export function UpgradeGate({ children, requiredTier, type, cardHeader, cardStyle = "default" }: UpgradeGateProps) {
+export function UpgradeGate({ children, requiredTier, type }: UpgradeGateProps) {
   const { isPro, isPremium } = useTiers();
 
   const hasAccess = requiredTier === "Pro" ? isPro : isPremium;
@@ -58,52 +56,31 @@ export function UpgradeGate({ children, requiredTier, type, cardHeader, cardStyl
       )
   }
 
-  const DefaultUpgradeContent = () => (
-    <>
-      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-orange-100">
-          <Crown className="h-6 w-6 text-orange-500" />
-      </div>
-      <p className="font-semibold text-lg text-orange-900">Pro+ Feature</p>
-      <p className="text-sm text-orange-800/80 mb-4 max-w-xs">
-          Upgrade to the Pro plan to unlock this chart.
-      </p>
-      <Button asChild size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-          <Link href="/pricing">
-              <Crown className="mr-2 h-4 w-4" />
-              Upgrade to Pro
-          </Link>
-      </Button>
-    </>
-  );
-  
-  const CompactUpgradeContent = () => (
-     <div className="flex flex-col items-center justify-center text-center p-4 h-full">
-        <Button asChild size="sm" className="bg-green-600 hover:bg-green-700 text-white mt-2">
-            <Link href="/pricing">
-                <Crown className="mr-2 h-4 w-4" />
-                Upgrade to Pro
-            </Link>
-        </Button>
-     </div>
-  )
+  // Card type
+  const cardHeader = React.Children.map(childElement.props.children, child => {
+    if (React.isValidElement(child) && (child.type as any).displayName === 'CardHeader') {
+        return child;
+    }
+    return null;
+  });
 
-  if (cardStyle === 'compact') {
-      return (
-        <Card className="h-full flex flex-col bg-orange-50/50 border-orange-200/80">
-          {cardHeader}
-          <CardContent className="flex-1 p-0">
-             <CompactUpgradeContent />
-          </CardContent>
-        </Card>
-      );
-  }
-
-  // Default Card type
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col bg-muted/30">
         {cardHeader}
-        <CardContent className="flex-1 flex flex-col items-center justify-center text-center p-4 bg-orange-50/50 border-orange-200/80 m-1 rounded-b-lg">
-           <DefaultUpgradeContent />
+        <CardContent className="flex-1 flex flex-col items-center justify-center text-center p-4">
+             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <Crown className="h-6 w-6 text-primary" />
+            </div>
+            <p className="font-semibold text-lg text-foreground/90">{requiredTier} Feature</p>
+            <p className="text-sm text-muted-foreground mb-4 max-w-xs">
+                Upgrade to the {requiredTier} plan to unlock this chart.
+            </p>
+            <Button asChild size="sm" className="btn-gradient-base btn-hover-fade">
+                <Link href="/pricing">
+                    <Crown className="mr-2 h-4 w-4" />
+                    Upgrade to {requiredTier}
+                </Link>
+            </Button>
         </CardContent>
     </Card>
   );
