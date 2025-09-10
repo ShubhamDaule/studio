@@ -6,9 +6,6 @@ import { Pie, PieChart, Tooltip, Cell, Sector } from 'recharts';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartConfig,
@@ -17,6 +14,7 @@ import {
 } from "@/components/ui/chart";
 import type { Transaction } from '@/lib/types';
 import { Target } from 'lucide-react';
+import { ChartCardHeader } from './chart-card-header';
 
 // Define the classification of each category
 export const categoryClassification: { [key: string]: 'Needs' | 'Wants' | 'Savings & Other' } = {
@@ -83,17 +81,6 @@ const renderActiveShape = (props: any) => {
 };
 
 
-export const SpendingClassificationChartHeader = () => (
-    <CardHeader>
-        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-          <Target className="h-6 w-6" />
-          Needs vs. Wants
-        </CardTitle>
-        <CardDescription>How your spending is classified. Click a slice for details.</CardDescription>
-    </CardHeader>
-);
-
-
 export function SpendingClassificationChart({ transactions, onClick }: { transactions: Transaction[], onClick: (data: any) => void }) {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(0);
 
@@ -132,8 +119,7 @@ export function SpendingClassificationChart({ transactions, onClick }: { transac
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <SpendingClassificationChartHeader />
-      <CardContent className="flex-1 pb-0">
+      <CardContent className="flex-1 pb-0 pt-6">
         <ChartContainer
           config={chartConfig}
           className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px]"

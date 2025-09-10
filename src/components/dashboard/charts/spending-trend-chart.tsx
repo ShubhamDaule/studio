@@ -6,9 +6,6 @@ import { Area, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartConfig,
@@ -17,7 +14,6 @@ import {
 } from "@/components/ui/chart";
 import type { Transaction } from '@/lib/types';
 import { format, startOfMonth, parseISO } from 'date-fns';
-import { AreaChart as AreaChartIcon } from 'lucide-react';
 
 interface SpendingTrendChartProps {
   transactions: Transaction[];
@@ -29,16 +25,6 @@ const chartConfig = {
     color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
-
-export const SpendingTrendChartHeader = () => (
-    <CardHeader>
-        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-            <AreaChartIcon className="h-6 w-6" />
-            Spending Trend
-        </CardTitle>
-        <CardDescription>A month-over-month view of your spending habits.</CardDescription>
-    </CardHeader>
-);
 
 export function SpendingTrendChart({ transactions }: SpendingTrendChartProps) {
   const aggregatedData = React.useMemo(() => {
@@ -75,8 +61,7 @@ export function SpendingTrendChart({ transactions }: SpendingTrendChartProps) {
   if (aggregatedData.length < 2) {
       return (
         <Card className="flex flex-col h-full card-interactive group">
-            <SpendingTrendChartHeader />
-            <CardContent className="flex flex-1 items-center justify-center">
+            <CardContent className="flex flex-1 items-center justify-center pt-6">
                 <p className="text-muted-foreground">Not enough data to display a trend. At least two months of transactions are needed.</p>
             </CardContent>
         </Card>
@@ -85,8 +70,7 @@ export function SpendingTrendChart({ transactions }: SpendingTrendChartProps) {
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <SpendingTrendChartHeader />
-      <CardContent className="flex-1 pb-4">
+      <CardContent className="flex-1 pb-4 pt-6">
         <ChartContainer config={chartConfig} className="h-[250px] w-full sm:h-[300px]">
             <AreaChart
                 data={aggregatedData}

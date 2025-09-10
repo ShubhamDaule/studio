@@ -6,9 +6,6 @@ import { Bar, BarChart, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartConfig,
@@ -17,11 +14,13 @@ import {
 } from "@/components/ui/chart";
 import type { Transaction, Budget, Category } from '@/lib/types';
 import { Target } from 'lucide-react';
+import { ChartCardHeader } from './chart-card-header';
 
 interface BudgetSpendingChartProps {
   transactions: Transaction[];
   budgets: Budget[];
   allCategories: Category[];
+  onExpand: () => void;
 }
 
 const chartConfig = {
@@ -35,7 +34,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function BudgetSpendingChart({ transactions, budgets }: BudgetSpendingChartProps) {
+export function BudgetSpendingChart({ transactions, budgets, onExpand }: BudgetSpendingChartProps) {
   const aggregatedData = React.useMemo(() => {
     if (!transactions) {
         return [];
@@ -69,13 +68,12 @@ export function BudgetSpendingChart({ transactions, budgets }: BudgetSpendingCha
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <CardHeader>
-        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-            <Target className="h-6 w-6" />
-            Spending vs. Budget
-        </CardTitle>
-        <CardDescription>How your spending compares to your set budgets.</CardDescription>
-      </CardHeader>
+      <ChartCardHeader
+        title="Spending vs. Budget"
+        description="How your spending compares to your set budgets."
+        Icon={Target}
+        onExpand={onExpand}
+      />
       <CardContent className="flex-1 pb-4">
         <ChartContainer config={chartConfig} className="h-[300px] w-full sm:h-[350px]">
           <BarChart

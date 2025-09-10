@@ -6,9 +6,6 @@ import { Bar, BarChart, XAxis, YAxis, Tooltip, LabelList, Rectangle } from 'rech
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartConfig,
@@ -17,10 +14,12 @@ import {
 } from "@/components/ui/chart";
 import type { Transaction } from '@/lib/types';
 import { TopMerchantIcon } from '../../icons';
+import { ChartCardHeader } from './chart-card-header';
 
 interface TopMerchantsChartProps {
   transactions: Transaction[];
   onBarClick: (data: any) => void;
+  onExpand: () => void;
 }
 
 const chartConfig = {
@@ -45,18 +44,7 @@ const CustomBar = (props: any) => {
     );
 };
 
-export const TopMerchantsChartHeader = () => (
-    <CardHeader>
-        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-            <TopMerchantIcon className="h-6 w-6" />
-            Top 5 Merchants
-        </CardTitle>
-        <CardDescription>Your highest spending by merchant. Click a bar for details.</CardDescription>
-    </CardHeader>
-);
-
-
-export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChartProps) {
+export function TopMerchantsChart({ transactions, onBarClick, onExpand }: TopMerchantsChartProps) {
   const [hoveredBar, setHoveredBar] = React.useState<string | null>(null);
 
   const aggregatedData = React.useMemo(() => {
@@ -87,7 +75,12 @@ export function TopMerchantsChart({ transactions, onBarClick }: TopMerchantsChar
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <TopMerchantsChartHeader />
+      <ChartCardHeader
+        title="Top 5 Merchants"
+        description="Your highest spending by merchant. Click a bar for details."
+        Icon={TopMerchantIcon}
+        onExpand={onExpand}
+       />
       <CardContent className="flex-1 pb-4">
         <ChartContainer config={chartConfig} className="h-[220px] w-full sm:h-[250px]">
           <BarChart

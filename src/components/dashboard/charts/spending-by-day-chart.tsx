@@ -6,9 +6,6 @@ import { Bar, BarChart, XAxis, YAxis, Tooltip, Rectangle } from 'recharts';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartConfig,
@@ -18,10 +15,12 @@ import {
 import type { Transaction } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
 import { BarChart3 } from 'lucide-react';
+import { ChartCardHeader } from './chart-card-header';
 
 interface SpendingByDayChartProps {
   transactions: Transaction[];
   onBarClick: (data: any) => void;
+  onExpand: () => void;
 }
 
 const chartConfig = {
@@ -46,7 +45,7 @@ const CustomBar = (props: any) => {
     );
 };
 
-export function SpendingByDayChart({ transactions, onBarClick }: SpendingByDayChartProps) {
+export function SpendingByDayChart({ transactions, onBarClick, onExpand }: SpendingByDayChartProps) {
   const [hoveredBar, setHoveredBar] = React.useState<string | null>(null);
 
   const aggregatedData = React.useMemo(() => {
@@ -78,13 +77,12 @@ export function SpendingByDayChart({ transactions, onBarClick }: SpendingByDayCh
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <CardHeader>
-        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-            <BarChart3 className="h-6 w-6" />
-            Spending By Day
-        </CardTitle>
-        <CardDescription>Daily spending overview. Click a bar to see details.</CardDescription>
-      </CardHeader>
+      <ChartCardHeader
+        title="Spending By Day"
+        description="Daily spending overview. Click a bar to see details."
+        Icon={BarChart3}
+        onExpand={onExpand}
+      />
       <CardContent className="flex-1 pb-0">
         <ChartContainer config={chartConfig} className="h-[250px] w-full sm:h-[300px]">
           <BarChart

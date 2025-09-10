@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import type { Transaction } from "@/lib/types";
 import { Repeat } from "lucide-react";
 import { CategoryIcon } from "@/components/icons";
@@ -27,16 +27,7 @@ export function SubscriptionsCard({ transactions }: SubscriptionsCardProps) {
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
-            <Repeat className="h-6 w-6" />
-            Recurring Subscriptions
-        </CardTitle>
-        <CardDescription>
-          A summary of your detected monthly and yearly subscriptions.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         {subscriptions.length > 0 ? (
           <div className="space-y-3">
             {subscriptions.slice(0, 5).map((sub) => (

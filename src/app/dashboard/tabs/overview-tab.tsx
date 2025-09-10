@@ -2,13 +2,13 @@
 "use client";
 
 import * as React from "react";
-import { Wallet, ReceiptText, TrendingUp, CalendarDays, Repeat, Target } from "lucide-react";
+import { Wallet, ReceiptText, TrendingUp, CalendarDays, Repeat, Target, PieChart, BarChart3, Banknote, AreaChart as AreaChartIcon } from "lucide-react";
 import { SpendingChart } from "@/components/dashboard/charts/spending-chart";
 import { SpendingByDayChart } from "@/components/dashboard/charts/spending-by-day-chart";
-import { SpendingBySourceChart, SpendingBySourceChartHeader } from "@/components/dashboard/charts/spending-by-source-chart";
-import { TopMerchantsChart, TopMerchantsChartHeader } from "@/components/dashboard/charts/top-merchants-chart";
-import { SpendingClassificationChart, SpendingClassificationChartHeader } from "@/components/dashboard/charts/SpendingClassificationChart";
-import { SpendingTrendChart, SpendingTrendChartHeader } from "@/components/dashboard/charts/spending-trend-chart";
+import { SpendingBySourceChart } from "@/components/dashboard/charts/spending-by-source-chart";
+import { TopMerchantsChart } from "@/components/dashboard/charts/top-merchants-chart";
+import { SpendingClassificationChart } from "@/components/dashboard/charts/SpendingClassificationChart";
+import { SpendingTrendChart } from "@/components/dashboard/charts/spending-trend-chart";
 import StatsCard from "@/components/dashboard/cards/stats-card";
 import { HighestTransactionCard } from "@/components/dashboard/cards/highest-transaction-card";
 import { HighestDayCard } from "@/components/dashboard/cards/highest-day-card";
@@ -16,25 +16,16 @@ import { CurrentBalanceCard } from "@/components/dashboard/cards/current-balance
 import { useDashboardContext } from "@/context/dashboard-context";
 import { useBudgets } from "@/hooks/useBudgets";
 import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SubscriptionsCard } from "@/components/dashboard/cards/subscriptions-card";
 import { useTiers } from "@/hooks/use-tiers";
 import { BudgetSpendingChart } from "@/components/dashboard/charts/budget-spending-chart";
+import { TopMerchantIcon } from "@/components/icons";
+import { ChartCardHeader } from "@/components/dashboard/charts/chart-card-header";
 
 // Props for the OverviewTab component, including a function to open dialogs.
 type OverviewTabProps = {
-    openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant' | 'classification', data: any) => void;
+    openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant' | 'classification' | 'chartExpanded', data: any) => void;
 };
-
-const RecurringSubscriptionsHeader = () => (
-    <CardHeader>
-        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-          <Repeat className="h-6 w-6" />
-          Recurring Subscriptions
-        </CardTitle>
-        <CardDescription>A summary of your detected monthly and yearly subscriptions.</CardDescription>
-    </CardHeader>
-);
 
 /**
  * Renders the "Overview" tab in the dashboard.
@@ -100,22 +91,22 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             
             {/* Row 1 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data)} budgets={budgets} allCategories={allCategories} />
-                <SpendingByDayChart transactions={filteredTransactions} onBarClick={(data) => openDialog('day', data.date)} />
+                <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data)} onExpand={() => openDialog('chartExpanded', { title: 'Spending Breakdown', data: filteredTransactions, type: 'pie' })} budgets={budgets} allCategories={allCategories} />
+                <SpendingByDayChart transactions={filteredTransactions} onBarClick={(data) => openDialog('day', data.date)} onExpand={() => openDialog('chartExpanded', { title: 'Spending By Day', data: filteredTransactions, type: 'bar' })} />
             </div>
 
             {/* Row 2 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
-                <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
+                <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} onExpand={() => openDialog('chartExpanded', { title: 'Spending by Source', data: allTransactions, type: 'treemap' })} />
+                <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} onExpand={() => openDialog('chartExpanded', { title: 'Top 5 Merchants', data: filteredTransactions, type: 'bar' })} />
             </div>
             
             {/* Row 3 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingClassificationChartHeader />}>
+                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<ChartCardHeader title="Needs vs. Wants" Icon={Target} description="How your spending is classified." onExpand={() => openDialog('chartExpanded', { title: 'Needs vs. Wants', data: filteredTransactions, type: 'pie' })} />}>
                     <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
                 </UpgradeGate>
-                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<RecurringSubscriptionsHeader />}>
+                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<ChartCardHeader title="Recurring Subscriptions" Icon={Repeat} description="A summary of your detected monthly and yearly subscriptions." onExpand={() => openDialog('chartExpanded', { title: 'Recurring Subscriptions', data: filteredTransactions, type: 'table' })} />}>
                     <SubscriptionsCard transactions={filteredTransactions} />
                 </UpgradeGate>
             </div>
@@ -123,9 +114,9 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             {/* Row 4 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                  <UpgradeGate requiredTier="Pro" type="card">
-                    <BudgetSpendingChart transactions={filteredTransactions} budgets={budgets} allCategories={allCategories} />
+                    <BudgetSpendingChart transactions={filteredTransactions} budgets={budgets} allCategories={allCategories} onExpand={() => openDialog('chartExpanded', { title: 'Spending vs. Budget', data: filteredTransactions, type: 'bar' })} />
                 </UpgradeGate>
-                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingTrendChartHeader />}>
+                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<ChartCardHeader title="Spending Trend" Icon={AreaChartIcon} description="A month-over-month view of your spending habits." onExpand={() => openDialog('chartExpanded', { title: 'Spending Trend', data: allTransactions, type: 'area' })} />}>
                      <SpendingTrendChart transactions={allTransactions} />
                 </UpgradeGate>
             </div>
