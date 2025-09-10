@@ -4,17 +4,14 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Transaction } from "@/lib/types";
-import { Repeat, Target } from "lucide-react";
+import { Repeat } from "lucide-react";
 import { CategoryIcon } from "@/components/icons";
-import { useTiers } from "@/hooks/use-tiers";
 
 interface SubscriptionsCardProps {
   transactions: Transaction[];
 }
 
 export function SubscriptionsCard({ transactions }: SubscriptionsCardProps) {
-  const { isPro } = useTiers();
-
   const subscriptions = React.useMemo(() => {
     return transactions
       .filter((t) => t.category === "Subscriptions" && t.amount > 0)
@@ -27,21 +24,16 @@ export function SubscriptionsCard({ transactions }: SubscriptionsCardProps) {
       currency: "USD",
     }).format(value);
   };
-  
-  const title = isPro ? "Recurring Subscriptions" : "Needs vs. Wants";
-  const icon = isPro ? <Repeat className="h-6 w-6" /> : <Target className="h-6 w-6" />;
-  const description = isPro ? "A summary of your detected monthly and yearly subscriptions." : "How your spending is classified. Click a slice for details.";
-
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
-            {icon}
-            {title}
+            <Repeat className="h-6 w-6" />
+            Recurring Subscriptions
         </CardTitle>
         <CardDescription>
-          {description}
+          A summary of your detected monthly and yearly subscriptions.
         </CardDescription>
       </CardHeader>
       <CardContent>

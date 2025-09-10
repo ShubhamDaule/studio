@@ -25,13 +25,13 @@ type OverviewTabProps = {
     openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant' | 'classification', data: any) => void;
 };
 
-const NeedsVsWantsHeader = () => (
+const RecurringSubscriptionsHeader = () => (
     <CardHeader>
         <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
-          <Target className="h-6 w-6" />
-          Needs vs. Wants
+          <Repeat className="h-6 w-6" />
+          Recurring Subscriptions
         </CardTitle>
-        <CardDescription>How your spending is classified. Click a slice for details.</CardDescription>
+        <CardDescription>A summary of your detected monthly and yearly subscriptions.</CardDescription>
     </CardHeader>
 );
 
@@ -108,7 +108,7 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                     <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
                 </div>
                  <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<NeedsVsWantsHeader />}>
+                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<RecurringSubscriptionsHeader />}>
                         <SubscriptionsCard transactions={filteredTransactions} />
                     </UpgradeGate>
                     <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingClassificationChartHeader />}>
