@@ -32,7 +32,7 @@ export function RulesDialog({ isOpen, onClose }: Props) {
               <DialogTitle className="text-2xl">Rules</DialogTitle>
             </div>
             <DialogDescription>
-              Create rules to automatically manage your transactions. You can rename merchants, change categories, and more. Rules run in order from top to bottom, and you can drag them to reorder.
+              Create rules to automatically rename merchants, update categories, and more. Rules are applied top-to-bottom.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
