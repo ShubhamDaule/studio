@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from 'react';
-import { Treemap, ResponsiveContainer, Rectangle, Cell } from 'recharts';
+import { Treemap, ResponsiveContainer, Rectangle } from 'recharts';
 import {
   Card,
   CardContent,
@@ -116,11 +116,11 @@ export function SpendingBySourceChart({ transactions, onPieClick }: { transactio
                         }}
                         onMouseLeave={() => setHoveredNode(null)}
                     >
-                        {aggregatedData.map((entry, index) => (
-                           <Cell 
+                         {aggregatedData.map((entry, index) => (
+                            <Cell 
                                 key={`cell-${index}`} 
                                 content={<CustomizedContent isHovered={hoveredNode?.name === entry.name} />}
-                           />
+                            />
                         ))}
                     </Treemap>
                 </ResponsiveContainer>
