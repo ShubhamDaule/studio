@@ -34,7 +34,7 @@ const CustomizedContent = (props: any) => {
         width={width}
         height={height}
         className={cn(
-            "stroke-background stroke-2 transition-all duration-300 ease-in-out cursor-pointer",
+            "stroke-background stroke-2 transition-all duration-300 ease-in-out",
             isHovered ? 'scale-[1.01]' : ''
         )}
         style={{
