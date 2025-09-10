@@ -61,7 +61,7 @@ export function SpendingTrendChart({ transactions }: SpendingTrendChartProps) {
   if (aggregatedData.length < 2) {
       return (
         <Card className="flex flex-col h-full card-interactive group">
-            <CardContent className="flex flex-1 items-center justify-center pt-6">
+            <CardContent className="flex flex-1 items-center justify-center pt-6 text-center">
                 <p className="text-muted-foreground">Not enough data to display a trend. At least two months of transactions are needed.</p>
             </CardContent>
         </Card>

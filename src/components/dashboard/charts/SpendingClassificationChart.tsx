@@ -114,7 +114,13 @@ export function SpendingClassificationChart({ transactions, onClick }: { transac
   const formatCurrency = (value: number) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   if (aggregatedData.length === 0) {
-    return null;
+    return (
+        <Card className="flex flex-col h-full card-interactive group">
+            <CardContent className="flex flex-1 items-center justify-center pt-6">
+                <p className="text-muted-foreground text-center">No transactions classified as 'Needs' or 'Wants' in this period.</p>
+            </CardContent>
+        </Card>
+    )
   }
 
   return (
