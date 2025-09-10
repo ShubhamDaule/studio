@@ -58,6 +58,7 @@ export function UpgradeGate({ children, requiredTier, type }: UpgradeGateProps) 
 
   // Card type
   const cardHeader = React.Children.map(childElement.props.children, child => {
+    // The displayName for CardHeader is "CardHeader"
     if (React.isValidElement(child) && (child.type as any).displayName === 'CardHeader') {
         return child;
     }
@@ -68,8 +69,8 @@ export function UpgradeGate({ children, requiredTier, type }: UpgradeGateProps) 
     <Card className="h-full flex flex-col bg-muted/30">
         {cardHeader}
         <CardContent className="flex-1 flex flex-col items-center justify-center text-center p-4">
-             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <Crown className="h-6 w-6 text-primary" />
+             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
+                <Crown className="h-6 w-6 text-orange-500" />
             </div>
             <p className="font-semibold text-lg text-foreground/90">{requiredTier} Feature</p>
             <p className="text-sm text-muted-foreground mb-4 max-w-xs">
