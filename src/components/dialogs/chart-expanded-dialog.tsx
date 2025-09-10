@@ -32,8 +32,9 @@ export function ChartExpandedDialog({ isOpen, onClose, chartData }: Props) {
   const [groupBy, setGroupBy] = React.useState('category');
   const { allCategories } = useDashboardContext();
   const { budgets } = useBudgets({allCategories, transactions: chartData?.data || [], dateRange: undefined});
-
-
+  
+  // Hooks must be called unconditionally before any early returns.
+  // The check for chartData is now moved after the hooks.
   if (!chartData) return null;
   
   const aggregatedData = React.useMemo(() => {
@@ -53,13 +54,13 @@ export function ChartExpandedDialog({ isOpen, onClose, chartData }: Props) {
   const chartComponent = () => {
     switch (chartData.title) {
         case 'Spending Breakdown':
-            return <SpendingChart transactions={chartData.data} onPieClick={() => {}} budgets={[]} allCategories={allCategories} />;
+            return <SpendingChart transactions={chartData.data} onPieClick={() => {}} onExpand={() => {}} budgets={[]} allCategories={allCategories} />;
         case 'Spending By Day':
-            return <SpendingByDayChart transactions={chartData.data} onBarClick={() => {}} />;
+            return <SpendingByDayChart transactions={chartData.data} onBarClick={() => {}} onExpand={() => {}} />;
         case 'Spending by Source':
-            return <SpendingBySourceChart transactions={chartData.data} onPieClick={() => {}} />;
+            return <SpendingBySourceChart transactions={chartData.data} onPieClick={() => {}} onExpand={() => {}} />;
         case 'Top 5 Merchants':
-             return <TopMerchantsChart transactions={chartData.data} onBarClick={() => {}} />;
+             return <TopMerchantsChart transactions={chartData.data} onBarClick={() => {}} onExpand={() => {}} />;
         case 'Needs vs. Wants':
             return <SpendingClassificationChart transactions={chartData.data} onClick={() => {}} />;
         case 'Recurring Subscriptions':
@@ -67,7 +68,7 @@ export function ChartExpandedDialog({ isOpen, onClose, chartData }: Props) {
         case 'Spending Trend':
              return <SpendingTrendChart transactions={chartData.data} />;
         case 'Spending vs. Budget':
-            return <BudgetSpendingChart transactions={chartData.data} budgets={budgets} allCategories={allCategories} />;
+            return <BudgetSpendingChart transactions={chartData.data} budgets={budgets} allCategories={allCategories} onExpand={() => {}} />;
         default:
             return <p>Chart type not supported in expanded view.</p>;
     }
