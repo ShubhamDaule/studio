@@ -36,7 +36,7 @@ const CustomizedContent = (props: any) => {
         onClick={() => onPieClick({ name })}
         className={cn(
             "stroke-background stroke-2 transition-all duration-300 ease-in-out cursor-pointer",
-            isHovered ? 'opacity-100 scale-[1.01]' : 'opacity-80'
+            isHovered ? 'opacity-100 scale-[1.01]' : 'opacity-90'
         )}
         style={{
             fill: color,
