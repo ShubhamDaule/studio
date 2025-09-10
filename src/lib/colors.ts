@@ -11,6 +11,14 @@ export const CHART_COLORS = [
   "hsl(50, 70%, 50%)",
   "hsl(170, 70%, 40%)",
   "hsl(0, 70%, 60%)",
+  "hsl(220, 80%, 60%)", // Additional Blue
+  "hsl(100, 60%, 45%)", // Additional Green
+  "hsl(30, 90%, 55%)",  // Additional Orange
+  "hsl(340, 80%, 65%)", // Additional Pink
+  "hsl(260, 60%, 65%)", // Additional Purple
+  "hsl(70, 70%, 45%)",  // Additional Lime
+  "hsl(190, 80%, 40%)", // Additional Teal
+  "hsl(40, 100%, 70%)", // Additional Gold
 ];
 
 // A cache to store mappings from a string (like a category name) to a color.
