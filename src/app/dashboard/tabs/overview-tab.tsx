@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Wallet, ReceiptText, TrendingUp, CalendarDays, Repeat, Target, PieChart, BarChart3, Banknote, AreaChart as AreaChartIcon } from "lucide-react";
+import { Wallet, ReceiptText} from "lucide-react";
 import { SpendingChart } from "@/components/dashboard/charts/spending-chart";
 import { SpendingByDayChart } from "@/components/dashboard/charts/spending-by-day-chart";
 import { SpendingBySourceChart } from "@/components/dashboard/charts/spending-by-source-chart";
@@ -19,8 +19,6 @@ import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
 import { SubscriptionsCard } from "@/components/dashboard/cards/subscriptions-card";
 import { useTiers } from "@/hooks/use-tiers";
 import { BudgetSpendingChart } from "@/components/dashboard/charts/budget-spending-chart";
-import { TopMerchantIcon } from "@/components/icons";
-import { ChartCardHeader } from "@/components/dashboard/charts/chart-card-header";
 
 // Props for the OverviewTab component, including a function to open dialogs.
 type OverviewTabProps = {
@@ -103,11 +101,11 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             
             {/* Row 3 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<ChartCardHeader title="Needs vs. Wants" Icon={Target} description="How your spending is classified." onExpand={() => openDialog('chartExpanded', { title: 'Needs vs. Wants', data: filteredTransactions, type: 'pie' })} />}>
-                    <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
+                <UpgradeGate requiredTier="Pro" type="card">
+                    <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} onExpand={() => openDialog('chartExpanded', { title: 'Needs vs. Wants', data: filteredTransactions, type: 'pie' })} />
                 </UpgradeGate>
-                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<ChartCardHeader title="Recurring Subscriptions" Icon={Repeat} description="A summary of your detected monthly and yearly subscriptions." onExpand={() => openDialog('chartExpanded', { title: 'Recurring Subscriptions', data: filteredTransactions, type: 'table' })} />}>
-                    <SubscriptionsCard transactions={filteredTransactions} />
+                <UpgradeGate requiredTier="Pro" type="card">
+                    <SubscriptionsCard transactions={filteredTransactions} onExpand={() => openDialog('chartExpanded', { title: 'Recurring Subscriptions', data: filteredTransactions, type: 'table' })} />
                 </UpgradeGate>
             </div>
             
@@ -116,8 +114,8 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                  <UpgradeGate requiredTier="Pro" type="card">
                     <BudgetSpendingChart transactions={filteredTransactions} budgets={budgets} allCategories={allCategories} onExpand={() => openDialog('chartExpanded', { title: 'Spending vs. Budget', data: filteredTransactions, type: 'bar' })} />
                 </UpgradeGate>
-                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<ChartCardHeader title="Spending Trend" Icon={AreaChartIcon} description="A month-over-month view of your spending habits." onExpand={() => openDialog('chartExpanded', { title: 'Spending Trend', data: allTransactions, type: 'area' })} />}>
-                     <SpendingTrendChart transactions={allTransactions} />
+                <UpgradeGate requiredTier="Pro" type="card">
+                     <SpendingTrendChart transactions={allTransactions} onExpand={() => openDialog('chartExpanded', { title: 'Spending Trend', data: allTransactions, type: 'area' })} />
                 </UpgradeGate>
             </div>
         </div>

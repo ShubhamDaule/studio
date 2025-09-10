@@ -81,7 +81,7 @@ const renderActiveShape = (props: any) => {
 };
 
 
-export function SpendingClassificationChart({ transactions, onClick }: { transactions: Transaction[], onClick: (data: any) => void }) {
+export function SpendingClassificationChart({ transactions, onClick, onExpand }: { transactions: Transaction[], onClick: (data: any) => void, onExpand: () => void }) {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(0);
 
   const aggregatedData = React.useMemo(() => {
@@ -116,6 +116,12 @@ export function SpendingClassificationChart({ transactions, onClick }: { transac
   if (aggregatedData.length === 0) {
     return (
         <Card className="flex flex-col h-full card-interactive group">
+            <ChartCardHeader 
+                title="Needs vs. Wants"
+                description="How your spending is classified."
+                Icon={Target}
+                onExpand={onExpand}
+            />
             <CardContent className="flex flex-1 items-center justify-center pt-6">
                 <p className="text-muted-foreground text-center">No transactions classified as 'Needs' or 'Wants' in this period.</p>
             </CardContent>
@@ -125,6 +131,12 @@ export function SpendingClassificationChart({ transactions, onClick }: { transac
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
+      <ChartCardHeader 
+        title="Needs vs. Wants"
+        description="How your spending is classified."
+        Icon={Target}
+        onExpand={onExpand}
+      />
       <CardContent className="flex-1 pb-0 pt-6">
         <ChartContainer
           config={chartConfig}
