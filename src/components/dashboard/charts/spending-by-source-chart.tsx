@@ -48,9 +48,11 @@ const CustomizedContent = (props: any) => {
          <foreignObject x={x + 4} y={y + 4} width={width - 8} height={height - 8}>
             <div className={`w-full h-full flex flex-col justify-start items-start ${textShadow}`}>
                 <p className={`font-bold text-sm ${textColor} truncate`}>{name}</p>
-                <p className={`text-xs ${textColor}`}>
-                    ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                </p>
+                {typeof value === 'number' && (
+                  <p className={`text-xs ${textColor}`}>
+                      ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </p>
+                )}
             </div>
         </foreignObject>
       )}
