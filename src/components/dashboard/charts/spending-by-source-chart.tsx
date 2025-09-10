@@ -21,7 +21,7 @@ import { getStableColor } from '@/lib/colors';
 
 // A custom component to render each cell of the treemap with styling
 const CustomizedContent = (props: any) => {
-  const { root, depth, x, y, width, height, index, name, value, onPieClick, isHovered, color } = props;
+  const { root, depth, x, y, width, height, index, name, value, isHovered, color } = props;
   const isParent = depth === 0;
   const textColor = isParent ? 'text-white' : 'text-white/80';
   const textShadow = 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]';
@@ -33,10 +33,9 @@ const CustomizedContent = (props: any) => {
         y={y}
         width={width}
         height={height}
-        onClick={() => onPieClick({ source: name })}
         className={cn(
             "stroke-background stroke-2 transition-all duration-300 ease-in-out cursor-pointer",
-            isHovered ? 'opacity-100 scale-[1.01]' : 'opacity-90'
+            isHovered ? 'opacity-100 scale-[1.01]' : ''
         )}
         style={{
             fill: color,
@@ -45,7 +44,7 @@ const CustomizedContent = (props: any) => {
         radius={4}
       />
       {width > 80 && height > 30 && (
-         <foreignObject x={x + 4} y={y + 4} width={width - 8} height={height - 8}>
+         <foreignObject x={x + 4} y={y + 4} width={width - 8} height={height - 8} className="pointer-events-none">
             <div className={`w-full h-full flex flex-col justify-start items-start ${textShadow}`}>
                 <p className={`font-bold text-sm ${textColor} truncate`}>{name}</p>
                 {typeof value === 'number' && (
@@ -82,6 +81,12 @@ export function SpendingBySourceChart({ transactions, onPieClick }: { transactio
             }))
             .sort((a, b) => b.size - a.size);
     }, [transactions]);
+
+    const handleChartClick = () => {
+        if (hoveredNode) {
+            onPieClick({ name: hoveredNode.name });
+        }
+    }
   
   return (
     <Card className="flex flex-col h-full card-interactive group">
@@ -94,20 +99,32 @@ export function SpendingBySourceChart({ transactions, onPieClick }: { transactio
       </CardHeader>
       <CardContent className="flex-1 pb-4">
         <ChartContainer config={{}} className="h-[250px] w-full sm:h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-                <Treemap
-                    data={aggregatedData}
-                    dataKey="size"
-                    aspectRatio={4 / 3}
-                    stroke="#fff"
-                    content={
-                        <CustomizedContent onPieClick={onPieClick} isHovered={false} />
-                    }
-                    onMouseEnter={(node) => setHoveredNode(node)}
-                    onMouseLeave={() => setHoveredNode(null)}
-                >
-                </Treemap>
-            </ResponsiveContainer>
+            <div className="w-full h-full cursor-pointer" onClick={handleChartClick}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <Treemap
+                        data={aggregatedData}
+                        dataKey="size"
+                        aspectRatio={4 / 3}
+                        stroke="#fff"
+                        content={
+                            <CustomizedContent isHovered={false} />
+                        }
+                        onMouseMove={(node) => {
+                           if (hoveredNode?.name !== node?.name) {
+                             setHoveredNode(node);
+                           }
+                        }}
+                        onMouseLeave={() => setHoveredNode(null)}
+                    >
+                        {aggregatedData.map((entry, index) => (
+                           <Cell 
+                                key={`cell-${index}`} 
+                                content={<CustomizedContent isHovered={hoveredNode?.name === entry.name} />}
+                           />
+                        ))}
+                    </Treemap>
+                </ResponsiveContainer>
+            </div>
         </ChartContainer>
       </CardContent>
     </Card>
