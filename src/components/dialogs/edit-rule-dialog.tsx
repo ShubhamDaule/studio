@@ -1,6 +1,7 @@
-
+// Ensure this component is treated as a client-side component
 "use client";
 
+// Import necessary React libraries and UI components
 import * as React from "react";
 import {
   Dialog,
@@ -17,11 +18,22 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Landmark, ArrowRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
+// Define the props for the EditRuleDialog component
 type Props = {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean; // Controls whether the dialog is open or closed
+  onClose: () => void; // Function to call when the dialog should be closed
 };
 
+/**
+ * A reusable component to create a section for a rule condition or action.
+ * It includes a title, a switch to enable/disable the section, and the content of the section.
+ * @param {object} props - The props for the component.
+ * @param {string} props.title - The title of the rule section.
+ * @param {React.ReactNode} props.children - The content of the rule section.
+ * @param {boolean} props.isEnabled - Whether the rule section is currently enabled.
+ * @param {(enabled: boolean) => void} props.onToggle - The function to call when the switch is toggled.
+ * @returns {JSX.Element} The rendered RuleSection component.
+ */
 const RuleSection = ({ title, children, isEnabled, onToggle }: { title: string; children: React.ReactNode; isEnabled: boolean; onToggle: (enabled: boolean) => void }) => {
   return (
     <div className="p-4 rounded-lg bg-muted/40 border space-y-4">
@@ -29,17 +41,27 @@ const RuleSection = ({ title, children, isEnabled, onToggle }: { title: string; 
             <Label className="font-semibold">{title}</Label>
             <Switch checked={isEnabled} onCheckedChange={onToggle} />
         </div>
+        {/* Only render the children if the section is enabled */}
         {isEnabled && <div className="pt-2">{children}</div>}
     </div>
   )
 }
 
+/**
+ * A dialog component for creating and editing transaction rules.
+ * It allows users to define conditions based on transaction properties
+ * and specify actions to be taken when those conditions are met.
+ * @param {Props} props - The props for the component.
+ * @returns {JSX.Element} The rendered EditRuleDialog component.
+ */
 export function EditRuleDialog({ isOpen, onClose }: Props) {
+  // State variables to manage whether each rule condition is enabled
   const [merchantsEnabled, setMerchantsEnabled] = React.useState(true);
   const [amountEnabled, setAmountEnabled] = React.useState(true);
   const [categoriesEnabled, setCategoriesEnabled] = React.useState(false);
   const [accountsEnabled, setAccountsEnabled] = React.useState(false);
   
+  // State variables to manage whether each rule action is enabled
   const [renameEnabled, setRenameEnabled] = React.useState(false);
   const [updateCategoryEnabled, setUpdateCategoryEnabled] = React.useState(true);
   const [addTagsEnabled, setAddTagsEnabled] = React.useState(true);
@@ -52,6 +74,7 @@ export function EditRuleDialog({ isOpen, onClose }: Props) {
       <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Edit rule</DialogTitle>
+          {/* Tabs to switch between rule settings and a preview of the changes */}
           <Tabs defaultValue="settings">
             <TabsList className="grid w-full grid-cols-2 max-w-sm">
                 <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -60,10 +83,11 @@ export function EditRuleDialog({ isOpen, onClose }: Props) {
           </Tabs>
         </DialogHeader>
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto p-1">
-            {/* Conditions Column */}
+            {/* Conditions Column: Defines the criteria for the rule */}
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg">If transaction matches criteria...</h3>
 
+                {/* Rule section for matching based on merchant name */}
                 <RuleSection title="Merchants" isEnabled={merchantsEnabled} onToggle={setMerchantsEnabled}>
                     <div className="grid grid-cols-3 gap-2">
                         <Select defaultValue="name">
@@ -78,6 +102,7 @@ export function EditRuleDialog({ isOpen, onClose }: Props) {
                     </div>
                 </RuleSection>
 
+                 {/* Rule section for matching based on transaction amount */}
                  <RuleSection title="Amount" isEnabled={amountEnabled} onToggle={setAmountEnabled}>
                     <div className="grid grid-cols-3 gap-2">
                         <Select defaultValue="expense">
@@ -92,22 +117,26 @@ export function EditRuleDialog({ isOpen, onClose }: Props) {
                     </div>
                 </RuleSection>
 
+                 {/* Rule section for matching based on categories */}
                  <RuleSection title="Categories" isEnabled={categoriesEnabled} onToggle={setCategoriesEnabled}>
                     <p className="text-sm text-muted-foreground">Define category criteria here...</p>
                  </RuleSection>
                  
+                 {/* Rule section for matching based on accounts */}
                  <RuleSection title="Accounts" isEnabled={accountsEnabled} onToggle={setAccountsEnabled}>
                     <p className="text-sm text-muted-foreground">Define account criteria here...</p>
                  </RuleSection>
             </div>
-            {/* Actions Column */}
+            {/* Actions Column: Defines what happens when the conditions are met */}
             <div className="space-y-4">
                  <h3 className="font-semibold text-lg">Then apply these updates...</h3>
                  
+                 {/* Rule action to rename the merchant */}
                  <RuleSection title="Rename merchant" isEnabled={renameEnabled} onToggle={setRenameEnabled}>
                     <Input placeholder="New merchant name" />
                  </RuleSection>
 
+                  {/* Rule action to update the transaction category */}
                   <RuleSection title="Update category" isEnabled={updateCategoryEnabled} onToggle={setUpdateCategoryEnabled}>
                     <Select>
                         <SelectTrigger>
@@ -122,6 +151,7 @@ export function EditRuleDialog({ isOpen, onClose }: Props) {
                     </Select>
                  </RuleSection>
 
+                 {/* Rule action to add tags to the transaction */}
                  <RuleSection title="Add tags" isEnabled={addTagsEnabled} onToggle={setAddTagsEnabled}>
                     <div className="flex items-center gap-2 p-2 border rounded-md bg-background">
                          <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-1 rounded-full border border-yellow-200/50">
@@ -135,21 +165,25 @@ export function EditRuleDialog({ isOpen, onClose }: Props) {
                     </div>
                  </RuleSection>
 
+                 {/* Other rule actions */}
                  <RuleSection title="Hide transaction" isEnabled={hideEnabled} onToggle={setHideEnabled}><></></RuleSection>
                  <RuleSection title="Review status" isEnabled={reviewEnabled} onToggle={setReviewEnabled}><></></RuleSection>
                  <RuleSection title="Link to goal" isEnabled={goalEnabled} onToggle={setGoalEnabled}><></></RuleSection>
                  
+                 {/* Separator to indicate an alternative action */}
                  <div className="relative my-4">
                     <Separator />
                     <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
                  </div>
                  
+                 {/* Button to split the transaction */}
                  <button className="w-full flex items-center justify-between p-4 rounded-lg bg-muted/40 border hover:bg-muted/80 transition-colors">
                     <span className="font-semibold">Split transaction</span>
                     <ArrowRight className="h-5 w-5 text-muted-foreground" />
                  </button>
             </div>
         </div>
+        {/* Dialog footer with action buttons */}
         <div className="flex justify-between items-center pt-4 border-t">
             <Button variant="destructive">Delete</Button>
             <div className="flex items-center gap-2">
