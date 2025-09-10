@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from 'react';
-import { Treemap, ResponsiveContainer, Rectangle, Cell } from 'recharts';
+import { Treemap, ResponsiveContainer, Rectangle } from 'recharts';
 import {
   Card,
   CardContent,
@@ -33,7 +33,7 @@ const CustomizedContent = (props: any) => {
         y={y}
         width={width}
         height={height}
-        onClick={() => onPieClick({ name })}
+        onClick={() => onPieClick({ source: name })}
         className={cn(
             "stroke-background stroke-2 transition-all duration-300 ease-in-out cursor-pointer",
             isHovered ? 'opacity-100 scale-[1.01]' : 'opacity-90'
@@ -101,17 +101,11 @@ export function SpendingBySourceChart({ transactions, onPieClick }: { transactio
                     aspectRatio={4 / 3}
                     stroke="#fff"
                     content={
-                        <CustomizedContent onPieClick={onPieClick} />
+                        <CustomizedContent onPieClick={onPieClick} isHovered={false} />
                     }
                     onMouseEnter={(node) => setHoveredNode(node)}
                     onMouseLeave={() => setHoveredNode(null)}
                 >
-                    {aggregatedData.map((entry, index) => (
-                        <Cell 
-                            key={`cell-${index}`} 
-                            content={<CustomizedContent onPieClick={onPieClick} isHovered={hoveredNode?.name === entry.name} />}
-                        />
-                    ))}
                 </Treemap>
             </ResponsiveContainer>
         </ChartContainer>
