@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Wallet, ReceiptText, TrendingUp, CalendarDays } from "lucide-react";
+import { Wallet, ReceiptText, TrendingUp, CalendarDays, Repeat, Target } from "lucide-react";
 import { SpendingChart } from "@/components/dashboard/charts/spending-chart";
 import { SpendingByDayChart } from "@/components/dashboard/charts/spending-by-day-chart";
 import { SpendingBySourceChart, SpendingBySourceChartHeader } from "@/components/dashboard/charts/spending-by-source-chart";
@@ -16,13 +16,23 @@ import { CurrentBalanceCard } from "@/components/dashboard/cards/current-balance
 import { useDashboardContext } from "@/context/dashboard-context";
 import { useBudgets } from "@/hooks/useBudgets";
 import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
-import { CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SubscriptionsCard } from "@/components/dashboard/cards/subscriptions-card";
 
 // Props for the OverviewTab component, including a function to open dialogs.
 type OverviewTabProps = {
     openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant' | 'classification', data: any) => void;
 };
+
+const NeedsVsWantsHeader = () => (
+    <CardHeader>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+          <Target className="h-6 w-6" />
+          Needs vs. Wants
+        </CardTitle>
+        <CardDescription>How your spending is classified. Click a slice for details.</CardDescription>
+    </CardHeader>
+);
 
 /**
  * Renders the "Overview" tab in the dashboard.
@@ -96,7 +106,7 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                     <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
                 </div>
                  <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <UpgradeGate requiredTier="Pro" type="card">
+                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<NeedsVsWantsHeader />}>
                         <SubscriptionsCard transactions={filteredTransactions} />
                     </UpgradeGate>
                     <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingClassificationChartHeader />}>
