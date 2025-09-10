@@ -19,6 +19,7 @@ import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SubscriptionsCard } from "@/components/dashboard/cards/subscriptions-card";
 import { useTiers } from "@/hooks/use-tiers";
+import { BudgetSpendingChart } from "@/components/dashboard/charts/budget-spending-chart";
 
 // Props for the OverviewTab component, including a function to open dialogs.
 type OverviewTabProps = {
@@ -56,7 +57,7 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
     const { isPro } = useTiers();
 
     // Use the budgets hook to get budget data relevant to the current view.
-    const { activeBudgets } = useBudgets({ allCategories, transactions: filteredTransactions, dateRange });
+    const { budgets } = useBudgets({ allCategories, transactions: filteredTransactions, dateRange });
 
 
     return (
@@ -98,7 +99,7 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             </div>
             {/* Section for primary charts */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data)} budgets={activeBudgets} allCategories={allCategories} />
+                <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data)} budgets={budgets} allCategories={allCategories} />
                 <SpendingByDayChart transactions={filteredTransactions} onBarClick={(data) => openDialog('day', data.date)} />
             </div>
             {/* Section for secondary charts */}
@@ -118,6 +119,9 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingTrendChartHeader />}>
                          <SpendingTrendChart transactions={allTransactions} />
+                    </UpgradeGate>
+                     <UpgradeGate requiredTier="Pro" type="card">
+                        <BudgetSpendingChart transactions={filteredTransactions} budgets={budgets} allCategories={allCategories} />
                     </UpgradeGate>
                 </div>
             </>
