@@ -61,6 +61,8 @@ const CustomizedContent = (props: any) => {
 };
 
 export function SpendingBySourceChart({ transactions, onPieClick }: { transactions: Transaction[], onPieClick: (data: any) => void }) {
+    const [hoveredNode, setHoveredNode] = React.useState<any | null>(null);
+
     const aggregatedData = React.useMemo(() => {
         if (!transactions) return [];
         
@@ -99,12 +101,18 @@ export function SpendingBySourceChart({ transactions, onPieClick }: { transactio
                     aspectRatio={4 / 3}
                     stroke="#fff"
                     content={
-                        <CustomizedContent 
-                            onPieClick={onPieClick} 
-                            isHovered={false} // Default state
-                        />
+                        <CustomizedContent onPieClick={onPieClick} />
                     }
-                />
+                    onMouseEnter={(node) => setHoveredNode(node)}
+                    onMouseLeave={() => setHoveredNode(null)}
+                >
+                    {aggregatedData.map((entry, index) => (
+                        <Cell 
+                            key={`cell-${index}`} 
+                            content={<CustomizedContent onPieClick={onPieClick} isHovered={hoveredNode?.name === entry.name} />}
+                        />
+                    ))}
+                </Treemap>
             </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
