@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from 'react';
-import { Treemap, ResponsiveContainer, Rectangle } from 'recharts';
+import { Treemap, ResponsiveContainer, Rectangle, Cell } from 'recharts';
 import {
   Card,
   CardContent,
