@@ -97,34 +97,38 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                     />
                 )}
             </div>
-            {/* Section for primary charts */}
+            
+            {/* Row 1 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                 <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data)} budgets={budgets} allCategories={allCategories} />
                 <SpendingByDayChart transactions={filteredTransactions} onBarClick={(data) => openDialog('day', data.date)} />
             </div>
-            {/* Section for secondary charts */}
-            <>
-                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
-                    <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
-                </div>
-                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<RecurringSubscriptionsHeader />}>
-                        <SubscriptionsCard transactions={filteredTransactions} />
-                    </UpgradeGate>
-                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingClassificationChartHeader />}>
-                        <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
-                    </UpgradeGate>
-                </div>
-                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingTrendChartHeader />}>
-                         <SpendingTrendChart transactions={allTransactions} />
-                    </UpgradeGate>
-                     <UpgradeGate requiredTier="Pro" type="card">
-                        <BudgetSpendingChart transactions={filteredTransactions} budgets={budgets} allCategories={allCategories} />
-                    </UpgradeGate>
-                </div>
-            </>
+
+            {/* Row 2 */}
+            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
+                <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
+                <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
+            </div>
+            
+            {/* Row 3 */}
+            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
+                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingClassificationChartHeader />}>
+                    <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
+                </UpgradeGate>
+                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<RecurringSubscriptionsHeader />}>
+                    <SubscriptionsCard transactions={filteredTransactions} />
+                </UpgradeGate>
+            </div>
+            
+            {/* Row 4 */}
+            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
+                 <UpgradeGate requiredTier="Pro" type="card">
+                    <BudgetSpendingChart transactions={filteredTransactions} budgets={budgets} allCategories={allCategories} />
+                </UpgradeGate>
+                <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingTrendChartHeader />}>
+                     <SpendingTrendChart transactions={allTransactions} />
+                </UpgradeGate>
+            </div>
         </div>
     );
 }
