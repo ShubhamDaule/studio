@@ -112,7 +112,7 @@ export default function DashboardPage() {
     }
     
     const handleTabChange = (value: string) => {
-        if (!isPro && (value === 'insights' || value === 'budgeting')) {
+        if (!isPro && value === 'budgeting') {
             return;
         }
         if(!isPremium && value === 'saved') {
@@ -156,12 +156,10 @@ export default function DashboardPage() {
                                 <List className="mr-2 h-4 w-4" />
                                 Transactions
                             </TabsTrigger>
-                            <UpgradeGate requiredTier="Pro" type="tab">
-                                <TabsTrigger value="insights">
-                                    <Sparkles className="mr-2 h-4 w-4" />
-                                    AI Insights
-                                </TabsTrigger>
-                            </UpgradeGate>
+                            <TabsTrigger value="insights">
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                AI Insights
+                            </TabsTrigger>
                             <UpgradeGate requiredTier="Pro" type="tab">
                                 <TabsTrigger value="budgeting">
                                     <Target className="mr-2 h-4 w-4" />
@@ -184,7 +182,7 @@ export default function DashboardPage() {
                             <TransactionsTab />
                         </TabsContent>
                         <TabsContent value="insights" className="mt-4">
-                           {isPro && <InsightsTab />}
+                           <InsightsTab />
                         </TabsContent>
                         <TabsContent value="budgeting" className="mt-4">
                             {isPro && <BudgetingTab />}

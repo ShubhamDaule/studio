@@ -7,6 +7,7 @@ import { FinancialCoachCard } from "@/components/dashboard/cards/financial-coach
 import { AskAiCard } from "@/components/dashboard/cards/ask-ai-card";
 import { useDashboardContext } from "@/context/dashboard-context";
 import { useBudgets } from "@/hooks/useBudgets";
+import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
 
 /**
  * Renders the "AI Insights" tab in the dashboard.
@@ -31,7 +32,9 @@ export function InsightsTab() {
             {/* Card for detecting unusual spending patterns */}
             <AnomaliesCard transactions={spendingTransactions} />
             {/* Card for asking natural language questions about financial data */}
-            <AskAiCard transactions={allTransactions} budgets={activeBudgets} />
+            <UpgradeGate requiredTier="Pro" type="card">
+                <AskAiCard transactions={allTransactions} budgets={activeBudgets} />
+            </UpgradeGate>
         </div>
     );
 }

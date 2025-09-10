@@ -70,42 +70,18 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
                         (transactionsTab as HTMLElement)?.click();
                     }}
                 />
-                 <UpgradeGate 
-                    requiredTier="Pro" 
-                    type="card" 
-                    cardStyle="compact"
-                    cardHeader={
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Highest Single Transaction</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                    }
-                 >
-                    <HighestTransactionCard 
-                        transaction={highestTransaction}
-                        onClick={() => openDialog('transactionDetail', highestTransaction)}
-                    />
-                </UpgradeGate>
+                <HighestTransactionCard 
+                    transaction={highestTransaction}
+                    onClick={() => openDialog('transactionDetail', highestTransaction)}
+                />
                 {/* Conditionally render either the current balance or the highest spending day card. */}
                 {currentBalance !== null ? (
                      <CurrentBalanceCard balance={currentBalance} />
                 ) : (
-                    <UpgradeGate 
-                        requiredTier="Pro" 
-                        type="card" 
-                        cardStyle="compact"
-                        cardHeader={
-                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Highest Spending Day</CardTitle>
-                                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                        }
-                    >
-                        <HighestDayCard 
-                            day={highestDay}
-                            onClick={() => openDialog('day', highestDay?.date ?? null)}
-                        />
-                    </UpgradeGate>
+                    <HighestDayCard 
+                        day={highestDay}
+                        onClick={() => openDialog('day', highestDay?.date ?? null)}
+                    />
                 )}
             </div>
             {/* Section for primary charts */}
@@ -116,12 +92,8 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             {/* Section for secondary charts */}
             <>
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<SpendingBySourceChartHeader />}>
-                        <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
-                    </UpgradeGate>
-                    <UpgradeGate requiredTier="Pro" type="card" cardHeader={<TopMerchantsChartHeader />}>
-                        <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
-                    </UpgradeGate>
+                    <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
+                    <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
                 </div>
                  <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                     <UpgradeGate requiredTier="Pro" type="card">
