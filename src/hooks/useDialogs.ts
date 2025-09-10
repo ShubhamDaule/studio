@@ -6,7 +6,7 @@ import type { Transaction, Category } from '@/lib/types';
 import { useTiers } from './use-tiers';
 import { categoryClassification } from '@/components/dashboard/charts/SpendingClassificationChart';
 
-type DialogType = 'category' | 'day' | 'source' | 'merchant' | 'transactionDetail' | 'classification' | 'chartExpanded';
+type DialogType = 'category' | 'day' | 'source' | 'merchant' | 'transactionDetail' | 'classification';
 
 type DialogState = {
   [key in DialogType]: boolean;
@@ -23,7 +23,6 @@ type DialogData = {
     allCategories: Category[];
     onCategoryChange: (transactionId: string, newCategory: Category['name']) => void;
     isPro: boolean;
-    chartData?: { title: string, data: Transaction[], type: 'bar' | 'pie' | 'treemap' | 'area' | 'line' };
 }
 
 type UseDialogsProps = {
@@ -43,7 +42,6 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
     merchant: false,
     transactionDetail: false,
     classification: false,
-    chartExpanded: false,
   });
   
   const [activeDialogKey, setActiveDialogKey] = useState<any | null>(null);
@@ -68,10 +66,6 @@ export const useDialogs = ({ transactions, allTransactions, allCategories, handl
     };
 
     if (!activeDialogKey) return baseData;
-
-     if (dialogState.chartExpanded && typeof activeDialogKey === 'object' && 'title' in activeDialogKey) {
-      return { ...baseData, chartData: activeDialogKey };
-    }
     
     if (dialogState.transactionDetail && typeof activeDialogKey === 'object' && activeDialogKey !== null && 'id' in activeDialogKey) {
         return { ...baseData, transaction: activeDialogKey };

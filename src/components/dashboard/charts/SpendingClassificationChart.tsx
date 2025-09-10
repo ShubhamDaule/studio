@@ -6,6 +6,9 @@ import { Pie, PieChart, Tooltip, Cell, Sector } from 'recharts';
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartConfig,
@@ -14,7 +17,6 @@ import {
 } from "@/components/ui/chart";
 import type { Transaction } from '@/lib/types';
 import { Target } from 'lucide-react';
-import { ChartCardHeader } from './chart-card-header';
 import { getStableColor } from '@/lib/colors';
 
 // Define the classification of each category
@@ -82,7 +84,7 @@ const renderActiveShape = (props: any) => {
 };
 
 
-export function SpendingClassificationChart({ transactions, onClick, onExpand }: { transactions: Transaction[], onClick: (data: any) => void, onExpand: () => void }) {
+export function SpendingClassificationChart({ transactions, onClick }: { transactions: Transaction[], onClick: (data: any) => void }) {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(0);
 
   const aggregatedData = React.useMemo(() => {
@@ -117,12 +119,13 @@ export function SpendingClassificationChart({ transactions, onClick, onExpand }:
   if (aggregatedData.length === 0) {
     return (
         <Card className="flex flex-col h-full card-interactive group">
-            <ChartCardHeader 
-                title="Needs vs. Wants"
-                description="How your spending is classified."
-                Icon={Target}
-                onExpand={onExpand}
-            />
+            <CardHeader>
+                <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+                    <Target className="h-6 w-6" />
+                    Needs vs. Wants
+                </CardTitle>
+                <CardDescription>How your spending is classified.</CardDescription>
+            </CardHeader>
             <CardContent className="flex flex-1 items-center justify-center pt-6">
                 <p className="text-muted-foreground text-center">No transactions classified as 'Needs' or 'Wants' in this period.</p>
             </CardContent>
@@ -132,12 +135,13 @@ export function SpendingClassificationChart({ transactions, onClick, onExpand }:
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <ChartCardHeader 
-        title="Needs vs. Wants"
-        description="How your spending is classified."
-        Icon={Target}
-        onExpand={onExpand}
-      />
+      <CardHeader>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+            <Target className="h-6 w-6" />
+            Needs vs. Wants
+        </CardTitle>
+        <CardDescription>How your spending is classified.</CardDescription>
+      </CardHeader>
       <CardContent className="flex-1 pb-0 pt-6">
         <ChartContainer
           config={chartConfig}

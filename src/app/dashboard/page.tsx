@@ -35,7 +35,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useTiers } from "@/hooks/use-tiers";
 import { cn } from "@/lib/utils";
 import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
-import { ChartExpandedDialog } from "@/components/dialogs/chart-expanded-dialog";
 
 
 export default function DashboardPage() {
@@ -226,11 +225,6 @@ export default function DashboardPage() {
                     onClose={() => closeDialog('transactionDetail')}
                     transaction={dialogData.transaction}
                     allCategories={allCategories}
-                />
-                 <ChartExpandedDialog
-                    isOpen={dialogState.chartExpanded}
-                    onClose={() => closeDialog('chartExpanded')}
-                    chartData={dialogData.chartData}
                 />
 
                 <AlertDialog open={!!fileToDelete} onOpenChange={(open) => !open && setFileToDelete(null)}>

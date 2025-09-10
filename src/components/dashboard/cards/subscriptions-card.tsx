@@ -2,18 +2,16 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Transaction } from "@/lib/types";
 import { Repeat } from "lucide-react";
 import { CategoryIcon } from "@/components/icons";
-import { ChartCardHeader } from "../charts/chart-card-header";
 
 interface SubscriptionsCardProps {
   transactions: Transaction[];
-  onExpand: () => void;
 }
 
-export function SubscriptionsCard({ transactions, onExpand }: SubscriptionsCardProps) {
+export function SubscriptionsCard({ transactions }: SubscriptionsCardProps) {
   const subscriptions = React.useMemo(() => {
     return transactions
       .filter((t) => t.category === "Subscriptions" && t.amount > 0)
@@ -29,12 +27,13 @@ export function SubscriptionsCard({ transactions, onExpand }: SubscriptionsCardP
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <ChartCardHeader
-        title="Recurring Subscriptions"
-        description="A summary of your detected monthly and yearly subscriptions."
-        Icon={Repeat}
-        onExpand={onExpand}
-      />
+      <CardHeader>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+            <Repeat className="h-6 w-6" />
+            Recurring Subscriptions
+        </CardTitle>
+        <CardDescription>A summary of your detected monthly and yearly subscriptions.</CardDescription>
+      </CardHeader>
       <CardContent className="pt-6">
         {subscriptions.length > 0 ? (
           <div className="space-y-3">

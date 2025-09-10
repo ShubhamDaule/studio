@@ -29,20 +29,22 @@ type Props = {
 };
 
 function ChartExpandedDialogContent({ chartData, onClose }: { chartData: NonNullable<Props['chartData']>, onClose: () => void }) {
-  const [groupBy, setGroupBy] = React.useState('category');
-  const { allCategories } = useDashboardContext();
-  const { budgets } = useBudgets({allCategories, transactions: chartData.data, dateRange: undefined});
+    if (!chartData) return null;
+    const [groupBy, setGroupBy] = React.useState('category');
+    const { allCategories } = useDashboardContext();
+    const { budgets } = useBudgets({allCategories, transactions: chartData.data, dateRange: undefined});
+    
 
   const chartComponent = React.useMemo(() => {
     switch (chartData.title) {
         case 'Spending Breakdown':
-            return <SpendingChart transactions={chartData.data} onPieClick={() => {}} onExpand={() => {}} budgets={[]} allCategories={allCategories} />;
+            return <SpendingChart transactions={chartData.data} onPieClick={() => {}} budgets={[]} allCategories={allCategories} />;
         case 'Spending By Day':
-            return <SpendingByDayChart transactions={chartData.data} onBarClick={() => {}} onExpand={() => {}} />;
+            return <SpendingByDayChart transactions={chartData.data} onBarClick={() => {}} />;
         case 'Spending by Source':
-            return <SpendingBySourceChart transactions={chartData.data} onPieClick={() => {}} onExpand={() => {}} />;
+            return <SpendingBySourceChart transactions={chartData.data} onPieClick={() => {}} />;
         case 'Top 5 Merchants':
-             return <TopMerchantsChart transactions={chartData.data} onBarClick={() => {}} onExpand={() => {}} />;
+             return <TopMerchantsChart transactions={chartData.data} onBarClick={() => {}} />;
         case 'Needs vs. Wants':
             return <SpendingClassificationChart transactions={chartData.data} onClick={() => {}} />;
         case 'Recurring Subscriptions':
@@ -50,7 +52,7 @@ function ChartExpandedDialogContent({ chartData, onClose }: { chartData: NonNull
         case 'Spending Trend':
              return <SpendingTrendChart transactions={chartData.data} />;
         case 'Spending vs. Budget':
-            return <BudgetSpendingChart transactions={chartData.data} budgets={budgets} allCategories={allCategories} onExpand={() => {}} />;
+            return <BudgetSpendingChart transactions={chartData.data} budgets={budgets} allCategories={allCategories} />;
         default:
             return <p>Chart type not supported in expanded view.</p>;
     }

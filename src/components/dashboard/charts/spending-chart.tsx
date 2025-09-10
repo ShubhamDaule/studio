@@ -6,6 +6,9 @@ import { Pie, PieChart, Tooltip, Cell, Sector } from 'recharts';
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartConfig,
@@ -14,7 +17,6 @@ import {
 } from "@/components/ui/chart";
 import type { Transaction, Budget, Category } from '@/lib/types';
 import { PieChart as PieChartIcon } from 'lucide-react';
-import { ChartCardHeader } from './chart-card-header';
 import { getStableColor } from '@/lib/colors';
 
 const chartConfigBase = {
@@ -26,7 +28,6 @@ const chartConfigBase = {
 interface SpendingChartProps {
   transactions: Transaction[];
   onPieClick: (data: any) => void;
-  onExpand: () => void;
   budgets: Budget[];
   allCategories: Category[];
 }
@@ -49,7 +50,7 @@ const renderActiveShape = (props: any) => {
   );
 };
 
-export function SpendingChart({ transactions, onPieClick, onExpand, budgets, allCategories }: SpendingChartProps) {
+export function SpendingChart({ transactions, onPieClick, budgets, allCategories }: SpendingChartProps) {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
 
   const { aggregatedData, chartConfig, totalSpending } = React.useMemo(() => {
@@ -106,12 +107,13 @@ export function SpendingChart({ transactions, onPieClick, onExpand, budgets, all
 
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <ChartCardHeader 
-        title="Spending Breakdown"
-        description="Monthly spending by category. Click a slice for details."
-        Icon={PieChartIcon}
-        onExpand={onExpand}
-      />
+      <CardHeader>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+            <PieChartIcon className="h-6 w-6" />
+            Spending Breakdown
+        </CardTitle>
+        <CardDescription>Monthly spending by category. Click a slice for details.</CardDescription>
+      </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}

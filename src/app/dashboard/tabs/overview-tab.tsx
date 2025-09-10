@@ -22,7 +22,7 @@ import { BudgetSpendingChart } from "@/components/dashboard/charts/budget-spendi
 
 // Props for the OverviewTab component, including a function to open dialogs.
 type OverviewTabProps = {
-    openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant' | 'classification' | 'chartExpanded', data: any) => void;
+    openDialog: (type: 'transactionDetail' | 'day' | 'category' | 'source' | 'merchant' | 'classification', data: any) => void;
 };
 
 /**
@@ -89,33 +89,33 @@ export function OverviewTab({ openDialog }: OverviewTabProps) {
             
             {/* Row 1 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data)} onExpand={() => openDialog('chartExpanded', { title: 'Spending Breakdown', data: filteredTransactions, type: 'pie' })} budgets={budgets} allCategories={allCategories} />
-                <SpendingByDayChart transactions={filteredTransactions} onBarClick={(data) => openDialog('day', data.date)} onExpand={() => openDialog('chartExpanded', { title: 'Spending By Day', data: filteredTransactions, type: 'bar' })} />
+                <SpendingChart transactions={filteredTransactions} onPieClick={(data) => openDialog('category', data)} budgets={budgets} allCategories={allCategories} />
+                <SpendingByDayChart transactions={filteredTransactions} onBarClick={(data) => openDialog('day', data.date)} />
             </div>
 
             {/* Row 2 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
-                <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} onExpand={() => openDialog('chartExpanded', { title: 'Spending by Source', data: allTransactions, type: 'treemap' })} />
-                <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} onExpand={() => openDialog('chartExpanded', { title: 'Top 5 Merchants', data: filteredTransactions, type: 'bar' })} />
+                <SpendingBySourceChart transactions={allTransactions} onPieClick={(data) => openDialog('source', {name: data.source})} />
+                <TopMerchantsChart transactions={filteredTransactions} onBarClick={(data) => openDialog('merchant', {merchant: data.merchant})} />
             </div>
             
             {/* Row 3 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                 <UpgradeGate requiredTier="Pro" type="card">
-                    <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} onExpand={() => openDialog('chartExpanded', { title: 'Needs vs. Wants', data: filteredTransactions, type: 'pie' })} />
+                    <SpendingClassificationChart transactions={filteredTransactions} onClick={(data) => openDialog('classification', data)} />
                 </UpgradeGate>
                 <UpgradeGate requiredTier="Pro" type="card">
-                    <SubscriptionsCard transactions={filteredTransactions} onExpand={() => openDialog('chartExpanded', { title: 'Recurring Subscriptions', data: filteredTransactions, type: 'table' })} />
+                    <SubscriptionsCard transactions={filteredTransactions} />
                 </UpgradeGate>
             </div>
             
             {/* Row 4 */}
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
                  <UpgradeGate requiredTier="Pro" type="card">
-                    <BudgetSpendingChart transactions={filteredTransactions} budgets={budgets} allCategories={allCategories} onExpand={() => openDialog('chartExpanded', { title: 'Spending vs. Budget', data: filteredTransactions, type: 'bar' })} />
+                    <BudgetSpendingChart transactions={filteredTransactions} budgets={budgets} allCategories={allCategories} />
                 </UpgradeGate>
                 <UpgradeGate requiredTier="Pro" type="card">
-                     <SpendingTrendChart transactions={allTransactions} onExpand={() => openDialog('chartExpanded', { title: 'Spending Trend', data: allTransactions, type: 'area' })} />
+                     <SpendingTrendChart transactions={allTransactions} />
                 </UpgradeGate>
             </div>
         </div>

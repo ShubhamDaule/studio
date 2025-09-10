@@ -6,6 +6,9 @@ import { Treemap, ResponsiveContainer, Rectangle } from 'recharts';
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartConfig,
@@ -14,7 +17,6 @@ import {
 import type { Transaction } from '@/lib/types';
 import { Banknote } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ChartCardHeader } from './chart-card-header';
 import { getStableColor } from '@/lib/colors';
 
 // A custom component to render each cell of the treemap with styling
@@ -56,7 +58,7 @@ const CustomizedContent = (props: any) => {
   );
 };
 
-export function SpendingBySourceChart({ transactions, onPieClick, onExpand }: { transactions: Transaction[], onPieClick: (data: any) => void, onExpand: () => void }) {
+export function SpendingBySourceChart({ transactions, onPieClick }: { transactions: Transaction[], onPieClick: (data: any) => void }) {
     const aggregatedData = React.useMemo(() => {
         if (!transactions) return [];
         
@@ -79,12 +81,13 @@ export function SpendingBySourceChart({ transactions, onPieClick, onExpand }: { 
   
   return (
     <Card className="flex flex-col h-full card-interactive group">
-      <ChartCardHeader 
-        title="Spending by Source"
-        description="Breakdown of spending from each bank. Click a block for details."
-        Icon={Banknote}
-        onExpand={onExpand}
-      />
+      <CardHeader>
+        <CardTitle className='flex items-center gap-2 group-hover:text-primary transition-colors'>
+            <Banknote className="h-6 w-6" />
+            Spending by Source
+        </CardTitle>
+        <CardDescription>Breakdown of spending from each bank. Click a block for details.</CardDescription>
+      </CardHeader>
       <CardContent className="flex-1 pb-4">
         <ChartContainer config={{}} className="h-[250px] w-full sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
