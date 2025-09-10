@@ -309,13 +309,24 @@ Statement Text:
 // STEP 4b: Main AI Flow Execution
 // This is the core function that orchestrates the extraction process.
 // ************************************************************************************
-export async function extractTransactions(input: ExtractTransactionsInput): Promise<{ bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null, transactions: ExtractedTransaction[], rawText: string, processedText: string }> {
+export async function extractTransactions(input: ExtractTransactionsInput, skipAi: boolean = false): Promise<{ bankName: BankName, statementType: StatementType, statementPeriod: StatementPeriod | null, transactions: ExtractedTransaction[], rawText: string, processedText: string }> {
     const { pdfText } = input;
 
-    // First, detect bank, type, and period from the raw text without using AI.
+    // First, always detect bank, type, and period from the raw text without using AI.
     const bankInfo = detectBankAndStatementType(pdfText);
     
-    // Then, pre-process the text to remove unnecessary headers/footers based on the bank.
+    // If skipAi is true, we are in the pre-analysis phase. Return metadata without calling the AI.
+    if (skipAi) {
+        return {
+            ...bankInfo,
+            transactions: [],
+            rawText: pdfText,
+            processedText: "" // No text is processed for the AI yet.
+        };
+    }
+    
+    // If skipAi is false, proceed with the full AI extraction.
+    // Pre-process the text to remove unnecessary headers/footers based on the bank.
     const processedText = preProcessStatementText(bankInfo.bankName, pdfText);
     
     // Choose the appropriate AI prompt (Credit Card vs. Bank Account) based on the detected statement type.
@@ -330,9 +341,7 @@ export async function extractTransactions(input: ExtractTransactionsInput): Prom
     const extractedData = llmResponse.output || [];
 
     return { 
-        bankName: bankInfo.bankName, 
-        statementType: bankInfo.statementType, 
-        statementPeriod: bankInfo.statementPeriod,
+        ...bankInfo,
         transactions: extractedData,
         rawText: pdfText,
         processedText,

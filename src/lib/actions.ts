@@ -55,12 +55,12 @@ export async function preAnalyzeTransactions(pdfText: string, fileName: string, 
     try {
         const input = { pdfText };
         
+        // This single call now handles both pre-analysis and full extraction logic internally.
+        const { bankName, statementType, statementPeriod, transactions, processedText } = await extractTransactions(input, skipAi);
+        
         if (skipAi) {
-            // First pass: Pre-analyze to get bank info and statement period
-            const { bankName, statementType, statementPeriod } = await extractTransactions(input);
-            const inputTokens = estimateTokens(JSON.stringify(input));
-            
-            // A more realistic estimation for the second call.
+            // For pre-analysis, we estimate the token usage without a full AI call.
+            const inputTokens = estimateTokens(pdfText);
             // The JSON output is typically around 30-40% of the raw text input size.
             const estimatedOutputTokens = inputTokens * 0.40; 
             
@@ -76,14 +76,12 @@ export async function preAnalyzeTransactions(pdfText: string, fileName: string, 
             };
         }
         
-        // Second pass: Full extraction
-        const { bankName, statementType, statementPeriod, transactions, processedText } = await extractTransactions(input);
-        
+        // This part runs for the full extraction after user confirmation.
         if (!transactions) {
              return { data: [], bankName, statementType, statementPeriod, processedText };
         }
         
-        const inputTokens = estimateTokens(JSON.stringify(input));
+        const inputTokens = estimateTokens(processedText); // Use processed text for more accurate input cost
         const actualOutputTokens = estimateTokens(JSON.stringify(transactions));
         const usage: TokenUsage = {
             inputTokens,
@@ -99,7 +97,7 @@ export async function preAnalyzeTransactions(pdfText: string, fileName: string, 
 
         return { data: dataWithMetadata, bankName, statementType, statementPeriod, usage, processedText };
     } catch (e: any) {
-        console.error("Error pre-analyzing transactions from PDF:", e);
+        console.error("Error processing transactions from PDF:", e);
         return { error: getFriendlyErrorMessage(e) };
     }
 }
